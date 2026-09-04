@@ -1195,15 +1195,15 @@ body:has(#menu-grid) header {
 }
 
 body.menu-page .logo img {
-    width: 270px;
-    height: 100px;
+    width: 210px;
+    height: 76px;
 }
 
 /* واجهة المنيو: هيدر أوسع وترحيب بشعاري ورد خفيفين على الجانبين. */
 body.menu-page header {
-    min-height: 104px;
-    padding-top: 18px;
-    padding-bottom: 18px;
+    min-height: 82px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 body.menu-page .hero {
@@ -1233,14 +1233,14 @@ body.menu-page .hero p {
 
 @media (max-width: 700px) {
     body.menu-page .logo img {
-        width: 220px;
-        height: 82px;
+        width: 185px;
+        height: 68px;
     }
 
     body.menu-page header {
         min-height: 0;
-        padding-top: 14px;
-        padding-bottom: 14px;
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
 
     body.menu-page .hero {

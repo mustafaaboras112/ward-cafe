@@ -419,7 +419,7 @@ async function checkout() {
         items: [...cart],
         total: cart.reduce((sum, i) => sum + (i.price * i.qty), 0),
         status: 'قيد التحضير',
-        time: new Date().toLocaleTimeString('ar-SY'),
+        time: formatWardDateTime(Date.now()),
         createdAt: Date.now()
     };
 
@@ -789,7 +789,7 @@ async function addExpense(e) {
         id: Date.now(),
         title,
         amount,
-        time: new Date().toLocaleTimeString('ar-SY')
+        time: formatWardDateTime(Date.now())
     });
 
     localStorage.setItem('cafe_ward_expenses', JSON.stringify(expenses));
@@ -905,7 +905,7 @@ async function addExpense(e) {
     const category = document.getElementById('exp-category').value;
     const amount = parseFloat(document.getElementById('exp-amount').value);
 
-    await saveAccountingRecord('expenses', { title, category, amount, time: new Date().toLocaleTimeString('ar-SY'), createdAt: Date.now() });
+    await saveAccountingRecord('expenses', { title, category, amount, time: formatWardDateTime(Date.now()), createdAt: Date.now() });
     document.getElementById('expense-form').reset();
     renderAccountingDashboard();
 }
@@ -998,6 +998,14 @@ async function markOrderPaid(id) {
         console.error('تعذر تسجيل دفع الفاتورة:', error);
         alert('تعذر تأكيد الدفع. تحقق من اتصال قاعدة البيانات ثم أعد المحاولة.');
     }
+}
+
+async function markTablePaid(table) {
+    const orderIds = getOrders()
+        .filter(order => String(order.table) === String(table) && order.status === 'تم التوصيل' && order.paymentStatus !== 'مدفوع')
+        .map(order => order.id);
+    if (!orderIds.length) return;
+    await Promise.all(orderIds.map(markOrderPaid));
 }
 
 function renderAccountingDashboard() {
@@ -1098,6 +1106,34 @@ function renderAccountingDashboard() {
         }).join('');
     }
 
+    // كاشير الطاولات: تجميع الطلبات المفتوحة لكل طاولة في فاتورة واحدة.
+    const cashierTables = document.getElementById('cashier-tables-list');
+    if (cashierTables) {
+        const tableGroups = new Map();
+        orders.filter(order => order.paymentStatus !== 'مدفوع').forEach(order => {
+            const table = String(order.table);
+            if (!tableGroups.has(table)) tableGroups.set(table, []);
+            tableGroups.get(table).push(order);
+        });
+        if (tableGroups.size === 0) {
+            cashierTables.innerHTML = '<p style="color:#2e7d32; grid-column:1/-1;">لا توجد حسابات طاولات مفتوحة حالياً.</p>';
+        } else {
+            cashierTables.innerHTML = [...tableGroups.entries()].sort((a, b) => Number(a[0]) - Number(b[0])).map(([table, tableOrders]) => {
+                const readyToPay = tableOrders.filter(order => order.status === 'تم التوصيل');
+                const waiting = tableOrders.filter(order => order.status !== 'تم التوصيل');
+                const total = readyToPay.reduce((sum, order) => sum + (Number(order.total) || 0), 0);
+                const items = tableOrders.flatMap(order => order.items).map(item => `${escapeHtml(item.name)} × ${item.qty}`).join('، ');
+                return `<article style="background:#fffafc; border:1px solid #f1c8d7; border-radius:10px; padding:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;"><strong style="color:var(--primary); font-size:18px;">الطاولة ${escapeHtml(table)}</strong><span style="font-size:12px; color:#777;">${tableOrders.length} طلب</span></div>
+                    <p style="color:#555; font-size:13px; line-height:1.7; margin:10px 0;">${items}</p>
+                    <strong style="display:block; color:var(--gold); font-size:17px;">المطلوب: ${total.toLocaleString('en-US')} ليرة</strong>
+                    ${waiting.length ? `<small style="display:block; color:#e91e63; margin-top:7px;">${waiting.length} طلب بانتظار التوصيل</small>` : ''}
+                    ${readyToPay.length ? `<button onclick='markTablePaid(${JSON.stringify(table)})' class="btn-action" style="width:100%; margin-top:12px; background:#1565c0;">تحصيل حساب الطاولة</button>` : ''}
+                </article>`;
+            }).join('');
+        }
+    }
+
     // 6. عرض الفواتير غير المسددة
     const unpaidTbody = document.getElementById('unpaid-invoices-tbody');
     if (unpaidTbody) {
@@ -1188,7 +1224,7 @@ async function addExpense(e) {
     const category = document.getElementById('exp-category').value;
     const amount = parseFloat(document.getElementById('exp-amount').value);
 
-    await saveAccountingRecord('expenses', { title, category, amount, time: new Date().toLocaleTimeString('ar-SY'), createdAt: Date.now() });
+    await saveAccountingRecord('expenses', { title, category, amount, time: formatWardDateTime(Date.now()), createdAt: Date.now() });
     document.getElementById('expense-form').reset();
     renderAccountingDashboard();
 }
@@ -1273,8 +1309,8 @@ async function executeDailyClosing() {
 /* واجهة موحّدة وربط بيانات أكثر اعتمادية بين جميع شاشات كافيه ورد */
 function formatWardDateTime(value) {
     const date = value ? new Date(value) : new Date();
-    return new Intl.DateTimeFormat('ar-SY', {
-        dateStyle: 'medium',
+    return new Intl.DateTimeFormat('en-GB', {
+        dateStyle: 'short',
         timeStyle: 'short',
         hour12: true
     }).format(date);

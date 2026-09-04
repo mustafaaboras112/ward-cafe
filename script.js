@@ -1202,24 +1202,9 @@ function addCafeNavigation() {
     });
 
     const currentPage = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-    const pages = [
-        ['index.html', 'fa-mug-hot', 'المنيو'],
-        ['waiter.html', 'fa-bell-concierge', 'الكارسون'],
-        ['kitchen.html', 'fa-kitchen-set', 'المطبخ'],
-        ['admin.html', 'fa-sliders', 'الإدارة'],
-        ['accounting.html', 'fa-chart-pie', 'الحسابات']
-    ];
-    const nav = document.createElement('nav');
-    nav.id = 'cafe-main-nav';
-    nav.setAttribute('aria-label', 'التنقل الرئيسي');
-    nav.innerHTML = pages.map(([href, icon, label]) =>
-        `<a href="${href}" class="${currentPage === href ? 'is-current' : ''}"><i class="fa-solid ${icon}"></i><span>${label}</span></a>`
-    ).join('');
-
     const clock = document.createElement('div');
     clock.id = 'ward-live-clock';
     clock.setAttribute('aria-label', 'الوقت الحالي');
-    if (currentPage !== 'index.html') header.append(nav);
     header.append(clock);
     const updateClock = () => { clock.textContent = formatWardDateTime(Date.now()); };
     updateClock();
@@ -1303,7 +1288,7 @@ function showOrderSuccess(order) {
         <div class="success-flower"><i class="fa-solid fa-mug-hot"></i></div>
         <div>
             <strong>تم استلام طلبك بنجاح</strong>
-            <p>طلب الطاولة ${escapeHtml(order.table)} وصل للمطبخ الآن — حضّرنا لك لحظات ورد وقهوة جميلة.</p>
+            <p>طلب الطاولة ${escapeHtml(order.table)} وصل للمطبخ الآن، وسيتم تحضيره بأسرع وقت.</p>
             <small><i class="fa-regular fa-clock"></i> ${escapeHtml(order.time)}</small>
         </div>
         <button type="button" aria-label="إغلاق الرسالة">&times;</button>`;

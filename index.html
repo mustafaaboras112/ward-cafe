@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كافيه ورد - القائمة الرئيسية</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo" aria-label="شعار كافيه ورد"><img src="q.png" alt="كافيه ورد"></div>
+        <label class="table-selector table-selector-attention" for="table-selector">
+            <span class="table-selector-title"><i class="fa-solid fa-chair"></i> اختر طاولتك</span>
+            <select id="table-selector" aria-label="تحديد رقم الطاولة" onchange="changeTable(this.value)">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+            </select>
+            <strong id="selected-table-label">رقم الطاولة</strong>
+        </label>
+        <p id="table-badge" class="table-badge">رقم الطاولة: جاري التحميل...</p>
+        <div class="cart-icon" onclick="toggleCart()">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cart-count">0</span>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>أهلاً بك في عالم النكهات الأصيلة</h2>
+            <p>اختر ما تحب من قائمة المنيو وسيصلك طلبك حتى طاولتك</p>
+        </section>
+
+        <div class="categories">
+            <button class="cat-btn active" onclick="filterMenu('all')">الكل</button>
+            <button class="cat-btn" onclick="filterMenu('hot')">مشروبات ساخنة</button>
+            <button class="cat-btn" onclick="filterMenu('cold')">مشروبات باردة</button>
+            <button class="cat-btn" onclick="filterMenu('sweets')">حلويات</button>
+            <button class="cat-btn" onclick="filterMenu('food')">مأكولات</button>
+        </div>
+
+        <div class="menu-grid" id="menu-grid"></div>
+    </main>
+
+    <div id="cart-modal" class="cart-modal">
+        <div class="cart-content">
+            <span class="close-btn" onclick="toggleCart()">&times;</span>
+            <h2>سلة طلبات الطاولة</h2>
+            <div id="cart-items"></div>
+            <div class="cart-total">
+                <h3>الإجمالي: <span id="total-price">0</span> ليرة</h3>
+            </div>
+            <button class="checkout-btn" onclick="checkout()">تأكيد وإرسال الطلب</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

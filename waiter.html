@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة الكارسون والطلبات - كافيه ورد</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo" aria-label="شعار كافيه ورد"><img src="q.png" alt="كافيه ورد"></div>
+        <div>
+            <a href="kitchen.html" style="background:var(--primary); color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">شاشة المطبخ</a>
+            <a href="index.html" style="background:#333; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold;">المنيو</a>
+        </div>
+    </header>
+
+    <main style="max-width: 1000px; margin: 30px auto; padding: 0 20px;">
+        <h2>الطلبات النشطة</h2>
+        <button id="enable-bell-btn" class="btn-action" onclick="enableWaiterBell()" style="margin-top:12px;">تفعيل رنة الجرس</button>
+        <div id="orders-container" style="display:grid; gap:15px; margin-top:20px;">
+            <p style="color:#888;">لا توجد طلبات جديدة حالياً...</p>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => { renderOrders(); startWaiterMonitor(); });
+    </script>
+</body>
+</html>

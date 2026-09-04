@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --primary: #e91e63;
     --primary-light: #f8bbd0;
     --bg-light: #fdfdfd;
@@ -1134,4 +1134,60 @@ th {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* Shared Ward Cafe navigation and live time */
+#cafe-main-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex: 1 1 440px;
+    flex-wrap: wrap;
+}
+
+.legacy-page-links {
+    display: none !important;
+}
+
+#cafe-main-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 7px 10px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: #6f4454;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    transition: 0.2s ease;
+}
+
+#cafe-main-nav a:hover,
+#cafe-main-nav a.is-current {
+    color: #fff;
+    background: var(--primary);
+    box-shadow: 0 4px 12px rgba(148, 30, 74, 0.2);
+}
+
+#ward-live-clock {
+    min-width: 148px;
+    padding: 8px 11px;
+    border: 1px solid #f2d6df;
+    border-radius: 9px;
+    color: #744257;
+    background: #fff8fa;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+    #cafe-main-nav { order: 4; flex-basis: 100%; }
+    #cafe-main-nav a { padding: 7px 8px; font-size: 12px; }
+    #cafe-main-nav a span { display: none; }
+    #ward-live-clock { margin: 0 auto; order: 3; }
 }

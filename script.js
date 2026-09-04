@@ -1,4 +1,4 @@
-const defaultMenu = [
+﻿const defaultMenu = [
     { id: 1, name: 'قهوة تركية ورد', category: 'hot', price: 40, desc: 'قهوة أصيلة ساخنة برغوة غنية', img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=500&q=80' },
     { id: 2, name: 'لاتيه كافيه ورد', category: 'hot', price: 60, desc: 'إسبريسو مع حليب ناعم', img: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=500&q=80' },
     { id: 3, name: 'موهيتو بيري', category: 'cold', price: 75, desc: 'نكهة التوت المنعشة مع الصودا والنعناع', img: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=500&q=80' },
@@ -376,9 +376,9 @@ function renderCartItems() {
                     <p style="color:var(--gold); font-size:12px;">${item.price} ليرة × ${item.qty}</p>
                 </div>
                 <div>
-                    <button onclick="changeQty(${item.id}, 1)" style="padding:2px 8px; background:var(--primary); color:#fff; border:none; cursor:pointer; border-radius:4px;">+</button>
+                    <button onclick='changeQty(${JSON.stringify(String(item.id))}, 1)' style="padding:2px 8px; background:var(--primary); color:#fff; border:none; cursor:pointer; border-radius:4px;">+</button>
                     <span style="margin: 0 8px; font-weight:bold;">${item.qty}</span>
-                    <button onclick="changeQty(${item.id}, -1)" style="padding:2px 8px; background:#ddd; color:#333; border:none; cursor:pointer; border-radius:4px;">-</button>
+                    <button onclick='changeQty(${JSON.stringify(String(item.id))}, -1)' style="padding:2px 8px; background:#ddd; color:#333; border:none; cursor:pointer; border-radius:4px;">-</button>
                 </div>
             </div>
         `;
@@ -470,7 +470,7 @@ function renderAdminMenu() {
                 <div>
                     <strong style="color:#333;">${item.name}</strong> - <span style="color:var(--gold);">${item.price} ليرة</span> (${item.category})
                 </div>
-                <button onclick="deleteMenuItem(${item.id})" style="background:#e53935; color:#fff; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">حذف</button>
+                <button onclick='deleteMenuItem(${JSON.stringify(String(item.id))})' style="background:#e53935; color:#fff; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">حذف</button>
             </div>
         `;
     });
@@ -860,14 +860,14 @@ function renderAccountingDashboard() {
     const clientList = document.getElementById('clients-list');
     if (clientList) {
         clientList.innerHTML = clients.length === 0 ? 'لا توجد ذمم عملاء مسجلة.' :
-            clients.map(c => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>العميل: ${c.name} (استحقاق: ${c.date})</span><div><strong style="color:var(--gold);">${c.amount} ليرة</strong> <button onclick="deleteClient(${c.id})" style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[سداد/حذف]</button></div></div>`).join('');
+            clients.map(c => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>العميل: ${c.name} (استحقاق: ${c.date})</span><div><strong style="color:var(--gold);">${c.amount} ليرة</strong> <button onclick='deleteClient(${JSON.stringify(String(c.id))})' style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[سداد/حذف]</button></div></div>`).join('');
     }
 
     // 4. تحديث قسم الموردين
     const supList = document.getElementById('suppliers-list');
     if (supList) {
         supList.innerHTML = suppliers.length === 0 ? 'لا توجد مستحقات للموردين.' :
-            suppliers.map(s => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>المورد: ${s.name} (استحقاق: ${s.date})</span><div><strong style="color:#e65100;">${s.amount} ليرة</strong> <button onclick="deleteSupplier(${s.id})" style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[دفع/حذف]</button></div></div>`).join('');
+            suppliers.map(s => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>المورد: ${s.name} (استحقاق: ${s.date})</span><div><strong style="color:#e65100;">${s.amount} ليرة</strong> <button onclick='deleteSupplier(${JSON.stringify(String(s.id))})' style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[دفع/حذف]</button></div></div>`).join('');
     }
 
     // 5. تحديث مطابقة الصندوق ومؤشرات الأرباح والخسائر
@@ -991,14 +991,14 @@ function renderAccountingDashboard() {
     const clientList = document.getElementById('clients-list');
     if (clientList) {
         clientList.innerHTML = clients.length === 0 ? 'لا توجد ذمم عملاء.' :
-            clients.map(c => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>العميل: ${c.name} (استحقاق: ${c.date})</span><div><strong style="color:var(--gold);">${c.amount} ليرة</strong> <button onclick="deleteClient(${c.id})" style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[سداد]</button></div></div>`).join('');
+            clients.map(c => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>العميل: ${c.name} (استحقاق: ${c.date})</span><div><strong style="color:var(--gold);">${c.amount} ليرة</strong> <button onclick='deleteClient(${JSON.stringify(String(c.id))})' style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[سداد]</button></div></div>`).join('');
     }
 
     // 4. تحديث الموردين
     const supList = document.getElementById('suppliers-list');
     if (supList) {
         supList.innerHTML = suppliers.length === 0 ? 'لا توجد مستحقات للموردين.' :
-            suppliers.map(s => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>المورد: ${s.name} (استحقاق: ${s.date})</span><div><strong style="color:#e65100;">${s.amount} ليرة</strong> <button onclick="deleteSupplier(${s.id})" style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[دفع]</button></div></div>`).join('');
+            suppliers.map(s => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>المورد: ${s.name} (استحقاق: ${s.date})</span><div><strong style="color:#e65100;">${s.amount} ليرة</strong> <button onclick='deleteSupplier(${JSON.stringify(String(s.id))})' style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[دفع]</button></div></div>`).join('');
     }
 
     // 5. حسابات تسوية الصندوق
@@ -1024,7 +1024,7 @@ function renderAccountingDashboard() {
                         <td style="font-weight:bold; color:red;">${remaining} ليرة</td>
                         <td>${i.dueDate}</td>
                         <td><span style="background:${badgeColor}; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">${i.status}</span></td>
-                        <td><button onclick="deleteUnpaid(${i.id})" style="background:none; border:none; color:red; cursor:pointer;">[حذف]</button></td>
+                        <td><button onclick='deleteUnpaid(${JSON.stringify(String(i.id))})' style="background:none; border:none; color:red; cursor:pointer;">[حذف]</button></td>
                     </tr>
                 `;
             }).join('');
@@ -1177,3 +1177,133 @@ async function executeDailyClosing() {
     renderAccountingDashboard();
     alert(!isClosed ? 'تم إغلاق الوردية واليوم المحاسبي بنجاح ✅' : 'تم إعادة فتح الوردية.');
 }
+
+/* واجهة موحّدة وربط بيانات أكثر اعتمادية بين جميع شاشات كافيه ورد */
+function formatWardDateTime(value) {
+    const date = value ? new Date(value) : new Date();
+    return new Intl.DateTimeFormat('ar-SY', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        hour12: true
+    }).format(date);
+}
+
+function escapeHtml(value) {
+    const node = document.createElement('span');
+    node.textContent = value == null ? '' : String(value);
+    return node.innerHTML;
+}
+
+function addCafeNavigation() {
+    const header = document.querySelector('header');
+    if (!header || document.getElementById('cafe-main-nav')) return;
+    header.querySelectorAll(':scope > div').forEach(section => {
+        if (section.querySelector('a[href$=".html"]')) section.classList.add('legacy-page-links');
+    });
+
+    const currentPage = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    const pages = [
+        ['index.html', 'fa-mug-hot', 'المنيو'],
+        ['waiter.html', 'fa-bell-concierge', 'الكارسون'],
+        ['kitchen.html', 'fa-kitchen-set', 'المطبخ'],
+        ['admin.html', 'fa-sliders', 'الإدارة'],
+        ['accounting.html', 'fa-chart-pie', 'الحسابات']
+    ];
+    const nav = document.createElement('nav');
+    nav.id = 'cafe-main-nav';
+    nav.setAttribute('aria-label', 'التنقل الرئيسي');
+    nav.innerHTML = pages.map(([href, icon, label]) =>
+        `<a href="${href}" class="${currentPage === href ? 'is-current' : ''}"><i class="fa-solid ${icon}"></i><span>${label}</span></a>`
+    ).join('');
+
+    const clock = document.createElement('div');
+    clock.id = 'ward-live-clock';
+    clock.setAttribute('aria-label', 'الوقت الحالي');
+    header.append(nav, clock);
+    const updateClock = () => { clock.textContent = formatWardDateTime(Date.now()); };
+    updateClock();
+    window.setInterval(updateClock, 30000);
+}
+
+function normalizeMenuId(id) {
+    return String(id);
+}
+
+function addToCart(id) {
+    const normalizedId = normalizeMenuId(id);
+    const item = getMenu().find(menuItem => normalizeMenuId(menuItem.id) === normalizedId);
+    if (!item) return;
+    const existing = cart.find(cartItem => normalizeMenuId(cartItem.id) === normalizedId);
+    if (existing) existing.qty += 1;
+    else cart.push({ ...item, qty: 1 });
+    updateCartBadge();
+}
+
+function displayMenu(items) {
+    const grid = document.getElementById('menu-grid');
+    if (!grid) return;
+    grid.innerHTML = items.map(item => `
+        <article class="menu-card">
+            <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}">
+            <div class="menu-card-body">
+                <h3>${escapeHtml(item.name)}</h3>
+                <p>${escapeHtml(item.desc)}</p>
+                <div class="card-footer">
+                    <span class="price">${Number(item.price).toLocaleString('ar-SY')} ليرة</span>
+                    <button class="add-btn" type="button" data-item-id="${escapeHtml(item.id)}">إضافة</button>
+                </div>
+            </div>
+        </article>`).join('');
+    grid.querySelectorAll('[data-item-id]').forEach(button => {
+        button.addEventListener('click', () => addToCart(button.dataset.itemId));
+    });
+}
+
+async function checkout() {
+    if (cart.length === 0) {
+        alert('السلة فارغة. أضف صنفًا أولًا.');
+        return;
+    }
+    const createdAt = Date.now();
+    const newOrder = {
+        id: String(createdAt),
+        table: tableNumber,
+        items: cart.map(item => ({ ...item, id: String(item.id) })),
+        total: cart.reduce((sum, item) => sum + (Number(item.price) * item.qty), 0),
+        status: 'قيد التحضير',
+        createdAt,
+        time: formatWardDateTime(createdAt)
+    };
+    try {
+        const ref = getFirebaseOrdersRef();
+        if (ref) await ref.child(newOrder.id).set(newOrder);
+        else {
+            const orders = readLocalOrders();
+            orders.unshift(newOrder);
+            localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
+        }
+        alert(`تم إرسال طلب الطاولة رقم ${tableNumber} في ${newOrder.time}.`);
+        cart = [];
+        updateCartBadge();
+        toggleCart();
+    } catch (error) {
+        console.error('تعذر حفظ الطلب:', error);
+        alert('تعذر إرسال الطلب. تحقق من اتصال قاعدة البيانات ثم حاول مجددًا.');
+    }
+}
+
+async function saveAccountingRecord(collection, record) {
+    const createdAt = record.createdAt || Date.now();
+    const completeRecord = { ...record, createdAt, time: record.time || formatWardDateTime(createdAt) };
+    const ref = getFirebaseAccountingRef();
+    if (ref) return ref.child(collection).push(completeRecord);
+    const records = getAccountingData()[collection] || [];
+    records.unshift({ ...completeRecord, id: String(createdAt) });
+    localStorage.setItem(`cafe_ward_${collection === 'cashMovements' ? 'cash_mov' : collection}`, JSON.stringify(records));
+}
+
+async function toggleCloseDay() {
+    return executeDailyClosing();
+}
+
+window.addEventListener('DOMContentLoaded', addCafeNavigation);

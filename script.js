@@ -1219,7 +1219,8 @@ function addCafeNavigation() {
     const clock = document.createElement('div');
     clock.id = 'ward-live-clock';
     clock.setAttribute('aria-label', 'الوقت الحالي');
-    header.append(nav, clock);
+    if (currentPage !== 'index.html') header.append(nav);
+    header.append(clock);
     const updateClock = () => { clock.textContent = formatWardDateTime(Date.now()); };
     updateClock();
     window.setInterval(updateClock, 30000);
@@ -1282,7 +1283,7 @@ async function checkout() {
             orders.unshift(newOrder);
             localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
         }
-        alert(`تم إرسال طلب الطاولة رقم ${tableNumber} في ${newOrder.time}.`);
+        showOrderSuccess(newOrder);
         cart = [];
         updateCartBadge();
         toggleCart();
@@ -1290,6 +1291,25 @@ async function checkout() {
         console.error('تعذر حفظ الطلب:', error);
         alert('تعذر إرسال الطلب. تحقق من اتصال قاعدة البيانات ثم حاول مجددًا.');
     }
+}
+
+function showOrderSuccess(order) {
+    const existing = document.getElementById('order-success-toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('section');
+    toast.id = 'order-success-toast';
+    toast.setAttribute('role', 'status');
+    toast.innerHTML = `
+        <div class="success-flower"><i class="fa-solid fa-mug-hot"></i></div>
+        <div>
+            <strong>تم استلام طلبك بنجاح</strong>
+            <p>طلب الطاولة ${escapeHtml(order.table)} وصل للمطبخ الآن — حضّرنا لك لحظات ورد وقهوة جميلة.</p>
+            <small><i class="fa-regular fa-clock"></i> ${escapeHtml(order.time)}</small>
+        </div>
+        <button type="button" aria-label="إغلاق الرسالة">&times;</button>`;
+    toast.querySelector('button').addEventListener('click', () => toast.remove());
+    document.body.appendChild(toast);
+    window.setTimeout(() => toast.remove(), 8000);
 }
 
 async function saveAccountingRecord(collection, record) {

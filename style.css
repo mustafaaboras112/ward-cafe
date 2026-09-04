@@ -1185,9 +1185,76 @@ th {
     white-space: nowrap;
 }
 
+body:has(#menu-grid) header {
+    background: linear-gradient(115deg, #fff 0%, #fff4f7 55%, #f8eee7 100%);
+}
+
+body:has(#menu-grid) .hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 34px 34px;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(233, 30, 99, .14) 0 5px, transparent 6px),
+        radial-gradient(circle at 84% 72%, rgba(184, 134, 11, .14) 0 7px, transparent 8px),
+        linear-gradient(135deg, #fff1f6, #fff 55%, #fff6e9);
+}
+
+body:has(#menu-grid) .hero::before,
+body:has(#menu-grid) .hero::after {
+    position: absolute;
+    color: rgba(181, 87, 119, .14);
+    font-size: 90px;
+    line-height: 1;
+    content: '✿';
+}
+
+body:has(#menu-grid) .hero::before { top: -14px; right: 7%; }
+body:has(#menu-grid) .hero::after { bottom: -28px; left: 8%; transform: rotate(25deg); }
+
+#order-success-toast {
+    position: fixed;
+    z-index: 12000;
+    right: 24px;
+    bottom: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 14px;
+    width: min(440px, calc(100vw - 32px));
+    padding: 16px;
+    border: 1px solid #f2c9d7;
+    border-radius: 18px;
+    color: #512c3b;
+    background: linear-gradient(135deg, #fff, #fff3f7);
+    box-shadow: 0 16px 42px rgba(116, 49, 78, .22);
+    animation: success-arrive .35s ease-out;
+}
+
+.success-flower {
+    display: grid;
+    width: 50px;
+    height: 50px;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: linear-gradient(135deg, #e91e63, #b8860b);
+    font-size: 21px;
+}
+
+#order-success-toast strong { display: block; margin-bottom: 4px; color: #b02d62; font-size: 16px; }
+#order-success-toast p { margin: 0 0 6px; font-size: 13px; line-height: 1.6; }
+#order-success-toast small { color: #8a6574; font-size: 11px; }
+#order-success-toast button { align-self: start; border: 0; color: #a66b80; background: transparent; font-size: 25px; cursor: pointer; }
+
+@keyframes success-arrive {
+    from { opacity: 0; transform: translateY(20px) scale(.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @media (max-width: 700px) {
     #cafe-main-nav { order: 4; flex-basis: 100%; }
     #cafe-main-nav a { padding: 7px 8px; font-size: 12px; }
     #cafe-main-nav a span { display: none; }
     #ward-live-clock { margin: 0 auto; order: 3; }
+    #order-success-toast { right: 16px; bottom: 16px; }
 }

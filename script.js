@@ -71,6 +71,15 @@ let cart = [];
 let tableNumber = "1";
 let liveMenu = null;
 let menuRealtimeStarted = false;
+let liveAccounting = {
+    expenses: [],
+    clients: [],
+    suppliers: [],
+    unpaid: [],
+    cashMovements: [],
+    dayClosed: false
+};
+let accountingRealtimeStarted = false;
 let liveOrders = [];
 let ordersRealtimeStarted = false;
 
@@ -102,6 +111,55 @@ function startMenuRealtime() {
 function renderMenuViews() {
     if (document.getElementById('menu-grid')) displayMenu(getMenu());
     if (document.getElementById('admin-menu-list')) renderAdminMenu();
+}
+
+function getAccountingData() {
+    if (firebaseDatabase) return liveAccounting;
+    return {
+        expenses: JSON.parse(localStorage.getItem('cafe_ward_expenses') || '[]'),
+        clients: JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]'),
+        suppliers: JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]'),
+        unpaid: JSON.parse(localStorage.getItem('cafe_ward_unpaid') || '[]'),
+        cashMovements: JSON.parse(localStorage.getItem('cafe_ward_cash_mov') || '[]'),
+        dayClosed: localStorage.getItem('cafe_ward_day_closed') === 'true'
+    };
+}
+
+function startAccountingRealtime() {
+    if (accountingRealtimeStarted) return;
+    accountingRealtimeStarted = true;
+    const accountingRef = getFirebaseAccountingRef();
+    if (!accountingRef) {
+        renderAccountingDashboard();
+        return;
+    }
+    accountingRef.on('value', snapshot => {
+        const data = snapshot.val() || {};
+        liveAccounting = {
+            expenses: Object.entries(data.expenses || {}).map(([id, item]) => ({ ...item, id })),
+            clients: Object.entries(data.clients || {}).map(([id, item]) => ({ ...item, id })),
+            suppliers: Object.entries(data.suppliers || {}).map(([id, item]) => ({ ...item, id })),
+            unpaid: Object.entries(data.unpaid || {}).map(([id, item]) => ({ ...item, id })),
+            cashMovements: Object.entries(data.cashMovements || {}).map(([id, item]) => ({ ...item, id })),
+            dayClosed: data.dayClosed === true
+        };
+        renderAccountingDashboard();
+    });
+}
+
+async function saveAccountingRecord(collection, record) {
+    const ref = getFirebaseAccountingRef();
+    if (ref) return ref.child(collection).push(record);
+    const records = getAccountingData()[collection] || [];
+    records.unshift(record);
+    localStorage.setItem(`cafe_ward_${collection === 'cashMovements' ? 'cash_mov' : collection}`, JSON.stringify(records));
+}
+
+async function removeAccountingRecord(collection, id) {
+    const ref = getFirebaseAccountingRef();
+    if (ref) return ref.child(collection).child(String(id)).remove();
+    const records = (getAccountingData()[collection] || []).filter(item => String(item.id) !== String(id));
+    localStorage.setItem(`cafe_ward_${collection === 'cashMovements' ? 'cash_mov' : collection}`, JSON.stringify(records));
 }
 
 function readLocalOrders() {
@@ -161,6 +219,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 3. قراءة رقم الطاولة وإعداد المنيو
     startMenuRealtime();
+    if (document.getElementById('tasks-container')) startAccountingRealtime();
     const urlParams = new URLSearchParams(window.location.search);
     const table = urlParams.get('table') || localStorage.getItem('cafe_ward_table');
     if (table) { tableNumber = table; }
@@ -701,7 +760,7 @@ function renderSmartAccounting() {
     });
 }
 
-function addExpense(e) {
+async function addExpense(e) {
     e.preventDefault();
     const title = document.getElementById('exp-title').value;
     const amount = parseFloat(document.getElementById('exp-amount').value);
@@ -821,56 +880,46 @@ function renderAccountingDashboard() {
 }
 
 // دوال الإضافة والحذف
-function addExpense(e) {
+async function addExpense(e) {
     e.preventDefault();
     const title = document.getElementById('exp-title').value;
     const category = document.getElementById('exp-category').value;
     const amount = parseFloat(document.getElementById('exp-amount').value);
 
-    const expenses = JSON.parse(localStorage.getItem('cafe_ward_expenses') || '[]');
-    expenses.unshift({ id: Date.now(), title, category, amount, time: new Date().toLocaleTimeString('ar-SY') });
-    localStorage.setItem('cafe_ward_expenses', JSON.stringify(expenses));
+    await saveAccountingRecord('expenses', { title, category, amount, time: new Date().toLocaleTimeString('ar-SY'), createdAt: Date.now() });
     document.getElementById('expense-form').reset();
     renderAccountingDashboard();
 }
 
-function addClientDebt(e) {
+async function addClientDebt(e) {
     e.preventDefault();
     const name = document.getElementById('client-name').value;
     const amount = parseFloat(document.getElementById('client-debt').value);
     const date = document.getElementById('client-date').value;
 
-    const clients = JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]');
-    clients.unshift({ id: Date.now(), name, amount, date });
-    localStorage.setItem('cafe_ward_clients', JSON.stringify(clients));
+    await saveAccountingRecord('clients', { name, amount, date, createdAt: Date.now() });
     document.getElementById('client-form').reset();
     renderAccountingDashboard();
 }
 
-function deleteClient(id) {
-    let clients = JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]');
-    clients = clients.filter(c => c.id !== id);
-    localStorage.setItem('cafe_ward_clients', JSON.stringify(clients));
+async function deleteClient(id) {
+    await removeAccountingRecord('clients', id);
     renderAccountingDashboard();
 }
 
-function addSupplierBill(e) {
+async function addSupplierBill(e) {
     e.preventDefault();
     const name = document.getElementById('supplier-name').value;
     const amount = parseFloat(document.getElementById('supplier-amount').value);
     const date = document.getElementById('supplier-date').value;
 
-    const suppliers = JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]');
-    suppliers.unshift({ id: Date.now(), name, amount, date });
-    localStorage.setItem('cafe_ward_suppliers', JSON.stringify(suppliers));
+    await saveAccountingRecord('suppliers', { name, amount, date, createdAt: Date.now() });
     document.getElementById('supplier-form').reset();
     renderAccountingDashboard();
 }
 
-function deleteSupplier(id) {
-    let suppliers = JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]');
-    suppliers = suppliers.filter(s => s.id !== id);
-    localStorage.setItem('cafe_ward_suppliers', JSON.stringify(suppliers));
+async function deleteSupplier(id) {
+    await removeAccountingRecord('suppliers', id);
     renderAccountingDashboard();
 }
 
@@ -886,12 +935,13 @@ function toggleCloseDay() {
 
 function renderAccountingDashboard() {
     const orders = getOrders();
-    const expenses = JSON.parse(localStorage.getItem('cafe_ward_expenses') || '[]');
-    const clients = JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]');
-    const suppliers = JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]');
-    const unpaidInvoices = JSON.parse(localStorage.getItem('cafe_ward_unpaid') || '[]');
-    const cashMovements = JSON.parse(localStorage.getItem('cafe_ward_cash_mov') || '[]');
-    const isClosed = localStorage.getItem('cafe_ward_day_closed') === 'true';
+    const accounting = getAccountingData();
+    const expenses = accounting.expenses;
+    const clients = accounting.clients;
+    const suppliers = accounting.suppliers;
+    const unpaidInvoices = accounting.unpaid;
+    const cashMovements = accounting.cashMovements;
+    const isClosed = accounting.dayClosed;
 
     // المجاميع الحسابية
     let totalSales = orders.reduce((sum, o) => sum + o.total, 0);
@@ -1040,60 +1090,50 @@ function calculateCashSettlement() {
 }
 
 // دوال الإضافة والحذف المتنوعة
-function addExpense(e) {
+async function addExpense(e) {
     e.preventDefault();
     const title = document.getElementById('exp-title').value;
     const category = document.getElementById('exp-category').value;
     const amount = parseFloat(document.getElementById('exp-amount').value);
 
-    const expenses = JSON.parse(localStorage.getItem('cafe_ward_expenses') || '[]');
-    expenses.unshift({ id: Date.now(), title, category, amount, time: new Date().toLocaleTimeString('ar-SY') });
-    localStorage.setItem('cafe_ward_expenses', JSON.stringify(expenses));
+    await saveAccountingRecord('expenses', { title, category, amount, time: new Date().toLocaleTimeString('ar-SY'), createdAt: Date.now() });
     document.getElementById('expense-form').reset();
     renderAccountingDashboard();
 }
 
-function addClientDebt(e) {
+async function addClientDebt(e) {
     e.preventDefault();
     const name = document.getElementById('client-name').value;
     const amount = parseFloat(document.getElementById('client-debt').value);
     const date = document.getElementById('client-date').value;
 
-    const clients = JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]');
-    clients.unshift({ id: Date.now(), name, amount, date });
-    localStorage.setItem('cafe_ward_clients', JSON.stringify(clients));
+    await saveAccountingRecord('clients', { name, amount, date, createdAt: Date.now() });
     document.getElementById('client-form').reset();
     renderAccountingDashboard();
 }
 
-function deleteClient(id) {
-    let clients = JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]');
-    clients = clients.filter(c => c.id !== id);
-    localStorage.setItem('cafe_ward_clients', JSON.stringify(clients));
+async function deleteClient(id) {
+    await removeAccountingRecord('clients', id);
     renderAccountingDashboard();
 }
 
-function addSupplierBill(e) {
+async function addSupplierBill(e) {
     e.preventDefault();
     const name = document.getElementById('supplier-name').value;
     const amount = parseFloat(document.getElementById('supplier-amount').value);
     const date = document.getElementById('supplier-date').value;
 
-    const suppliers = JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]');
-    suppliers.unshift({ id: Date.now(), name, amount, date });
-    localStorage.setItem('cafe_ward_suppliers', JSON.stringify(suppliers));
+    await saveAccountingRecord('suppliers', { name, amount, date, createdAt: Date.now() });
     document.getElementById('supplier-form').reset();
     renderAccountingDashboard();
 }
 
-function deleteSupplier(id) {
-    let suppliers = JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]');
-    suppliers = suppliers.filter(s => s.id !== id);
-    localStorage.setItem('cafe_ward_suppliers', JSON.stringify(suppliers));
+async function deleteSupplier(id) {
+    await removeAccountingRecord('suppliers', id);
     renderAccountingDashboard();
 }
 
-function addUnpaidInvoice(e) {
+async function addUnpaidInvoice(e) {
     e.preventDefault();
     const num = document.getElementById('inv-num').value;
     const client = document.getElementById('inv-client').value;
@@ -1105,36 +1145,35 @@ function addUnpaidInvoice(e) {
     if (paid === 0) status = 'متأخرة';
     else if (paid < total) status = 'جزئية';
 
-    const unpaid = JSON.parse(localStorage.getItem('cafe_ward_unpaid') || '[]');
-    unpaid.unshift({ id: Date.now(), num, client, total, paid, dueDate, status });
-    localStorage.setItem('cafe_ward_unpaid', JSON.stringify(unpaid));
+    await saveAccountingRecord('unpaid', { num, client, total, paid, dueDate, status, createdAt: Date.now() });
     document.getElementById('unpaid-form').reset();
     renderAccountingDashboard();
 }
 
-function deleteUnpaid(id) {
-    let unpaid = JSON.parse(localStorage.getItem('cafe_ward_unpaid') || '[]');
-    unpaid = unpaid.filter(i => i.id !== id);
-    localStorage.setItem('cafe_ward_unpaid', JSON.stringify(unpaid));
+async function deleteUnpaid(id) {
+    await removeAccountingRecord('unpaid', id);
     renderAccountingDashboard();
 }
 
-function addCashMovement(e) {
+async function addCashMovement(e) {
     e.preventDefault();
     const type = document.getElementById('cash-type').value;
     const desc = document.getElementById('cash-desc').value;
     const val = parseFloat(document.getElementById('cash-val').value);
 
-    const movs = JSON.parse(localStorage.getItem('cafe_ward_cash_mov') || '[]');
-    movs.unshift({ id: Date.now(), type, desc, val });
-    localStorage.setItem('cafe_ward_cash_mov', JSON.stringify(movs));
+    await saveAccountingRecord('cashMovements', { type, desc, val, createdAt: Date.now() });
     document.getElementById('cash-movement-form').reset();
     renderAccountingDashboard();
 }
 
-function executeDailyClosing() {
-    const isClosed = localStorage.getItem('cafe_ward_day_closed') === 'true';
-    localStorage.setItem('cafe_ward_day_closed', !isClosed);
+async function executeDailyClosing() {
+    const isClosed = getAccountingData().dayClosed;
+    const accountingRef = getFirebaseAccountingRef();
+    if (accountingRef) {
+        await accountingRef.child('dayClosed').set(!isClosed);
+    } else {
+        localStorage.setItem('cafe_ward_day_closed', String(!isClosed));
+    }
     renderAccountingDashboard();
     alert(!isClosed ? 'تم إغلاق الوردية واليوم المحاسبي بنجاح ✅' : 'تم إعادة فتح الوردية.');
 }

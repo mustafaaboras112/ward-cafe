@@ -24,6 +24,10 @@ function getFirebaseMenuRef() {
     return firebaseDatabase ? firebaseDatabase.ref('menu') : null;
 }
 
+function getFirebaseAccountingRef() {
+    return firebaseDatabase ? firebaseDatabase.ref('accounting') : null;
+}
+
 function showFirebaseSetupMessage() {
     if (!firebaseConfigured) {
         console.warn('Firebase is not configured. Add the project configuration to firebase-config.js.');

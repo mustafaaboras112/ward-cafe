@@ -1199,11 +1199,61 @@ body.menu-page .logo img {
     height: 100px;
 }
 
+/* واجهة المنيو: هيدر أوسع وترحيب بشعاري ورد خفيفين على الجانبين. */
+body.menu-page header {
+    min-height: 104px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+}
+
+body.menu-page .hero {
+    min-height: 210px;
+    padding-top: clamp(42px, 7vw, 76px);
+    padding-bottom: clamp(42px, 7vw, 76px);
+}
+
+.hero-brand {
+    position: absolute;
+    z-index: 0;
+    width: clamp(92px, 13vw, 180px);
+    height: auto;
+    opacity: .14;
+    pointer-events: none;
+    filter: saturate(.8);
+}
+
+.hero-brand-right { right: 5%; top: 50%; transform: translateY(-50%) rotate(8deg); }
+.hero-brand-left { left: 5%; top: 50%; transform: translateY(-50%) rotate(-8deg); }
+
+body.menu-page .hero h2,
+body.menu-page .hero p {
+    position: relative;
+    z-index: 1;
+}
+
 @media (max-width: 700px) {
     body.menu-page .logo img {
         width: 220px;
         height: 82px;
     }
+
+    body.menu-page header {
+        min-height: 0;
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+
+    body.menu-page .hero {
+        min-height: 175px;
+    }
+
+    .hero-brand {
+        width: 82px;
+        opacity: .11;
+    }
+
+    .hero-brand-right { right: -12px; }
+    .hero-brand-left { left: -12px; }
 }
 
 body:has(#menu-grid) .hero {

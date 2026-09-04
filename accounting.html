@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -274,4 +275,282 @@
         });
     </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النظام المحاسبي الذكي - كافيه ورد</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .task-alert {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .task-red { background: #ffebee; color: #c62828; border-left: 5px solid #c62828; }
+        .task-orange { background: #fff3e0; color: #ef6c00; border-left: 5px solid #ef6c00; }
+        .task-blue { background: #e3f2fd; color: #1565c0; border-left: 5px solid #1565c0; }
+        .task-green { background: #e8f5e9; color: #2e7d32; border-left: 5px solid #2e7d32; }
+        
+        .section-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            margin-bottom: 25px;
+        }
+        .section-box h3 {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f5f5f5;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        input, select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+            font-size: 14px;
+        }
+        .btn-action {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-action:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: center; }
+        th { background: #f9f9f9; color: #333; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo" aria-label="شعار كافيه ورد"><img src="q.png" alt="كافيه ورد"></div>
+        <div>
+            <a href="admin.html" style="background:var(--primary); color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">لوحة الإدارة</a>
+            <a href="waiter.html" style="background:#333; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">شاشة الكارسون</a>
+            <a href="index.html" style="background:#555; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold;">المنيو</a>
+        </div>
+    </header>
+
+    <main style="max-width: 1200px; margin: 30px auto; padding: 0 20px;">
+
+        <section class="dashboard-kpis" aria-label="ملخص اليوم">
+            <div class="kpi-card kpi-sales">
+                <span>إجمالي المبيعات</span>
+                <strong id="dashboard-sales">0 ليرة</strong>
+                <small>إيرادات الطلبات المسجلة</small>
+            </div>
+            <div class="kpi-card kpi-expenses">
+                <span>إجمالي المصروفات</span>
+                <strong id="dashboard-expenses">0 ليرة</strong>
+                <small>المصروفات التشغيلية</small>
+            </div>
+            <div class="kpi-card kpi-suppliers">
+                <span>مستحقات الموردين</span>
+                <strong id="dashboard-suppliers">0 ليرة</strong>
+                <small>دفعات تحتاج متابعة</small>
+            </div>
+            <div class="kpi-card kpi-profit">
+                <span>صافي الربح</span>
+                <strong id="dashboard-profit">0 ليرة</strong>
+                <small>بعد خصم المصروفات</small>
+            </div>
+        </section>
+        
+        <!-- مركز المهام والتنبيهات -->
+        <div class="section-box accounting-tasks-box">
+            <div class="tasks-heading">
+                <div>
+                    <h3><i class="fa-solid fa-list-check"></i> مهام اليوم</h3>
+                    <p>الأمور التي تحتاج متابعة قبل نهاية الوردية</p>
+                </div>
+                <strong id="tasks-count" class="tasks-count">0 مهام</strong>
+            </div>
+            <div id="tasks-container"></div>
+        </div>
+
+        <!-- 1. إدارة المصروفات -->
+        <div class="section-box">
+            <h3><i class="fa-solid fa-file-invoice-dollar"></i> 1. إدارة المصروفات (إيجار، رواتب، كهرباء، مشتريات...)</h3>
+            <form id="expense-form" onsubmit="addExpense(event)" class="form-grid">
+                <input type="text" id="exp-title" placeholder="بيان المصروف" required>
+                <select id="exp-category">
+                    <option value="تشغيلي">مشتريات تشغيلية</option>
+                    <option value="كهرباء ومياه">كهرباء ومياه</option>
+                    <option value="إيجار">إيجار</option>
+                    <option value="رواتب">رواتب</option>
+                    <option value="أخرى">أخرى</option>
+                </select>
+                <input type="number" id="exp-amount" placeholder="المبلغ (ليرة)" required>
+                <button type="submit" class="btn-action">تسجيل المصروف</button>
+            </form>
+            <div id="expenses-list" style="margin-top:15px; font-size:14px; color:#555;"></div>
+        </div>
+
+        <!-- 2. العملاء والدفعات المستحقة -->
+        <div class="section-box">
+            <h3><i class="fa-solid fa-users"></i> 2. العملاء والدفعات المستحقة</h3>
+            <form id="client-form" onsubmit="addClientDebt(event)" class="form-grid">
+                <input type="text" id="client-name" placeholder="اسم العميل" required>
+                <input type="number" id="client-debt" placeholder="المبلغ (ليرة)" required>
+                <input type="date" id="client-date" required>
+                <button type="submit" class="btn-action" style="background:#28a745;">تسجيل ذمة عميل</button>
+            </form>
+            <div id="clients-list" style="margin-top:15px;"></div>
+        </div>
+
+        <!-- 3. فواتير ومستحقات الموردين -->
+        <div class="section-box">
+            <h3><i class="fa-solid fa-truck-field"></i> 3. فواتير ومستحقات الموردين</h3>
+            <form id="supplier-form" onsubmit="addSupplierBill(event)" class="form-grid">
+                <input type="text" id="supplier-name" placeholder="اسم المورد" required>
+                <input type="number" id="supplier-amount" placeholder="المبلغ (ليرة)" required>
+                <input type="date" id="supplier-date" required>
+                <button type="submit" class="btn-action" style="background:#e65100;">إضافة فاتورة مورد</button>
+            </form>
+            <div id="suppliers-list" style="margin-top:15px;"></div>
+        </div>
+
+        <!-- 4. تسوية وإغلاق الصندوق -->
+        <div class="section-box">
+            <h3><i class="fa-solid fa-cash-register"></i> 4. تسوية وإغلاق الصندوق</h3>
+            <div class="form-grid" style="align-items: center; background: #fafafa; padding: 15px; border-radius: 8px;">
+                <div>
+                    <label style="font-size:12px; color:#666; display:block;">الرصيد الافتتاحي للصندوق:</label>
+                    <input type="number" id="opening-balance" value="500" oninput="calculateCashSettlement()" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:12px; color:#666; display:block;">الرصيد الفعلي (المعدود بالدرج):</label>
+                    <input type="number" id="actual-balance" placeholder="أدخل المبلغ الفعلي" oninput="calculateCashSettlement()" style="width:100%;">
+                </div>
+                <div>
+                    <span style="font-size:12px; color:#666; display:block;">الرصيد المتوقع:</span>
+                    <strong id="expected-balance-val" style="font-size:16px; color:var(--primary);">0 ليرة</strong>
+                </div>
+                <div>
+                    <span style="font-size:12px; color:#666; display:block;">فرق الصندوق (العجز/الزيادة):</span>
+                    <strong id="diff-balance-val" style="font-size:16px; color:#333;">0 ليرة</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. الفواتير غير المسددة -->
+        <div class="section-box">
+            <h3><i class="fa-solid fa-file-invoice"></i> 5. متابعة الفواتير غير المسددة</h3>
+            <form id="unpaid-form" onsubmit="addUnpaidInvoice(event)" class="form-grid">
+                <input type="text" id="inv-num" placeholder="رقم الفاتورة (مثال: #102)" required>
+                <input type="text" id="inv-client" placeholder="اسم العميل" required>
+                <input type="number" id="inv-total" placeholder="قيمة الفاتورة" required>
+                <input type="number" id="inv-paid" placeholder="المدفوع حالياً" required>
+                <input type="date" id="inv-duedate" required>
+                <button type="submit" class="btn-action" style="background:#555;">إضافة فاتورة</button>
+            </form>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>رقم الفاتورة</th>
+                            <th>العميل</th>
+                            <th>القيمة</th>
+                            <th>المدفوع</th>
+                            <th>المتبقي</th>
+                            <th>تاريخ الاستحقاق</th>
+                            <th>الحالة</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="unpaid-invoices-tbody">
+                        <tr><td colspan="8" style="color:#888;">لا توجد فواتير غير مسددة مسجلة.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. تقرير الأرباح والخسائر -->
+        <div class="section-box" style="background: #fbf9f5; border-color: #d4af37;">
+            <h3><i class="fa-solid fa-chart-line"></i> 6. تقرير الأرباح والخسائر التلقائي</h3>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; text-align:center;">
+                <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid #eee;">
+                    <span style="color:#666; font-size:13px; display:block; margin-bottom:5px;">إجمالي المبيعات</span>
+                    <strong id="rep-sales" style="color:#2e7d32; font-size:20px;">0 ليرة</strong>
+                </div>
+                <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid #eee;">
+                    <span style="color:#666; font-size:13px; display:block; margin-bottom:5px;">التزامات ومشتريات موردين</span>
+                    <strong id="rep-suppliers" style="color:#e65100; font-size:20px;">0 ليرة</strong>
+                </div>
+                <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid #eee;">
+                    <span style="color:#666; font-size:13px; display:block; margin-bottom:5px;">إجمالي المصروفات</span>
+                    <strong id="rep-expenses" style="color:#c62828; font-size:20px;">0 ليرة</strong>
+                </div>
+                <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid #eee;">
+                    <span style="color:#666; font-size:13px; display:block; margin-bottom:5px;">صافي الربح</span>
+                    <strong id="rep-netprofit" style="color:var(--gold); font-size:22px;">0 ليرة</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. حركة الحسابات النقدية -->
+        <div class="section-box">
+            <h3><i class="fa-solid fa-wallet"></i> 7. حركة الحسابات النقدية (قبض، صرف، تحويل)</h3>
+            <form id="cash-movement-form" onsubmit="addCashMovement(event)" class="form-grid">
+                <select id="cash-type">
+                    <option value="قبض">سند قبض (+)</option>
+                    <option value="صرف">سند صرف (-)</option>
+                    <option value="تحويل">تحويل بنكي / داخلي</option>
+                </select>
+                <input type="text" id="cash-desc" placeholder="البيان / السبب" required>
+                <input type="number" id="cash-val" placeholder="المبلغ" required>
+                <button type="submit" class="btn-action" style="background:#00796b;">تسجيل الحركة</button>
+            </form>
+            <div id="cash-movements-list" style="margin-top:15px; max-height:150px; overflow-y:auto; font-size:13px;"></div>
+        </div>
+
+        <!-- 8. الإقفال اليومي -->
+        <div class="section-box" style="background: #f0f7ff; border-color: #90caf9;">
+            <h3><i class="fa-solid fa-lock"></i> 8. الإقفال اليومي وإغلاق الوردية</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;">
+                <div id="daily-closing-summary" style="font-size:14px; color:#333; line-height: 1.6;">
+                    <!-- تفاصيل الإقفال -->
+                </div>
+                <div>
+                    <button onclick="executeDailyClosing()" id="close-day-main-btn" class="btn-action" style="background:#1565c0; padding:12px 25px; font-size:15px;">إغلاق اليوم وتثبيت الحسابات ✅</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            renderAccountingDashboard();
+        });
+    </script>
+</body>
+>>>>>>> 8c5cdfadbd3670b07b6600833c4e4d77d959b8da
 </html>

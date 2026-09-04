@@ -431,6 +431,11 @@ header {
     animation: splash-auto-hide 0.7s ease 2.4s forwards;
 }
 
+/* شاشة التحميل موجودة مباشرة في HTML حتى لا يظهر المنيو للحظة قبل تشغيل JavaScript. */
+body.menu-page-loading > :not(#splash-screen) {
+    visibility: hidden;
+}
+
 #splash-screen.splash-hidden {
     opacity: 0;
     pointer-events: none;
@@ -1187,6 +1192,18 @@ th {
 
 body:has(#menu-grid) header {
     background: linear-gradient(115deg, #fff 0%, #fff4f7 55%, #f8eee7 100%);
+}
+
+body.menu-page .logo img {
+    width: 270px;
+    height: 100px;
+}
+
+@media (max-width: 700px) {
+    body.menu-page .logo img {
+        width: 220px;
+        height: 82px;
+    }
 }
 
 body:has(#menu-grid) .hero {

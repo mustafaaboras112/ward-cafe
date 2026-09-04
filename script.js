@@ -76,6 +76,7 @@ let liveAccounting = {
     clients: [],
     suppliers: [],
     unpaid: [],
+    sales: [],
     cashMovements: [],
     dayClosed: false
 };
@@ -120,6 +121,7 @@ function getAccountingData() {
         clients: JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]'),
         suppliers: JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]'),
         unpaid: JSON.parse(localStorage.getItem('cafe_ward_unpaid') || '[]'),
+        sales: JSON.parse(localStorage.getItem('cafe_ward_sales') || '[]'),
         cashMovements: JSON.parse(localStorage.getItem('cafe_ward_cash_mov') || '[]'),
         dayClosed: localStorage.getItem('cafe_ward_day_closed') === 'true'
     };
@@ -140,6 +142,7 @@ function startAccountingRealtime() {
             clients: Object.entries(data.clients || {}).map(([id, item]) => ({ ...item, id })),
             suppliers: Object.entries(data.suppliers || {}).map(([id, item]) => ({ ...item, id })),
             unpaid: Object.entries(data.unpaid || {}).map(([id, item]) => ({ ...item, id })),
+            sales: Object.entries(data.sales || {}).map(([id, item]) => ({ ...item, id })),
             cashMovements: Object.entries(data.cashMovements || {}).map(([id, item]) => ({ ...item, id })),
             dayClosed: data.dayClosed === true
         };
@@ -202,16 +205,22 @@ window.addEventListener('DOMContentLoaded', () => {
     initializeProtectedPage();
 
     // 1. إنشاء شاشة الترحيب الأنيقة
-    const splash = document.createElement('div');
-    splash.id = 'splash-screen';
-    splash.setAttribute('aria-label', 'شاشة التحميل');
-    splash.innerHTML = '<img src="q.png" alt="كافيه ورد">';
-    document.body.appendChild(splash);
+    let splash = document.getElementById('splash-screen');
+    if (!splash) {
+        splash = document.createElement('div');
+        splash.id = 'splash-screen';
+        splash.setAttribute('aria-label', 'شاشة التحميل');
+        splash.innerHTML = '<img src="q.png" alt="كافيه ورد">';
+        document.body.appendChild(splash);
+    }
     createSplashPetals(splash);
 
     setTimeout(() => {
         splash.classList.add('splash-hidden');
-        setTimeout(() => splash.remove(), 650);
+        setTimeout(() => {
+            splash.remove();
+            document.body.classList.remove('menu-page-loading');
+        }, 650);
     }, 2400);
 
     // 2. توليد الورد المتناثر المتحرك في الخلفية
@@ -504,9 +513,13 @@ function renderOrders() {
     }
 
     orders.forEach(order => {
+        const isDelivered = order.status === 'تم التوصيل';
+        const isReady = order.status === 'جاهز';
+        const borderColor = isDelivered || isReady ? '#28a745' : '#f48fb1';
+        const statusColor = isDelivered || isReady ? '#28a745' : '#e91e63';
         let itemsHtml = order.items.map(i => `<li>${i.name} (${i.qty}) - ${i.price * i.qty} ليرة</li>`).join('');
         container.innerHTML += `
-            <div style="background:#fff; border:1px solid ${order.status === 'جاهز' ? '#28a745' : '#f48fb1'}; padding:15px; border-radius:10px; margin-bottom:12px; box-shadow: 0 3px 10px rgba(0,0,0,0.03);">
+            <div style="background:${isDelivered ? '#f1fff4' : '#fff'}; border:2px solid ${borderColor}; padding:15px; border-radius:10px; margin-bottom:12px; box-shadow: 0 3px 10px rgba(0,0,0,0.03);">
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                     <h3 style="color:var(--primary);">الطاولة رقم: ${order.table}</h3>
                     <span style="font-size:12px; color:#888;">${order.time}</span>
@@ -515,9 +528,9 @@ function renderOrders() {
                 <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:10px;">
                     <strong style="color:#333;">الإجمالي: ${order.total} ليرة</strong>
                     <div>
-                        <span style="background:${order.status === 'جاهز' ? '#28a745' : '#e91e63'}; color:#fff; padding:4px 10px; border-radius:4px; font-size:12px; margin-left:10px;">${order.status}</span>
-                        ${order.status === 'جاهز' ? `<button onclick="updateOrderStatus(${order.id})" style="background:#28a745; color:#fff; border:0; padding:6px 10px; border-radius:4px; cursor:pointer;">تسليم الطلب</button>` : '<span style="color:#888; font-size:12px;">بانتظار المطبخ</span>'}
-                        <button onclick="deleteOrder(${order.id})" style="background:transparent; color:#e53935; border:none; padding:4px 10px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                        <span style="background:${statusColor}; color:#fff; padding:4px 10px; border-radius:4px; font-size:12px; margin-left:10px;">${order.status}</span>
+                        ${isReady ? `<button onclick='updateOrderStatus(${JSON.stringify(String(order.id))})' style="background:#28a745; color:#fff; border:0; padding:6px 10px; border-radius:4px; cursor:pointer;">تم التوصيل</button>` : ''}
+                        ${isDelivered ? `<button onclick='deleteOrder(${JSON.stringify(String(order.id))})' style="background:transparent; color:#e53935; border:none; padding:4px 10px; cursor:pointer;">حذف <i class="fa-solid fa-trash"></i></button>` : '<span style="color:#888; font-size:12px;">' + (order.status === 'قيد التحضير' ? 'قيد التحضير في المطبخ' : '') + '</span>'}
                     </div>
                 </div>
             </div>
@@ -531,8 +544,9 @@ async function updateOrderStatus(id) {
     if (order) {
         if (order.status !== 'جاهز') return;
         order.status = 'تم التوصيل';
+        order.deliveredAt = Date.now();
         if (firebaseDatabase) {
-            await getFirebaseOrdersRef().child(String(order.id)).update({ status: order.status });
+            await getFirebaseOrdersRef().child(String(order.id)).update({ status: order.status, deliveredAt: order.deliveredAt });
         } else {
             localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
             renderOrders();
@@ -593,16 +607,22 @@ function showWaiterReadyNotification(order) {
 }
 
 function enableWaiterBell() {
-    const context = new (window.AudioContext || window.webkitAudioContext)();
-    context.resume();
-    context.close();
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    window.waiterAudioContext = window.waiterAudioContext || new AudioContextClass();
+    window.waiterAudioContext.resume();
+    sessionStorage.setItem('cafe_ward_bell_enabled', 'true');
     const button = document.getElementById('enable-bell-btn');
     if (button) button.innerText = 'رنة الجرس مفعلة';
 }
 
 function playBellSound() {
     try {
-        const context = new (window.AudioContext || window.webkitAudioContext)();
+        if (sessionStorage.getItem('cafe_ward_bell_enabled') !== 'true') return;
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const context = window.waiterAudioContext = window.waiterAudioContext || new AudioContextClass();
+        if (context.state === 'suspended') context.resume();
         [0, 0.18].forEach((delay, index) => {
             const oscillator = context.createOscillator();
             const gain = context.createGain();
@@ -615,7 +635,6 @@ function playBellSound() {
             oscillator.start(context.currentTime + delay);
             oscillator.stop(context.currentTime + delay + 0.4);
         });
-        setTimeout(() => context.close(), 1000);
     } catch (error) {
         // صوت الجرس اختياري حسب دعم المتصفح.
     }
@@ -933,6 +952,54 @@ function toggleCloseDay() {
 
 // --- دوال النظام المحاسبي المتكامل بـ 8 مهام ---
 
+function isTodayWard(value) {
+    const date = new Date(value || Date.now());
+    const today = new Date();
+    return date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate();
+}
+
+async function markOrderPaid(id) {
+    const order = getOrders().find(item => String(item.id) === String(id));
+    if (!order || order.status !== 'تم التوصيل' || order.paymentStatus === 'مدفوع') return;
+
+    const paidAt = Date.now();
+    const sale = {
+        orderId: String(order.id),
+        table: order.table,
+        total: Number(order.total) || 0,
+        paidAt,
+        time: formatWardDateTime(paidAt),
+        items: order.items.map(item => ({ name: item.name, qty: item.qty, price: item.price }))
+    };
+
+    try {
+        if (firebaseDatabase) {
+            await firebaseDatabase.ref().update({
+                [`orders/${String(order.id)}/paymentStatus`]: 'مدفوع',
+                [`orders/${String(order.id)}/paidAt`]: paidAt,
+                [`accounting/sales/${String(order.id)}`]: sale
+            });
+        } else {
+            const orders = readLocalOrders();
+            const localOrder = orders.find(item => String(item.id) === String(id));
+            localOrder.paymentStatus = 'مدفوع';
+            localOrder.paidAt = paidAt;
+            localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
+            const sales = getAccountingData().sales || [];
+            if (!sales.some(item => String(item.orderId) === String(order.id))) {
+                sales.unshift({ ...sale, id: String(order.id) });
+                localStorage.setItem('cafe_ward_sales', JSON.stringify(sales));
+            }
+        }
+        renderAccountingDashboard();
+    } catch (error) {
+        console.error('تعذر تسجيل دفع الفاتورة:', error);
+        alert('تعذر تأكيد الدفع. تحقق من اتصال قاعدة البيانات ثم أعد المحاولة.');
+    }
+}
+
 function renderAccountingDashboard() {
     const orders = getOrders();
     const accounting = getAccountingData();
@@ -941,10 +1008,14 @@ function renderAccountingDashboard() {
     const suppliers = accounting.suppliers;
     const unpaidInvoices = accounting.unpaid;
     const cashMovements = accounting.cashMovements;
+    const salesLedger = accounting.sales || [];
     const isClosed = accounting.dayClosed;
 
     // المجاميع الحسابية
-    let totalSales = orders.reduce((sum, o) => sum + o.total, 0);
+    // لا تدخل المبيعات إلا بعد أن يؤكد المحاسب دفع الفاتورة.
+    let totalSales = salesLedger
+        .filter(sale => isTodayWard(sale.paidAt || sale.createdAt))
+        .reduce((sum, sale) => sum + (Number(sale.total) || 0), 0);
     let totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
     let totalSuppliers = suppliers.reduce((sum, s) => sum + s.amount, 0);
     let totalClientsDue = clients.reduce((sum, c) => sum + c.amount, 0);
@@ -960,6 +1031,12 @@ function renderAccountingDashboard() {
             tasksContainer.innerHTML += `<article class="accounting-task task-blue"><div class="task-icon"><i class="fa-solid fa-cash-register"></i></div><div class="task-copy"><strong>إغلاق الصندوق</strong><span>المطابقة اليومية لم تُغلق بعد</span></div><button onclick="toggleCloseDay()">إغلاق الآن</button></article>`;
         } else {
             tasksContainer.innerHTML += `<article class="accounting-task task-green"><div class="task-icon"><i class="fa-solid fa-circle-check"></i></div><div class="task-copy"><strong>الصندوق مغلق</strong><span>تم تثبيت حسابات الوردية بنجاح</span></div><b class="task-done">مكتمل</b></article>`;
+        }
+
+        const deliveredUnpaid = orders.filter(order => order.status === 'تم التوصيل' && order.paymentStatus !== 'مدفوع');
+        if (deliveredUnpaid.length) {
+            taskCount++;
+            tasksContainer.innerHTML += `<article class="accounting-task task-orange"><div class="task-icon"><i class="fa-solid fa-receipt"></i></div><div class="task-copy"><strong>فواتير بانتظار الدفع</strong><span>${deliveredUnpaid.length} طلبات تم توصيلها وتحتاج تأكيد الحساب</span></div><a href="#restaurant-orders">عرض الفواتير</a></article>`;
         }
 
         if (unpaidInvoices.some(i => i.status === 'متأخرة')) {
@@ -1005,6 +1082,21 @@ function renderAccountingDashboard() {
     window.currentSalesForBox = totalSales;
     window.currentExpensesForBox = totalExpenses;
     calculateCashSettlement();
+
+    // فواتير الطاولات: كل طلب ظاهر للمحاسب، ولا يتحول إلى سجل مبيعات قبل الدفع.
+    const restaurantOrders = document.getElementById('restaurant-orders-list');
+    if (restaurantOrders) {
+        restaurantOrders.innerHTML = orders.length === 0 ? '<p style="color:#888;">لا توجد طلبات مسجلة اليوم.</p>' : orders.map(order => {
+            const paid = order.paymentStatus === 'مدفوع';
+            const canPay = order.status === 'تم التوصيل' && !paid;
+            const statusColor = paid ? '#1565c0' : (order.status === 'تم التوصيل' ? '#ef6c00' : '#e91e63');
+            const paymentText = paid ? 'مدفوع ومسجل بالمبيعات' : (order.status === 'تم التوصيل' ? 'بانتظار الدفع' : 'بانتظار تسليم الطلب');
+            return `<article style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; background:#fafafa; border:1px solid #eee; padding:12px 15px; border-radius:8px; margin-bottom:8px;">
+                <div><strong style="color:var(--primary);">طاولة ${escapeHtml(order.table)}</strong><span style="color:#777; margin-right:10px;">${escapeHtml(order.time)}</span><br><small>${order.items.map(item => `${escapeHtml(item.name)} × ${item.qty}`).join('، ')}</small></div>
+                <div style="text-align:left;"><strong style="color:var(--gold); display:block;">${Number(order.total).toLocaleString('ar-SY')} ليرة</strong><span style="background:${statusColor}; color:#fff; padding:3px 7px; border-radius:4px; font-size:11px;">${paymentText}</span>${canPay ? `<button onclick='markOrderPaid(${JSON.stringify(String(order.id))})' class="btn-action" style="display:block; margin-top:7px; background:#1565c0;">تم الحساب والدفع</button>` : ''}</div>
+            </article>`;
+        }).join('');
+    }
 
     // 6. عرض الفواتير غير المسددة
     const unpaidTbody = document.getElementById('unpaid-invoices-tbody');

@@ -68,6 +68,44 @@ function saveMenu(menu) {
 
 let cart = [];
 let tableNumber = "1";
+let liveOrders = [];
+let ordersRealtimeStarted = false;
+
+function readLocalOrders() {
+    return JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
+}
+
+function renderAllOrderScreens() {
+    renderOrders();
+    renderKitchenOrders();
+    if (document.getElementById('tasks-container')) renderAccountingDashboard();
+    if (document.getElementById('accounting-orders-list')) renderAccountingData();
+    if (document.getElementById('dashboard-sales')) renderSmartAccounting();
+}
+
+function getOrders() {
+    return firebaseDatabase ? liveOrders : readLocalOrders();
+}
+
+function startOrdersRealtime() {
+    if (ordersRealtimeStarted) return;
+    ordersRealtimeStarted = true;
+    const ordersRef = getFirebaseOrdersRef();
+    if (!ordersRef) {
+        showFirebaseSetupMessage();
+        liveOrders = readLocalOrders();
+        renderAllOrderScreens();
+        return;
+    }
+
+    ordersRef.on('value', snapshot => {
+        liveOrders = Object.entries(snapshot.val() || {})
+            .map(([key, order]) => ({ ...order, id: order.id || key }))
+            .sort((first, second) => (second.createdAt || 0) - (first.createdAt || 0));
+        renderAllOrderScreens();
+        notifyReadyOrders(liveOrders);
+    });
+}
 
 window.addEventListener('DOMContentLoaded', () => {
     initializeProtectedPage();
@@ -83,7 +121,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         splash.classList.add('splash-hidden');
         setTimeout(() => splash.remove(), 650);
-    }, 900);
+    }, 2400);
 
     // 2. توليد الورد المتناثر المتحرك في الخلفية
     createPetals();
@@ -270,23 +308,29 @@ function changeQty(id, delta) {
     renderCartItems();
 }
 
-function checkout() {
+async function checkout() {
     if (cart.length === 0) {
         alert('السلة فارغة!');
         return;
     }
 
-    const orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
     const newOrder = {
         id: Date.now(),
         table: tableNumber,
         items: [...cart],
         total: cart.reduce((sum, i) => sum + (i.price * i.qty), 0),
         status: 'قيد التحضير',
-        time: new Date().toLocaleTimeString('ar-SY')
+        time: new Date().toLocaleTimeString('ar-SY'),
+        createdAt: Date.now()
     };
-    orders.unshift(newOrder);
-    localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
+
+    if (firebaseDatabase) {
+        await getFirebaseOrdersRef().child(String(newOrder.id)).set(newOrder);
+    } else {
+        const orders = readLocalOrders();
+        orders.unshift(newOrder);
+        localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
+    }
 
     alert(`تم إرسال طلبك بنجاح من الطاولة رقم (${tableNumber})! سيصلك الطلب قريباً.`);
     cart = [];
@@ -345,7 +389,7 @@ function deleteMenuItem(id) {
 function renderOrders() {
     const container = document.getElementById('orders-container');
     if (!container) return;
-    const orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
+    const orders = getOrders();
     container.innerHTML = '';
     if (orders.length === 0) {
         container.innerHTML = '<p style="color:#888;">لا توجد طلبات جديدة حالياً...</p>';
@@ -374,21 +418,25 @@ function renderOrders() {
     });
 }
 
-function updateOrderStatus(id) {
-    let orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
-    const order = orders.find(o => o.id === id);
+async function updateOrderStatus(id) {
+    const orders = getOrders();
+    const order = orders.find(o => String(o.id) === String(id));
     if (order) {
         if (order.status !== 'جاهز') return;
         order.status = 'تم التوصيل';
-        localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
-        renderOrders();
+        if (firebaseDatabase) {
+            await getFirebaseOrdersRef().child(String(order.id)).update({ status: order.status });
+        } else {
+            localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
+            renderOrders();
+        }
     }
 }
 
 function renderKitchenOrders() {
     const container = document.getElementById('kitchen-orders-container');
     if (!container) return;
-    const orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
+    const orders = getOrders();
     const activeOrders = orders.filter(order => order.status === 'قيد التحضير' || order.status === 'جاهز');
     container.innerHTML = activeOrders.length === 0 ? '<p style="color:#888;">لا توجد طلبات بانتظار التحضير.</p>' : activeOrders.map(order => `
         <article class="kitchen-order ${order.status === 'جاهز' ? 'is-ready' : ''}">
@@ -400,32 +448,32 @@ function renderKitchenOrders() {
     `).join('');
 }
 
-function markOrderReady(id) {
-    const orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
-    const order = orders.find(item => item.id === id);
+async function markOrderReady(id) {
+    const orders = getOrders();
+    const order = orders.find(item => String(item.id) === String(id));
     if (!order) return;
     order.status = 'جاهز';
     order.readyAt = Date.now();
-    localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
-    renderKitchenOrders();
+    if (firebaseDatabase) {
+        await getFirebaseOrdersRef().child(String(order.id)).update({ status: order.status, readyAt: order.readyAt });
+    } else {
+        localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
+        renderKitchenOrders();
+    }
 }
 
-let waiterMonitorTimer;
 function startWaiterMonitor() {
+    if (document.getElementById('orders-container')) notifyReadyOrders(getOrders());
+}
+
+function notifyReadyOrders(orders) {
     if (!document.getElementById('orders-container')) return;
-    const checkReadyOrders = () => {
-        const orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
-        const seen = JSON.parse(sessionStorage.getItem('cafe_ward_seen_ready') || '[]');
-        orders.filter(order => order.status === 'جاهز' && !seen.includes(order.id)).forEach(order => {
-            showWaiterReadyNotification(order);
-            seen.push(order.id);
-        });
-        sessionStorage.setItem('cafe_ward_seen_ready', JSON.stringify(seen));
-        renderOrders();
-    };
-    checkReadyOrders();
-    clearInterval(waiterMonitorTimer);
-    waiterMonitorTimer = setInterval(checkReadyOrders, 1500);
+    const seen = JSON.parse(sessionStorage.getItem('cafe_ward_seen_ready') || '[]');
+    orders.filter(order => order.status === 'جاهز' && !seen.includes(order.id)).forEach(order => {
+        showWaiterReadyNotification(order);
+        seen.push(order.id);
+    });
+    sessionStorage.setItem('cafe_ward_seen_ready', JSON.stringify(seen));
 }
 
 function showWaiterReadyNotification(order) {
@@ -466,16 +514,19 @@ function playBellSound() {
     }
 }
 
-function deleteOrder(id) {
-    let orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
-    orders = orders.filter(o => o.id !== id);
+async function deleteOrder(id) {
+    if (firebaseDatabase) {
+        await getFirebaseOrdersRef().child(String(id)).remove();
+        return;
+    }
+    const orders = readLocalOrders().filter(o => String(o.id) !== String(id));
     localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
     renderOrders();
 }
 
 // دوال المحاسبة والكاشير الشاملة
 function renderAccountingData() {
-    const orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
+    const orders = getOrders();
     
     let totalRevenue = 0;
     let completedCount = 0;
@@ -534,7 +585,7 @@ function clearAccountingData() {
 
 // دوال النظام المحاسبي الذكي
 function renderSmartAccounting() {
-    const orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
+    const orders = getOrders();
     const expenses = JSON.parse(localStorage.getItem('cafe_ward_expenses') || '[]');
 
     let totalRevenue = 0;
@@ -645,7 +696,7 @@ function clearAccountingData() {
 // --- دوال النظام المحاسبي الذكي وتوجيه المهام ---
 
 function renderAccountingDashboard() {
-    const orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
+    const orders = getOrders();
     const expenses = JSON.parse(localStorage.getItem('cafe_ward_expenses') || '[]');
     const clients = JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]');
     const suppliers = JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]');
@@ -786,7 +837,7 @@ function toggleCloseDay() {
 // --- دوال النظام المحاسبي المتكامل بـ 8 مهام ---
 
 function renderAccountingDashboard() {
-    const orders = JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
+    const orders = getOrders();
     const expenses = JSON.parse(localStorage.getItem('cafe_ward_expenses') || '[]');
     const clients = JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]');
     const suppliers = JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]');

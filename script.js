@@ -58,6 +58,7 @@ function initializeProtectedPage() {
 }
 
 function getMenu() {
+    if (liveMenu) return liveMenu;
     const local = localStorage.getItem('cafe_ward_menu');
     return local ? JSON.parse(local) : defaultMenu;
 }
@@ -68,8 +69,40 @@ function saveMenu(menu) {
 
 let cart = [];
 let tableNumber = "1";
+let liveMenu = null;
+let menuRealtimeStarted = false;
 let liveOrders = [];
 let ordersRealtimeStarted = false;
+
+function startMenuRealtime() {
+    if (menuRealtimeStarted) return;
+    menuRealtimeStarted = true;
+    const menuRef = getFirebaseMenuRef();
+    if (!menuRef) {
+        showFirebaseSetupMessage();
+        renderMenuViews();
+        return;
+    }
+
+    menuRef.on('value', snapshot => {
+        if (!snapshot.exists()) {
+            const initialMenu = {};
+            defaultMenu.forEach(item => {
+                initialMenu[String(item.id)] = { ...item, createdAt: Date.now() };
+            });
+            menuRef.set(initialMenu);
+            return;
+        }
+        const data = snapshot.val();
+        liveMenu = Object.entries(data).map(([key, item]) => ({ ...item, id: key }));
+        renderMenuViews();
+    });
+}
+
+function renderMenuViews() {
+    if (document.getElementById('menu-grid')) displayMenu(getMenu());
+    if (document.getElementById('admin-menu-list')) renderAdminMenu();
+}
 
 function readLocalOrders() {
     return JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
@@ -127,6 +160,7 @@ window.addEventListener('DOMContentLoaded', () => {
     createPetals();
 
     // 3. قراءة رقم الطاولة وإعداد المنيو
+    startMenuRealtime();
     const urlParams = new URLSearchParams(window.location.search);
     const table = urlParams.get('table') || localStorage.getItem('cafe_ward_table');
     if (table) { tableNumber = table; }
@@ -144,9 +178,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const badge = document.getElementById('table-badge');
     if (badge) { badge.innerText = `رقم الطاولة: ${tableNumber}`; }
     
-    if (document.getElementById('menu-grid')) {
-        displayMenu(getMenu());
-    }
     updateCartBadge();
 });
 
@@ -338,7 +369,7 @@ async function checkout() {
     toggleCart();
 }
 
-function addNewItem(e) {
+async function addNewItem(e) {
     e.preventDefault();
     const name = document.getElementById('item-name').value;
     const category = document.getElementById('item-cat').value;
@@ -346,14 +377,23 @@ function addNewItem(e) {
     const desc = document.getElementById('item-desc').value;
     const img = document.getElementById('item-img').value;
 
-    const menu = getMenu();
-    const newItem = { id: Date.now(), name, category, price, desc, img };
-    menu.push(newItem);
-    saveMenu(menu);
+    const newItem = { name, category, price, desc, img, createdAt: Date.now() };
+    const menuRef = getFirebaseMenuRef();
 
-    alert('تمت إضافة الصنف بنجاح إلى المنيو!');
-    document.getElementById('add-item-form').reset();
-    renderAdminMenu();
+    try {
+        if (menuRef) {
+            await menuRef.push(newItem);
+        } else {
+            const menu = getMenu();
+            menu.push({ ...newItem, id: Date.now() });
+            saveMenu(menu);
+        }
+        alert('تمت إضافة الصنف بنجاح إلى المنيو!');
+        document.getElementById('add-item-form').reset();
+    } catch (error) {
+        console.error('خطأ في إضافة الصنف إلى Firebase:', error);
+        alert('حدث خطأ أثناء إرسال الصنف، تحقق من الاتصال وقواعد Firebase.');
+    }
 }
 
 function renderAdminMenu() {
@@ -379,6 +419,14 @@ function renderAdminMenu() {
 
 function deleteMenuItem(id) {
     if (confirm('هل أنت متأكد من حذف هذا الصنف؟')) {
+        const menuRef = getFirebaseMenuRef();
+        if (menuRef) {
+            menuRef.child(String(id)).remove().catch(error => {
+                console.error('خطأ في حذف الصنف من Firebase:', error);
+                alert('تعذر حذف الصنف من قاعدة البيانات.');
+            });
+            return;
+        }
         let menu = getMenu();
         menu = menu.filter(i => i.id !== id);
         saveMenu(menu);

@@ -20,6 +20,10 @@ function getFirebaseOrdersRef() {
     return firebaseDatabase ? firebaseDatabase.ref('orders') : null;
 }
 
+function getFirebaseMenuRef() {
+    return firebaseDatabase ? firebaseDatabase.ref('menu') : null;
+}
+
 function showFirebaseSetupMessage() {
     if (!firebaseConfigured) {
         console.warn('Firebase is not configured. Add the project configuration to firebase-config.js.');

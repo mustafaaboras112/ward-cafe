@@ -473,8 +473,12 @@ function createSplashPetals(container) {
 
 function displayMenu(items) {
     const grid = document.getElementById('menu-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.warn('menu-grid غير موجود');
+        return;
+    }
     grid.innerHTML = '';
+    console.log('عرض المنيو:', items.length, 'أصناف');
     items.forEach(item => {
         grid.innerHTML += `
             <div class="menu-card">

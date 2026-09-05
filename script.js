@@ -326,7 +326,7 @@ function displayMenu(items) {
                     <p>${item.desc}</p>
                     <div class="card-footer">
                         <span class="price">${item.price} ليرة</span>
-                        <button class="add-btn" onclick="addToCart(${item.id})">إضافة</button>
+                        <button class="add-btn" onclick="addToCart('${item.id}')">إضافة</button>
                     </div>
                 </div>
             </div>
@@ -419,9 +419,9 @@ function renderCartItems() {
                     <p style="color:var(--gold); font-size:12px;">${item.price} ليرة × ${item.qty}</p>
                 </div>
                 <div>
-                    <button onclick='changeQty(${JSON.stringify(String(item.id))}, 1)' style="padding:2px 8px; background:var(--primary); color:#fff; border:none; cursor:pointer; border-radius:4px;">+</button>
+                    <button onclick='changeQty("${item.id}", 1)' style="padding:2px 8px; background:var(--primary); color:#fff; border:none; cursor:pointer; border-radius:4px;">+</button>
                     <span style="margin: 0 8px; font-weight:bold;">${item.qty}</span>
-                    <button onclick='changeQty(${JSON.stringify(String(item.id))}, -1)' style="padding:2px 8px; background:#ddd; color:#333; border:none; cursor:pointer; border-radius:4px;">-</button>
+                    <button onclick='changeQty("${item.id}", -1)' style="padding:2px 8px; background:#ddd; color:#333; border:none; cursor:pointer; border-radius:4px;">-</button>
                 </div>
             </div>
         `;
@@ -430,11 +430,11 @@ function renderCartItems() {
 }
 
 function changeQty(id, delta) {
-    const item = cart.find(i => i.id === id);
+    const item = cart.find(i => String(i.id) === String(id));
     if (item) {
         item.qty += delta;
         if (item.qty <= 0) {
-            cart = cart.filter(i => i.id !== id);
+            cart = cart.filter(i => String(i.id) !== String(id));
         }
     }
     updateCartBadge();

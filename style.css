@@ -1326,66 +1326,269 @@ body:has(#menu-grid) .hero::after { bottom: -28px; left: 8%; transform: rotate(2
     #order-success-toast { right: 16px; bottom: 16px; }
 }
 
-
-
-
-
-
-
-
-/* إشعار جاهزية الطلب للزبون */
-.customer-ready-popup {
+/* ===== إشعار الطلب جاهز - تصميم كافيه ورد الفاخر ===== */
+.customer-ready-overlay {
     position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 999999;
+    inset: 0;
+    z-index: 20000;
     display: flex;
     align-items: center;
-    gap: 15px;
-    background: #ffffff;
-    border: 2px solid #e91e63;
-    padding: 16px 22px;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(233, 30, 99, 0.35);
-    width: 90%;
-    max-width: 400px;
-    direction: rtl;
-    animation: dropDownBounce 0.5s ease forwards;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(74, 18, 42, 0.55);
+    backdrop-filter: blur(6px);
+    animation: ready-overlay-fade 0.4s ease-out;
 }
 
-.customer-ready-popup .notice-icon {
-    background: #e91e63;
-    color: #fff;
-    width: 45px;
-    height: 45px;
+@keyframes ready-overlay-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.customer-ready-card {
+    position: relative;
+    width: min(94vw, 430px);
+    padding: 38px 28px 30px;
+    text-align: center;
+    background: linear-gradient(160deg, #fff 0%, #fff4f8 55%, #ffe9d6 100%);
+    border: 2px solid rgba(237, 35, 97, 0.25);
+    border-radius: 24px;
+    box-shadow: 0 24px 70px rgba(90, 18, 48, 0.35), inset 0 0 0 1px rgba(255,255,255,0.7);
+    animation: ready-card-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+@keyframes ready-card-pop {
+    from { opacity: 0; transform: scale(0.75) translateY(30px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* زخارف وردية خفيفة داخل البطاقة */
+.customer-ready-card::before,
+.customer-ready-card::after {
+    content: '✿';
+    position: absolute;
+    color: rgba(237, 35, 97, 0.12);
+    font-size: 70px;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.customer-ready-card::before { top: 6px; right: 8px; transform: rotate(15deg); }
+.customer-ready-card::after { bottom: -6px; left: 10px; transform: rotate(-20deg); }
+
+/* شعار كافيه ورد على زاوية البطاقة - مائل قليلاً */
+.customer-ready-logo {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: 74px;
+    height: 46px;
+    object-fit: contain;
+    opacity: 0.85;
+    transform: rotate(-8deg);
+    filter: drop-shadow(0 2px 6px rgba(148, 30, 74, 0.18));
+    pointer-events: none;
+    animation: ready-logo-float 3.2s ease-in-out infinite;
+}
+
+@keyframes ready-logo-float {
+    0%, 100% { transform: rotate(-8deg) translateY(0); }
+    50% { transform: rotate(-6deg) translateY(-3px); }
+}
+
+/* ===== الفنجان المتحرك مع البخار المتصاعد ===== */
+.ready-coffee-wrap {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 6px auto 14px;
+    animation: coffee-sway 3.4s ease-in-out infinite;
+}
+
+@keyframes coffee-sway {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    25% { transform: rotate(-3deg) translateY(-4px); }
+    50% { transform: rotate(0deg) translateY(0); }
+    75% { transform: rotate(3deg) translateY(-4px); }
+}
+
+.ready-coffee-cup {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 96px;
+    height: 62px;
+    background: linear-gradient(180deg, #ffffff 0%, #f3e3e8 100%);
+    border: 3px solid #ed2361;
+    border-radius: 8px 8px 22px 22px;
+    box-shadow: 0 8px 20px rgba(148, 30, 74, 0.22);
+}
+
+.ready-coffee-cup::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    right: -24px;
+    width: 30px;
+    height: 24px;
+    border: 3px solid #ed2361;
+    border-left: none;
+    border-radius: 0 14px 14px 0;
+    background: #fff;
+}
+
+.ready-coffee-cup::after {
+    content: '';
+    position: absolute;
+    inset: 8px 9px 7px;
+    background: radial-gradient(circle at 40% 35%, #8b5a2b 0%, #6b3f1d 60%, #4a2a10 100%);
+    border-radius: 4px 4px 14px 14px;
+    box-shadow: inset 0 -5px 8px rgba(0,0,0,0.25);
+}
+
+/* البخار المتصاعد من الفنجان */
+.ready-steam {
+    position: absolute;
+    bottom: 68px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 62px;
+}
+
+.ready-steam span {
+    position: absolute;
+    bottom: 0;
+    width: 7px;
+    height: 30px;
     border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-size: 20px;
-    flex-shrink: 0;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.9));
+    filter: blur(1.5px);
+    opacity: 0;
+    animation: steam-rise 2.2s ease-out infinite;
 }
 
-.customer-ready-popup .notice-text {
-    flex-grow: 1;
+.ready-steam span:nth-child(1) { left: 4px; animation-delay: 0s; }
+.ready-steam span:nth-child(2) { left: 30px; height: 40px; animation-delay: 0.7s; }
+.ready-steam span:nth-child(3) { left: 56px; animation-delay: 1.4s; }
+
+@keyframes steam-rise {
+    0% { opacity: 0; transform: translateY(0) scaleX(1) rotate(0deg); }
+    20% { opacity: 0.85; }
+    100% { opacity: 0; transform: translateY(-62px) scaleX(1.8) rotate(12deg); }
 }
 
-.customer-ready-popup .notice-text strong {
+/* نص الإشعار */
+.customer-ready-title {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 8px;
+    color: #b02d62;
+    font-size: 24px;
+    font-weight: 800;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.customer-ready-message {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 6px;
+    color: #5a3a48;
+    font-size: 16px;
+    line-height: 1.8;
+    font-weight: 700;
+}
+
+.customer-ready-table {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    margin: 10px 0 6px;
+    padding: 9px 22px;
+    color: #fff;
+    background: linear-gradient(135deg, #ed2361, #c9154d);
+    border-radius: 30px;
+    font-size: 17px;
+    font-weight: 800;
+    box-shadow: 0 6px 16px rgba(237, 35, 97, 0.3);
+    animation: ready-table-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes ready-table-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 6px 16px rgba(237, 35, 97, 0.3); }
+    50% { transform: scale(1.05); box-shadow: 0 8px 24px rgba(237, 35, 97, 0.45); }
+}
+
+.customer-ready-time {
+    position: relative;
+    z-index: 1;
     display: block;
-    color: #e91e63;
+    margin-top: 12px;
+    color: #a58a96;
+    font-size: 12px;
+}
+
+.customer-ready-close {
+    position: relative;
+    z-index: 2;
+    margin-top: 18px;
+    padding: 10px 34px;
+    color: #fff;
+    background: linear-gradient(135deg, #ed2361, #c9154d);
+    border: 0;
+    border-radius: 30px;
     font-size: 15px;
-    margin-bottom: 3px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(237, 35, 97, 0.25);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.customer-ready-popup .notice-text p {
-    color: #444;
-    font-size: 13px;
-    margin: 0;
-    line-height: 1.4;
+.customer-ready-close:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 9px 22px rgba(237, 35, 97, 0.35);
 }
 
-@keyframes dropDownBounce {
-    0% { transform: translate(-50%, -60px); opacity: 0; }
-    60% { transform: translate(-50%, 10px); opacity: 1; }
-    100% { transform: translate(-50%, 0); opacity: 1; }
+/* وميض جرس صغير أعلى البطاقة */
+.ready-bell-icon {
+    position: relative;
+    z-index: 1;
+    display: inline-grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 4px;
+    color: #fff;
+    background: linear-gradient(135deg, #f5b301, #e8890c);
+    border-radius: 50%;
+    font-size: 20px;
+    box-shadow: 0 5px 14px rgba(232, 137, 12, 0.35);
+    animation: bell-ring 1.4s ease-in-out infinite;
+    transform-origin: top center;
 }
+
+@keyframes bell-ring {
+    0%, 100% { transform: rotate(0deg); }
+    15% { transform: rotate(14deg); }
+    30% { transform: rotate(-12deg); }
+    45% { transform: rotate(10deg); }
+    60% { transform: rotate(-6deg); }
+    75% { transform: rotate(3deg); }
+}
+
+@media (max-width: 700px) {
+    .customer-ready-card { padding: 30px 18px 24px; }
+    .customer-ready-logo { width: 62px; height: 40px; top: 10px; left: 10px; }
+    .ready-coffee-wrap { width: 130px; height: 130px; }
+    .customer-ready-title { font-size: 21px; }
+    .customer-ready-message { font-size: 14px; }
+}
+
+
+
+
+
+
+

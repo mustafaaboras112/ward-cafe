@@ -1440,3 +1440,114 @@ async function toggleCloseDay() {
 }
 
 window.addEventListener('DOMContentLoaded', addCafeNavigation);
+
+
+// الاستماع المباشر لتحديثات الطلبات في Firebase لإشعار الزبون
+// يشتغل فقط على صفحة المنيو (صفحة الزبون) التي فيها #menu-grid
+if (typeof firebase !== 'undefined' && document.getElementById('menu-grid')) {
+    const ordersRef = firebase.database().ref('orders');
+    
+    ordersRef.on('value', (snapshot) => {
+        const ordersData = snapshot.val();
+        if (!ordersData) return;
+
+        // جلب رقم الطاولة الحالي المخزن
+        const currentTable = localStorage.getItem('cafe_ward_table') || localStorage.getItem('cafe_table') || '1';
+
+        Object.keys(ordersData).forEach(key => {
+            const order = ordersData[key];
+            
+            // التحقق إذا كان الطلب يخص طاولة الزبون وحالته أصبحت "جاهز"
+            if (String(order.table) === String(currentTable) && (order.status === 'جاهز' || order.status === 'ready')) {
+                
+                const noticeUniqueId = 'customer-ready-' + key;
+                
+                // التأكد من عدم تكرار ظهور نفس الإشعار
+                if (!document.getElementById(noticeUniqueId)) {
+                    showCustomerReadyNotification(order, noticeUniqueId);
+                }
+            }
+        });
+    });
+}
+
+// دالة عرض إشعار الطلب الجاهز للزبون - تصميم كافيه ورد الفاخر
+function showCustomerReadyNotification(order, uniqueId) {
+    // تشغيل رنة الجرس على الهاتف
+    playCustomerBellSound();
+
+    // إزالة أي إشعار سابق
+    const existingOverlay = document.querySelector('.customer-ready-overlay');
+    if (existingOverlay) existingOverlay.remove();
+
+    // إنشاء طبقة الإشعار
+    const overlay = document.createElement('div');
+    overlay.className = 'customer-ready-overlay';
+    overlay.id = uniqueId;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'customer-ready-title');
+
+    const readyTime = order.readyAt ? formatWardDateTime(order.readyAt) : (order.time || formatWardDateTime(Date.now()));
+
+    overlay.innerHTML = `
+        <div class="customer-ready-card">
+            <img class="customer-ready-logo" src="q.png" alt="كافيه ورد">
+            <span class="ready-bell-icon"><i class="fa-solid fa-bell"></i></span>
+            <div class="ready-coffee-wrap">
+                <div class="ready-steam"><span></span><span></span><span></span></div>
+                <div class="ready-coffee-cup"></div>
+            </div>
+            <h2 class="customer-ready-title" id="customer-ready-title">طلبك جاهز! ✨</h2>
+            <p class="customer-ready-message">الطلب في طريق إلى طاولتك الآن</p>
+            <span class="customer-ready-table"><i class="fa-solid fa-chair"></i> الطاولة رقم ${escapeHtml(order.table)}</span>
+            <small class="customer-ready-time"><i class="fa-regular fa-clock"></i> ${escapeHtml(readyTime)}</small>
+            <button type="button" class="customer-ready-close">استلمت طلبي، شكراً <i class="fa-solid fa-heart"></i></button>
+        </div>
+    `;
+
+    // زر الإغلاق
+    overlay.querySelector('.customer-ready-close').addEventListener('click', () => {
+        overlay.remove();
+    });
+
+    // إغلاق تلقائي بعد 20 ثانية
+    window.setTimeout(() => {
+        if (overlay.parentNode) overlay.remove();
+    }, 20000);
+
+    document.body.appendChild(overlay);
+}
+
+// رنة جرس الهاتف للزبون عند تجهيز الطلب
+function playCustomerBellSound() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const context = window.customerBellContext = window.customerBellContext || new AudioContextClass();
+        if (context.state === 'suspended') context.resume();
+
+        // نغمة جرس جميلة - نغمتان متتاليتان
+        [0, 0.25, 0.5].forEach((delay, index) => {
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            oscillator.frequency.value = index === 1 ? 1046.5 : 783.99; // C6 و G5
+            oscillator.type = 'sine';
+            gain.gain.setValueAtTime(0.0001, context.currentTime + delay);
+            gain.gain.exponentialRampToValueAtTime(0.25, context.currentTime + delay + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + delay + 0.45);
+            oscillator.connect(gain).connect(context.destination);
+            oscillator.start(context.currentTime + delay);
+            oscillator.stop(context.currentTime + delay + 0.5);
+        });
+
+        // اهتزاز الهاتف إذا كان مدعوماً
+        if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200, 100, 300]);
+        }
+    } catch (error) {
+        // رنة الجرس اختيارية حسب دعم المتصفح
+    }
+}
+
+  

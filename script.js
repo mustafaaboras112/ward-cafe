@@ -323,8 +323,18 @@ function filterMenu(category) {
     }
 }
 
-function changeTable(value) {
-    tableNumber = String(value);
+async function changeTable(value) {
+    const newTable = String(value);
+    const status = await getTableStatus(newTable);
+    
+    if (status.status === 'occupied') {
+        alert(`الطاولة رقم ${newTable} محجوزة حالياً. يرجى اختيار طاولة أخرى.`);
+        const selector = document.getElementById('table-selector');
+        if (selector) selector.value = tableNumber;
+        return;
+    }
+    
+    tableNumber = newTable;
     localStorage.setItem('cafe_ward_table', tableNumber);
     const badge = document.getElementById('table-badge');
     if (badge) badge.innerText = `رقم الطاولة: ${tableNumber}`;
@@ -430,6 +440,8 @@ async function checkout() {
         orders.unshift(newOrder);
         localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
     }
+
+    await reserveTable(tableNumber, String(newOrder.id));
 
     alert(`تم إرسال طلبك بنجاح من الطاولة رقم (${tableNumber})! سيصلك الطلب قريباً.`);
     cart = [];
@@ -1550,4 +1562,268 @@ function playCustomerBellSound() {
     }
 }
 
-  
+// ===== نظام إدارة الطاولات ومنع التضارب =====
+
+function getLocalTableStatus(tableNumber) {
+    const stored = localStorage.getItem(`cafe_ward_table_${String(tableNumber)}`);
+    return stored ? JSON.parse(stored) : null;
+}
+
+function setLocalTableStatus(tableNumber, status) {
+    localStorage.setItem(`cafe_ward_table_${String(tableNumber)}`, JSON.stringify(status));
+}
+
+function clearLocalTableStatus(tableNumber) {
+    localStorage.removeItem(`cafe_ward_table_${String(tableNumber)}`);
+}
+
+async function reserveTable(tableNumber, orderId) {
+    const status = {
+        status: 'occupied',
+        orderId: String(orderId),
+        reservedAt: Date.now(),
+        table: String(tableNumber)
+    };
+
+    try {
+        if (getFirebaseTablesRef()) {
+            await getFirebaseTablesRef().child(String(tableNumber)).set(status);
+        }
+    } catch (error) {
+        console.error('تعذر حجز الطاولة في Firebase، سيتم الحجز محلياً:', error);
+    }
+
+    setLocalTableStatus(tableNumber, status);
+    updateTableSelectorUI();
+}
+
+async function releaseTable(tableNumber) {
+    try {
+        if (getFirebaseTablesRef()) {
+            await getFirebaseTablesRef().child(String(tableNumber)).remove();
+        }
+    } catch (error) {
+        console.error('تعذر تحرير الطاولة من Firebase، سيتم التحرير محلياً:', error);
+    }
+
+    clearLocalTableStatus(tableNumber);
+    updateTableSelectorUI();
+    renderWaiterTables();
+}
+    clearLocalTableStatus(tableNumber);
+    updateTableSelectorUI();
+}
+
+async function getTableStatus(tableNumber) {
+    let status = null;
+
+    try {
+        if (getFirebaseTablesRef()) {
+            const snapshot = await getFirebaseTablesRef().child(String(tableNumber)).once('value');
+            if (snapshot.exists()) {
+                status = snapshot.val();
+            }
+        }
+    } catch (error) {
+        console.error('تعذر قراءة حالة الطاولة من Firebase:', error);
+    }
+
+    if (!status) {
+        status = getLocalTableStatus(tableNumber);
+    }
+
+    return status || { status: 'available', table: String(tableNumber) };
+}
+
+function updateTableSelectorUI() {
+    const selector = document.getElementById('table-selector');
+    if (!selector) return;
+
+    const options = selector.querySelectorAll('option');
+    options.forEach(option => {
+        const tableNum = String(option.value);
+        const status = getLocalTableStatus(tableNum);
+        if (status && status.status === 'occupied') {
+            option.disabled = true;
+            option.textContent = `طاولة ${tableNum} (محجوزة)`;
+        } else {
+            option.disabled = false;
+            option.textContent = tableNum;
+        }
+    });
+
+    const currentStatus = getLocalTableStatus(tableNumber);
+    if (currentStatus && currentStatus.status === 'occupied' && String(currentStatus.orderId) !== 'checkout') {
+        const label = document.getElementById('selected-table-label');
+        if (label) label.innerText = `محمي (طاولة ${tableNumber})`;
+    }
+}
+
+async function loadTableStatuses() {
+    if (!getFirebaseTablesRef()) return;
+
+    const snapshot = await getFirebaseTablesRef().once('value');
+    const data = snapshot.val() || {};
+    
+    Object.entries(data).forEach(([tableNum, status]) => {
+        if (status.status === 'occupied') {
+            setLocalTableStatus(tableNum, status);
+        } else {
+            clearLocalTableStatus(tableNum);
+        }
+    });
+
+    updateTableSelectorUI();
+}
+
+function startTablesRealtime() {
+    if (!getFirebaseTablesRef()) return;
+    
+    getFirebaseTablesRef().on('value', snapshot => {
+        const data = snapshot.val() || {};
+        const allTables = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'];
+        
+        allTables.forEach(tableNum => {
+            const status = data[tableNum];
+            if (status && status.status === 'occupied') {
+                setLocalTableStatus(tableNum, status);
+            } else {
+                clearLocalTableStatus(tableNum);
+            }
+        });
+
+        updateTableSelectorUI();
+        renderWaiterTables();
+    });
+}
+
+function renderWaiterTables() {
+    const container = document.getElementById('waiter-tables-container');
+    if (!container) return;
+
+    const allTables = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'];
+    const tables = [];
+    
+    allTables.forEach(num => {
+        const status = getLocalTableStatus(num);
+        if (status && status.status === 'occupied') {
+            tables.push({ number: num, ...status });
+        }
+    });
+
+    if (tables.length === 0) {
+        container.innerHTML = '<p style="color:#888;">لا توجد طاولات مشغولة حالياً.</p>';
+        return;
+    }
+
+    container.innerHTML = tables.map(t => `
+        <div class="waiter-table-card occupied-table">
+            <div class="waiter-table-header">
+                <span class="waiter-table-number">طاولة ${escapeHtml(t.table)}</span>
+                <span class="waiter-table-badge occupied">محجوزة</span>
+            </div>
+            <div class="waiter-table-body">
+                <p><strong>طلب رقم:</strong> ${escapeHtml(t.orderId)}</p>
+                <p><strong>الحالة:</strong> <span class="status-text">${escapeHtml(t.status)}</span></p>
+                <p><strong>منذ:</strong> ${formatWardDateTime(t.reservedAt)}</p>
+            </div>
+            <button class="release-table-btn" onclick="releaseTableAndRefresh(${JSON.stringify(String(t.table))})">
+                <i class="fa-solid fa-door-open"></i> تحرير الطاولة (الزبون خرج)
+            </button>
+        </div>
+    `).join('');
+}
+
+async function releaseTableAndRefresh(tableNumber) {
+    await releaseTable(String(tableNumber));
+    alert(`تم تحرير الطاولة رقم ${tableNumber}. يمكن للزبائن الآن اختيارها.`);
+}
+
+function initializeTableSystem() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedTable = urlParams.get('table');
+    
+    if (requestedTable) {
+        getTableStatus(requestedTable).then(status => {
+            if (status.status === 'occupied') {
+                const selector = document.getElementById('table-selector');
+                if (selector) {
+                    selector.value = '1';
+                    tableNumber = '1';
+                    localStorage.setItem('cafe_ward_table', '1');
+                    updateTableLabel();
+                    const badge = document.getElementById('table-badge');
+                    if (badge) badge.innerText = `رقم الطاولة: 1`;
+                    alert(`الطاولة رقم ${requestedTable} محجوزة حالياً. تم توجيهك للطاولة 1. يرجى اختيار طاولة أخرى.`);
+                }
+            }
+        });
+    }
+
+    getTableStatus(tableNumber).then(status => {
+        if (status.status === 'occupied') {
+            const selector = document.getElementById('table-selector');
+            if (selector) {
+                selector.value = '1';
+                tableNumber = '1';
+                localStorage.setItem('cafe_ward_table', '1');
+                updateTableLabel();
+                const badge = document.getElementById('table-badge');
+                if (badge) badge.innerText = `رقم الطاولة: 1`;
+                alert(`الطاولة رقم ${tableNumber} محجوزة حالياً. تم توجيهك للطاولة 1. يرجى اختيار طاولة أخرى.`);
+            }
+        }
+    });
+
+    updateTableSelectorUI();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    initializeProtectedPage();
+
+    let splash = document.getElementById('splash-screen');
+    if (!splash) {
+        splash = document.createElement('div');
+        splash.id = 'splash-screen';
+        splash.setAttribute('aria-label', 'شاشة التحميل');
+        splash.innerHTML = '<img src="q.png" alt="كافيه ورد">';
+        document.body.appendChild(splash);
+    }
+    createSplashPetals(splash);
+
+    setTimeout(() => {
+        splash.classList.add('splash-hidden');
+        setTimeout(() => {
+            splash.remove();
+            document.body.classList.remove('menu-page-loading');
+        }, 650);
+    }, 2400);
+
+    createPetals();
+
+    startMenuRealtime();
+    startOrdersRealtime();
+    startTablesRealtime();
+    if (document.getElementById('tasks-container')) startAccountingRealtime();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const table = urlParams.get('table') || localStorage.getItem('cafe_ward_table');
+    if (table) { tableNumber = table; }
+    localStorage.setItem('cafe_ward_table', tableNumber);
+    const tableSelector = document.getElementById('table-selector');
+    if (tableSelector) {
+        if (![...tableSelector.options].some(option => option.value === tableNumber)) {
+            tableNumber = '1';
+            localStorage.setItem('cafe_ward_table', tableNumber);
+        }
+        tableSelector.value = tableNumber;
+        tableSelector.addEventListener('change', (event) => changeTable(event.target.value));
+    }
+    
+    initializeTableSystem();
+    updateTableLabel();
+    const badge = document.getElementById('table-badge');
+    if (badge) { badge.innerText = `رقم الطاولة: ${tableNumber}`; }
+    
+    updateCartBadge();
+});

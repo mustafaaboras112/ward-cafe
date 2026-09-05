@@ -23,6 +23,14 @@
         <div id="orders-container" style="display:grid; gap:15px; margin-top:20px;">
             <p style="color:#888;">لا توجد طلبات جديدة حالياً...</p>
         </div>
+
+        <section style="margin-top:40px; padding-top:20px; border-top:2px dashed #f1c8d7;">
+            <h2><i class="fa-solid fa-chair"></i> الطاولات المشغولة</h2>
+            <p style="color:#777; margin:8px 0 0; font-size:13px;">اضغط على زر التحرير فقط عندما يخرج الزبون من الطاولة ويستلم طلبه.</p>
+            <div id="waiter-tables-container" style="display:grid; gap:15px; margin-top:20px;">
+                <p style="color:#888;">جاري تحميل حالة الطاولات...</p>
+            </div>
+        </section>
     </main>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -30,7 +38,7 @@
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
     <script>
-        window.addEventListener('DOMContentLoaded', () => { startOrdersRealtime(); startWaiterMonitor(); });
+        window.addEventListener('DOMContentLoaded', () => { startWaiterMonitor(); });
     </script>
 </body>
 </html>

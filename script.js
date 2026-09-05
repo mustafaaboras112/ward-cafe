@@ -511,11 +511,11 @@ function renderAdminMenu() {
     }
     menu.forEach(item => {
         list.innerHTML += `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa; padding:12px 15px; border-radius:8px; border:1px solid #eee;">
-                <div>
-                    <strong style="color:#333;">${item.name}</strong> - <span style="color:var(--gold);">${item.price} ليرة</span> (${item.category})
+            <div class="product-row">
+                <div class="product-info">
+                    <strong>${item.name}</strong> - <span class="product-price-tag">${item.price} ليرة</span> (${item.category})
                 </div>
-                <button onclick='deleteMenuItem(${JSON.stringify(String(item.id))})' style="background:#e53935; color:#fff; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">حذف</button>
+                <button class="delete-btn" onclick='deleteMenuItem("${item.id}")'>حذف</button>
             </div>
         `;
     });

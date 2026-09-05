@@ -10,43 +10,36 @@
 <body>
     <header>
         <div class="logo" aria-label="شعار كافيه ورد"><img src="q.png" alt="كافيه ورد"></div>
-        <div>
-            <a href="waiter.html" style="background:#e91e63; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">شاشة الكارسون</a>
-            <a href="kitchen.html" style="background:#00796b; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">شاشة المطبخ</a>
-            <a href="index.html" style="background:#d656bb; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold;">عرض المنيو</a>
+        <div class="top-buttons-container">
+            <a href="waiter.html">شاشة الكارسون</a>
+            <a href="kitchen.html">شاشة المطبخ</a>
+            <a href="index.html">عرض المنيو</a>
+            <a href="accounting.html">شاشة المحاسبة</a>
         </div>
     </header>
 
-    <main style="max-width: 900px; margin: 30px auto; padding: 0 20px;">
-        <div style="background:var(--card-bg); padding:20px; border-radius:12px; border:1px solid var(--primary); margin-bottom:30px;">
+    <main>
+        <div class="admin-box">
             <h2>إضافة صنف جديد للمنيو</h2>
-            <form id="add-item-form" onsubmit="addNewItem(event)" style="display:grid; gap:12px; margin-top:15px;">
-                <input type="text" id="item-name" placeholder="اسم الصنف (مثال: قهوة لاتيه)" required style="padding:10px; border-radius:6px; background:#fff; border:1px solid #ead7df; color:var(--text-main);">
-                <select id="item-cat" required style="padding:10px; border-radius:6px; background:#fff; border:1px solid #ead7df; color:var(--text-main);">
+            <form id="add-item-form" onsubmit="addNewItem(event)" class="admin-form">
+                <input type="text" id="item-name" placeholder="اسم الصنف (مثال: قهوة لاتيه)" required>
+                <select id="item-cat" required>
                     <option value="hot">مشروبات ساخنة</option>
                     <option value="cold">مشروبات باردة</option>
                     <option value="sweets">حلويات</option>
                     <option value="food">مأكولات</option>
                 </select>
-                <input type="number" id="item-price" placeholder="السعر (بالليرة)" required style="padding:10px; border-radius:6px; background:#fff; border:1px solid #ead7df; color:var(--text-main);">
-                <input type="text" id="item-desc" placeholder="وصف قصير للصنف" required style="padding:10px; border-radius:6px; background:#fff; border:1px solid #ead7df; color:var(--text-main);">
-                <input type="url" id="item-img" placeholder="رابط صورة الصنف (URL)" required style="padding:10px; border-radius:6px; background:#fff; border:1px solid #ead7df; color:var(--text-main);">
-                <button type="submit" style="background:var(--primary); color:#fff; padding:12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">إضافة الصنف</button>
+                <input type="number" id="item-price" placeholder="السعر (بالليرة)" required>
+                <input type="text" id="item-desc" placeholder="وصف قصير للصنف" required>
+                <input type="url" id="item-img" placeholder="رابط صورة الصنف (URL)" required>
+                <button type="submit">إضافة الصنف</button>
             </form>
         </div>
 
-        <div style="background:var(--card-bg); padding:20px; border-radius:12px; border:1px solid #ead7df;">
+        <div class="products-list-container">
             <h2>الأصناف الحالية في المنيو</h2>
-            <div id="admin-menu-list" style="margin-top:15px; display:grid; gap:10px;"></div>
+            <div id="admin-menu-list"></div>
         </div>
-
-<div>
-            <a href="accounting.html" style="background:var(--gold); color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">شاشة المحاسبة</a>
-            <a href="kitchen.html" style="background:#00796b; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">شاشة المطبخ</a>
-            <a href="waiter.html" style="background:#e91e63; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">شاشة الكارسون</a>
-            <a href="index.html" style="background:#d656bb; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold;">المنيو</a>
-        </div>
-
     </main>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>

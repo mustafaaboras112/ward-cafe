@@ -2304,6 +2304,53 @@ body.menu-page .header-right {
     box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);
 }
 
+.admin-form {
+    display: grid;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.admin-form input,
+.admin-form select {
+    padding: 10px;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #ead7df;
+    color: var(--text-main);
+}
+
+.admin-form button[type="submit"] {
+    background: var(--primary);
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.top-buttons-container a {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.top-buttons-container a:hover {
+    background-color: #e91e63;
+    color: white;
+    border-color: #e91e63;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(233, 30, 99, 0.2);
+}
+
 
 
 

@@ -9,53 +9,49 @@
 </head>
 <body class="menu-page menu-page-loading">
     <div id="splash-screen" aria-label="شاشة التحميل"><img src="q.png" alt="كافيه ورد"></div>
-    <header>
-        <div class="header-left">
-            <label class="table-selector table-selector-attention" for="table-selector">
-                <span class="table-selector-title"><i class="fa-solid fa-chair"></i> اختر طاولتك</span>
-                <select id="table-selector" class="table-selector" aria-label="تحديد رقم الطاولة" onchange="changeTable(this.value)">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                    <option value="11">11</option>
-                    <option value="12">12</option>
-                    <option value="13">13</option>
-                    <option value="14">14</option>
-                    <option value="15">15</option>
-                    <option value="16">16</option>
-                    <option value="17">17</option>
-                    <option value="18">18</option>
-                    <option value="19">19</option>
-                    <option value="20">20</option>
+
+    <section class="hero-no-header">
+        <div class="centered-logo">
+            <img src="q.png" alt="شعار كافيه ورد">
+        </div>
+
+        <div class="table-selector-container">
+            <div class="table-select-box">
+                <label for="table-selector"><i class="fa-solid fa-chair"></i> اختر طاولتك</label>
+                <select id="table-selector">
+                    <option value="1" selected>رقم 1</option>
+                    <option value="2">رقم 2</option>
+                    <option value="3">رقم 3</option>
+                    <option value="4">رقم 4</option>
+                    <option value="5">رقم 5</option>
+                    <option value="6">رقم 6</option>
+                    <option value="7">رقم 7</option>
+                    <option value="8">رقم 8</option>
+                    <option value="9">رقم 9</option>
+                    <option value="10">رقم 10</option>
+                    <option value="11">رقم 11</option>
+                    <option value="12">رقم 12</option>
+                    <option value="13">رقم 13</option>
+                    <option value="14">رقم 14</option>
+                    <option value="15">رقم 15</option>
+                    <option value="16">رقم 16</option>
+                    <option value="17">رقم 17</option>
+                    <option value="18">رقم 18</option>
+                    <option value="19">رقم 19</option>
+                    <option value="20">رقم 20</option>
                 </select>
-                <strong id="selected-table-label">رقم الطاولة</strong>
-            </label>
-            <p id="table-badge" class="table-badge">رقم الطاولة: جاري التحميل...</p>
-        </div>
-        <div class="logo" aria-label="شعار كافيه ورد"><img src="q.png" alt="كافيه ورد"></div>
-        <div class="header-right">
-            <div class="cart-icon" onclick="toggleCart()">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span id="cart-count">0</span>
+                <strong id="selected-table-label">رقم الطاولة: 1</strong>
             </div>
+            <p id="table-badge" class="table-badge">رقم الطاولة: 1</p>
         </div>
-    </header>
+    </section>
+
+    <div class="cart-fab" onclick="toggleCart()" aria-label="سلة المشتريات">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span id="cart-count">0</span>
+    </div>
 
     <main>
-        <section class="hero">
-            <img class="hero-brand hero-brand-right" src="q.png" alt="" aria-hidden="true">
-            <img class="hero-brand hero-brand-left" src="q.png" alt="" aria-hidden="true">
-            <h2>أهلاً وسهلاً بكم في كافيه ورد</h2>
-            <p>اختر ما تحب من قائمة المنيو وسيصلك طلبك حتى طاولتك</p>
-        </section>
-
         <div class="categories">
             <button class="cat-btn active" onclick="filterMenu('all')">الكل</button>
             <button class="cat-btn" onclick="filterMenu('hot')">مشروبات ساخنة</button>
@@ -79,9 +75,42 @@
         </div>
     </div>
 
+    <div class="cart-fab" onclick="toggleCart()" aria-label="سلة المشتريات">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span id="cart-count">0</span>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
+    <script>
+        function confirmTable() {
+            const select = document.getElementById('table-number');
+            const badge = document.getElementById('table-badge');
+            if (select && badge) {
+                badge.textContent = 'رقم الطاولة: ' + select.value;
+            }
+            if (typeof changeTable === 'function') {
+                changeTable(select.value);
+            }
+        }
+
+        function toggleLangMenu() {
+            const menu = document.getElementById('lang-options');
+            if (menu) menu.classList.toggle('show');
+        }
+
+        function changeLang(lang) {
+            document.documentElement.lang = lang;
+            if (lang === 'en') {
+                document.documentElement.dir = 'ltr';
+            } else {
+                document.documentElement.dir = 'rtl';
+            }
+            const menu = document.getElementById('lang-options');
+            if (menu) menu.classList.remove('show');
+        }
+    </script>
 </body>
 </html>

@@ -47,7 +47,8 @@ function initializeProtectedPage() {
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('cafe_ward_staff_unlocked', 'true');
             document.body.classList.remove('page-locked');
-            lockScreen.remove();
+            if (lockScreen && lockScreen.parentNode) lockScreen.remove();
+            fixAdminHeader();
             return;
         }
 
@@ -55,6 +56,28 @@ function initializeProtectedPage() {
         codeInput.value = '';
         codeInput.focus();
     });
+}
+
+function fixAdminHeader() {
+    const header = document.querySelector('header');
+    if (!header) return;
+    if (header.querySelector('.header-left') || header.querySelector('.header-right')) return;
+
+    const logo = header.querySelector('.logo');
+    const links = header.querySelectorAll('a');
+    if (!logo || links.length === 0) return;
+
+    const left = document.createElement('div');
+    left.className = 'header-left';
+    left.appendChild(logo);
+
+    const right = document.createElement('div');
+    right.className = 'header-right';
+    links.forEach(a => right.appendChild(a));
+
+    header.innerHTML = '';
+    header.appendChild(left);
+    header.appendChild(right);
 }
 
 function getMenu() {

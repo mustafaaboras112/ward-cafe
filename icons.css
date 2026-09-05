@@ -1,0 +1,29 @@
+/* ===== أيقونات SVG محلية بدلاً من Font Awesome ===== */
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+    fill: currentColor;
+}
+
+.icon-chair::before { content: "🪑"; }
+.icon-cart::before { content: "🛒"; }
+.icon-lock::before { content: "🔒"; }
+.icon-bell::before { content: "🔔"; }
+.icon-language::before { content: "🌐"; }
+.icon-check::before { content: "✅"; }
+.icon-trash::before { content: "🗑️"; }
+.icon-plus::before { content: "➕"; }
+.icon-minus::before { content: "➖"; }
+.icon-coffee::before { content: "☕"; }
+.icon-fire::before { content: "🔥"; }
+.icon-star::before { content: "⭐"; }
+.icon-heart::before { content: "❤️"; }
+.icon-home::before { content: "🏠"; }
+.icon-user::before { content: "👤"; }
+.icon-settings::before { content: "⚙️"; }
+.icon-menu::before { content: "📋"; }
+.icon-close::before { content: "❌"; }
+.icon-back::before { content: "⬅️"; }
+.icon-forward::before { content: "➡️"; }

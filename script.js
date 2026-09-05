@@ -1610,9 +1610,6 @@ async function releaseTable(tableNumber) {
     updateTableSelectorUI();
     renderWaiterTables();
 }
-    clearLocalTableStatus(tableNumber);
-    updateTableSelectorUI();
-}
 
 async function getTableStatus(tableNumber) {
     let status = null;

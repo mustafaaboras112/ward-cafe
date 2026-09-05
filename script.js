@@ -272,8 +272,6 @@ function startOrdersRealtime() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    initializeProtectedPage();
-
     // 1. إنشاء شاشة الترحيب الأنيقة
     let splash = document.getElementById('splash-screen');
     if (!splash) {

@@ -12,7 +12,7 @@ const STAFF_ACCESS_CODE = '1234';
 
 function initializeProtectedPage() {
     try {
-        const pageName = window.location.pathname.split('/').pop().toLowerCase();
+        const pageName = window.location.pathname.split('/').pop().toLowerCase().split('?')[0].split('#')[0];
         const isProtectedPage = pageName === 'admin.html' || pageName === 'accounting.html';
         const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
         const legacyLogin = sessionStorage.getItem('cafe_ward_staff_unlocked') === 'true';

@@ -160,11 +160,13 @@ body.page-locked > main {
     }
 }
 
-@keyframes logo-float {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-5px) rotate(1deg); }
-    50% { transform: translateY(0) rotate(0deg); }
-    75% { transform: translateY(-3px) rotate(-1deg); }
+@keyframes logo-wave {
+    0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+    15% { transform: translateY(-6px) scale(1.03) rotate(-1deg); }
+    30% { transform: translateY(0) scale(1) rotate(0deg); }
+    45% { transform: translateY(-4px) scale(1.02) rotate(1deg); }
+    60% { transform: translateY(0) scale(1) rotate(0deg); }
+    75% { transform: translateY(-3px) scale(1.01) rotate(-0.5deg); }
 }
 
 /* الهيدر العام */
@@ -172,35 +174,54 @@ header {
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
+    padding: 10px 24px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    justify-items: center;
     align-items: center;
     border-bottom: 1px solid rgba(233, 30, 99, 0.15);
     box-shadow: 0 4px 20px rgba(148, 30, 74, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
     position: sticky;
     top: 0;
     z-index: 1000;
-    min-height: 150px;
+    min-height: 80px;
+}
+
+.logo {
+    grid-column: 2;
+    justify-self: center;
 }
 
 .logo h1 {
     color: var(--primary);
-    font-size: 24px;
+    font-size: 20px;
 }
 
 .logo p {
-    font-size: 13px;
+    font-size: 20px;
     color: var(--text-muted);
-    margin-top: 3px;
+    margin-top: 2px;
 }
 
 .logo img {
     display: block;
-    width: 320px;
-    height: 118px;
+    width: 600px;
+    height: 216px;
     object-fit: contain;
-    animation: logo-float 3.2s ease-in-out infinite;
+    animation: logo-wave 3.2s ease-in-out infinite;
+}
+
+.header-left {
+    grid-column: 1;
+    justify-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.header-right {
+    grid-column: 3;
+    justify-self: end;
 }
 
 .cart-icon {
@@ -211,6 +232,7 @@ header {
     cursor: pointer;
     position: relative;
     font-weight: bold;
+    font-size: 14px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -220,7 +242,7 @@ header {
 .cart-icon span {
     background: #fff;
     color: var(--primary);
-    padding: 2px 7px;
+    padding: 2px 8px;
     border-radius: 50%;
     font-size: 12px;
 }
@@ -572,18 +594,22 @@ body {
 }
 
 header {
-    min-height: 148px;
-    padding: 15px clamp(16px, 4vw, 52px);
+    min-height: 80px;
+    padding: 10px clamp(16px, 4vw, 52px);
     border-bottom: 1px solid rgba(233, 35, 97, 0.18);
     box-shadow: 0 5px 28px rgba(148, 30, 74, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
-    gap: 22px;
+    gap: 16px;
     background: rgba(255, 255, 255, 0.88);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    justify-items: center;
+    align-items: center;
 }
 
 .logo h1 {
-    font-size: clamp(18px, 2.2vw, 25px);
+    font-size: clamp(16px, 2vw, 22px);
     letter-spacing: 0;
 }
 
@@ -592,16 +618,16 @@ header {
 }
 
 .logo:empty {
-    min-width: 200px;
+    min-width: 160px;
     min-height: 40px;
 }
 
 .logo img {
     display: block;
-    width: 320px;
-    height: 118px;
+    width: 200px;
+    height: 74px;
     object-fit: contain;
-    animation: logo-float 3.2s ease-in-out infinite;
+    animation: logo-wave 3.2s ease-in-out infinite;
 }
 
 .table-badge {
@@ -619,10 +645,85 @@ header {
     font-weight: 700;
 }
 
+.header-left {
+    grid-column: 1;
+    justify-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.header-right {
+    grid-column: 3;
+    justify-self: end;
+}
+
+header > div:last-child {
+    grid-column: 3;
+    justify-self: end;
+}
+
+.logo {
+    grid-column: 2;
+    justify-self: center;
+}
+
+.logo h1 {
+    font-size: clamp(16px, 2vw, 22px);
+    letter-spacing: 0;
+}
+
+.logo p {
+    color: var(--text-muted);
+}
+
+.logo:empty {
+    min-width: 160px;
+    min-height: 40px;
+}
+
+.logo img {
+    display: block;
+    width: 200px;
+    height: 74px;
+    object-fit: contain;
+    animation: logo-wave 3.2s ease-in-out infinite;
+}
+
+.table-badge {
+    margin-inline-start: auto;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.table-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+header > div:first-child {
+    grid-column: 1;
+    justify-self: start;
+}
+
+header > div:last-child {
+    grid-column: 3;
+    justify-self: end;
+}
+
+.logo {
+    grid-column: 2;
+    justify-self: center;
+}
+
 .table-selector-attention {
     position: relative;
-    min-height: 48px;
-    padding: 6px 9px;
+    min-height: 56px;
+    padding: 8px 12px;
     border: 2px solid var(--primary);
     border-radius: 10px;
     background: #fff5f8;
@@ -644,7 +745,7 @@ header {
 
 .table-selector-attention select {
     width: 62px;
-    min-height: 34px;
+    min-height: 40px;
     border: 2px solid var(--primary);
     background: #fff;
     font-size: 16px;
@@ -652,13 +753,13 @@ header {
 }
 
 .table-selector-attention strong {
-    min-width: 48px;
+    min-width: 56px;
     color: #fff;
     background: var(--primary);
     border-radius: 6px;
-    padding: 6px 7px;
+    padding: 8px 10px;
     text-align: center;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 @keyframes table-attention {
@@ -1045,10 +1146,59 @@ th {
 
 @media (max-width: 700px) {
     header {
-        align-items: stretch;
-        flex-direction: column;
+        align-items: center;
         text-align: center;
-        min-height: 160px;
+        min-height: 120px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        justify-items: center;
+        align-items: center;
+    }
+
+    .header-left {
+        grid-column: 1;
+        justify-self: start;
+    }
+
+    .header-right {
+        grid-column: 3;
+        justify-self: end;
+    }
+
+    .logo {
+        grid-column: 2;
+        justify-self: center;
+    }
+
+    .table-badge {
+        margin-inline-start: 0;
+        order: 2;
+    }
+
+    .table-selector {
+        justify-content: center;
+        order: 1;
+    }
+
+    .table-selector-attention {
+        width: min(100%, 310px);
+        margin: 0 auto;
+        justify-content: center;
+    }
+
+    header > div:last-child a {
+        flex: 1 1 120px;
+    }
+
+    .logo p {
+        font-size: 11px;
+    }
+
+    .logo img {
+        width: 140px;
+        height: 52px;
+        margin: 0 auto;
+        animation: logo-wave 3.2s ease-in-out infinite;
     }
 
     header > div:last-child {
@@ -1076,15 +1226,15 @@ th {
     }
 
     .logo p {
-        font-size: 12px;
+        font-size: 11px;
     }
 
-.logo img {
-    width: 260px;
-    height: 95px;
-    margin: 0 auto;
-    animation: logo-float 3.2s ease-in-out infinite;
-}
+    .logo img {
+        width: 500px;
+        height: 180px;
+        margin: 0 auto;
+        animation: logo-wave 3.2s ease-in-out infinite;
+    }
 
     .section-box {
         padding: 15px;
@@ -1213,23 +1363,33 @@ body:has(#menu-grid) header {
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 5px 28px rgba(148, 30, 74, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    justify-items: center;
+    align-items: center;
 }
 
 body.menu-page .logo img {
-    width: 300px;
-    height: 110px;
-    animation: logo-float 3.2s ease-in-out infinite;
+    width: 840px;
+    height: 300px;
+    animation: logo-wave 3.2s ease-in-out infinite;
+    grid-column: 2;
+    justify-self: center;
 }
 
 /* واجهة المنيو: هيدر أوسع وترحيب بشعاري ورد خفيفين على الجانبين. */
 body.menu-page header {
-    min-height: 130px;
+    min-height: 320px;
     padding-top: 10px;
     padding-bottom: 10px;
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 5px 28px rgba(148, 30, 74, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    justify-items: center;
+    align-items: center;
 }
 
 body.menu-page .hero {
@@ -1259,9 +1419,9 @@ body.menu-page .hero p {
 
 @media (max-width: 700px) {
     body.menu-page .logo img {
-        width: 240px;
-        height: 88px;
-        animation: logo-float 3.2s ease-in-out infinite;
+        width: 660px;
+        height: 240px;
+        animation: logo-wave 3.2s ease-in-out infinite;
     }
 
     /* واجهة المنيو: هيدر أوسع وترحيب بشعاري ورد خفيفين على الجانبين. */
@@ -1269,6 +1429,10 @@ body.menu-page .hero p {
         min-height: 0;
         padding-top: 10px;
         padding-bottom: 10px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        justify-items: center;
+        align-items: center;
     }
 
     body.menu-page .hero {

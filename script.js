@@ -11,73 +11,231 @@
 const STAFF_ACCESS_CODE = '1234';
 
 function initializeProtectedPage() {
-    const pageName = window.location.pathname.split('/').pop().toLowerCase();
-    const isProtectedPage = pageName === 'admin.html' || pageName === 'accounting.html';
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-    const legacyLogin = sessionStorage.getItem('cafe_ward_staff_unlocked') === 'true';
-    if (!isProtectedPage || isLoggedIn || legacyLogin) return;
+    try {
+        const pageName = window.location.pathname.split('/').pop().toLowerCase();
+        const isProtectedPage = pageName === 'admin.html' || pageName === 'accounting.html';
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+        const legacyLogin = sessionStorage.getItem('cafe_ward_staff_unlocked') === 'true';
+        
+        console.log('حماية الصفحة:', { pageName, isProtectedPage, isLoggedIn, legacyLogin });
+        
+        if (!isProtectedPage || isLoggedIn || legacyLogin) return;
 
-    document.body.classList.add('page-locked');
+        document.body.classList.add('page-locked');
 
-    const lockScreen = document.createElement('div');
-    lockScreen.id = 'access-lock';
-    lockScreen.innerHTML = `
-        <div class="access-card" role="dialog" aria-modal="true" aria-labelledby="access-title">
-            <img class="access-logo" src="q.png" alt="كافيه ورد">
-            <div class="access-icon"><i class="fa-solid fa-lock"></i></div>
-            <h2 id="access-title">الصفحة محمية</h2>
-            <p>أدخل رمز الموظفين للوصول إلى هذه الصفحة</p>
-            <form id="access-form">
-                <label for="access-code">رمز الدخول</label>
-                <input id="access-code" type="password" inputmode="numeric" autocomplete="off" required autofocus>
-                <button type="submit">فتح الصفحة</button>
-                <small id="access-error" role="alert"></small>
-            </form>
-        </div>
-    `;
-    document.body.appendChild(lockScreen);
+        const lockScreen = document.createElement('div');
+        lockScreen.id = 'access-lock';
+        lockScreen.innerHTML = `
+            <div class="access-card" role="dialog" aria-modal="true" aria-labelledby="access-title">
+                <img class="access-logo" src="q.png" alt="كافيه ورد">
+                <div class="access-icon"><i class="fa-solid fa-lock"></i></div>
+                <h2 id="access-title">الصفحة محمية</h2>
+                <p>أدخل رمز الموظفين للوصول إلى هذه الصفحة</p>
+                <form id="access-form">
+                    <label for="access-code">رمز الدخول</label>
+                    <input id="access-code" type="password" inputmode="numeric" autocomplete="off" required autofocus>
+                    <button type="submit">فتح الصفحة</button>
+                    <small id="access-error" role="alert"></small>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(lockScreen);
+        console.log('تم إنشاء شاشة القفل');
 
-    const form = document.getElementById('access-form');
-    const codeInput = document.getElementById('access-code');
-    const error = document.getElementById('access-error');
+        const form = document.getElementById('access-form');
+        const codeInput = document.getElementById('access-code');
+        const error = document.getElementById('access-error');
 
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if (codeInput.value === STAFF_ACCESS_CODE) {
-            sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('cafe_ward_staff_unlocked', 'true');
-            document.body.classList.remove('page-locked');
-            if (lockScreen && lockScreen.parentNode) lockScreen.remove();
-            fixAdminHeader();
+        if (!form || !codeInput || !error) {
+            console.error('عناصر شاشة القفل غير موجودة');
             return;
         }
 
-        error.textContent = 'رمز الدخول غير صحيح';
-        codeInput.value = '';
-        codeInput.focus();
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            try {
+                console.log('تم إرسال النموذج، الرمز المدخل:', codeInput.value);
+                console.log('الرمز المطلوب:', STAFF_ACCESS_CODE);
+                
+                if (codeInput.value === STAFF_ACCESS_CODE) {
+                    console.log('الرمز صحيح!');
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('cafe_ward_staff_unlocked', 'true');
+                    document.body.classList.remove('page-locked');
+                    
+                    if (lockScreen && lockScreen.parentNode) {
+                        console.log('إزالة شاشة القفل...');
+                        lockScreen.remove();
+                    } else {
+                        console.warn('شاشة القفل غير موجودة أو تمت إزالتها مسبقاً');
+                    }
+                    
+                    console.log('تم فتح الصفحة بنجاح');
+                    return;
+                }
+
+                console.log('الرمز غير صحيح');
+                error.textContent = 'رمز الدخول غير صحيح';
+                codeInput.value = '';
+                codeInput.focus();
+            } catch (e) {
+                console.error('خطأ في معالجة نموذج الدخول:', e);
+                error.textContent = 'حدث خطأ، حاول مرة أخرى';
+            }
+        });
+    } catch (e) {
+        console.error('خطأ في تهيئة شاشة الحماية:', e);
+    }
+}
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            try {
+                console.log('تم إرسال النموذج، الرمز المدخل:', codeInput.value);
+                console.log('الرمز المطلوب:', STAFF_ACCESS_CODE);
+                
+                if (codeInput.value === STAFF_ACCESS_CODE) {
+                    console.log('الرمز صحيح!');
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('cafe_ward_staff_unlocked', 'true');
+                    document.body.classList.remove('page-locked');
+                    
+                    if (lockScreen && lockScreen.parentNode) {
+                        console.log('إزالة شاشة القفل...');
+                        lockScreen.remove();
+                    } else {
+                        console.warn('شاشة القفل غير موجودة أو تمت إزالتها مسبقاً');
+                    }
+                    
+                    console.log('تم فتح الصفحة بنجاح');
+                    return;
+                }
+
+                console.log('الرمز غير صحيح');
+                error.textContent = 'رمز الدخول غير صحيح';
+                codeInput.value = '';
+                codeInput.focus();
+            } catch (e) {
+                console.error('خطأ في معالجة نموذج الدخول:', e);
+                error.textContent = 'حدث خطأ، حاول مرة أخرى';
+            }
+        });
+    } catch (e) {
+        console.error('خطأ في تهيئة شاشة الحماية:', e);
+    }
+}
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            try {
+                console.log('تم إرسال النموذج، الرمز المدخل:', codeInput.value);
+                console.log('الرمز المطلوب:', STAFF_ACCESS_CODE);
+                
+                if (codeInput.value === STAFF_ACCESS_CODE) {
+                    console.log('الرمز صحيح!');
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('cafe_ward_staff_unlocked', 'true');
+                    document.body.classList.remove('page-locked');
+                    
+                    if (lockScreen && lockScreen.parentNode) {
+                        console.log('إزالة شاشة القفل...');
+                        lockScreen.remove();
+                    } else {
+                        console.warn('شاشة القفل غير موجودة أو تمت إزالتها مسبقاً');
+                    }
+                    
+                    console.log('تم فتح الصفحة بنجاح');
+                    return;
+                }
+
+                console.log('الرمز غير صحيح');
+                error.textContent = 'رمز الدخول غير صحيح';
+                codeInput.value = '';
+                codeInput.focus();
+            } catch (e) {
+                console.error('خطأ في معالجة نموذج الدخول:', e);
+                error.textContent = 'حدث خطأ، حاول مرة أخرى';
+            }
+        });
+    } catch (e) {
+        console.error('خطأ في تهيئة شاشة الحماية:', e);
+    }
+}
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        try {
+            console.log('تم إرسال النموذج، الرمز المدخل:', codeInput.value);
+            console.log('الرمز المطلوب:', STAFF_ACCESS_CODE);
+            
+            if (codeInput.value === STAFF_ACCESS_CODE) {
+                console.log('الرمز صحيح!');
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('cafe_ward_staff_unlocked', 'true');
+                document.body.classList.remove('page-locked');
+                
+                if (lockScreen && lockScreen.parentNode) {
+                    console.log('إزالة شاشة القفل...');
+                    lockScreen.remove();
+                } else {
+                    console.warn('شاشة القفل غير موجودة أو تمت إزالتها مسبقاً');
+                }
+                
+                console.log('تم فتح الصفحة بنجاح');
+                return;
+            }
+
+            console.log('الرمز غير صحيح');
+            error.textContent = 'رمز الدخول غير صحيح';
+            codeInput.value = '';
+            codeInput.focus();
+        } catch (e) {
+            console.error('خطأ في معالجة نموذج الدخول:', e);
+            error.textContent = 'حدث خطأ، حاول مرة أخرى';
+        }
     });
+    } catch (e) {
+        console.error('خطأ في تهيئة شاشة الحماية:', e);
+    }
 }
 
 function fixAdminHeader() {
-    const header = document.querySelector('header');
-    if (!header) return;
-    if (header.querySelector('.header-left') || header.querySelector('.header-right')) return;
-
-    const logo = header.querySelector('.logo');
-    const links = header.querySelectorAll('a');
-    if (!logo || links.length === 0) return;
-
-    const left = document.createElement('div');
-    left.className = 'header-left';
-    left.appendChild(logo);
-
-    const right = document.createElement('div');
-    right.className = 'header-right';
-    links.forEach(a => right.appendChild(a));
-
-    header.innerHTML = '';
-    header.appendChild(left);
-    header.appendChild(right);
+    try {
+        const header = document.querySelector('header');
+        if (!header) return;
+        
+        const logo = header.querySelector('.logo');
+        const links = header.querySelectorAll('a');
+        
+        if (!logo || links.length === 0) return;
+        
+        const existingLeft = header.querySelector('.header-left');
+        const existingRight = header.querySelector('.header-right');
+        
+        if (existingLeft && existingRight) return;
+        
+        const left = document.createElement('div');
+        left.className = 'header-left';
+        
+        const right = document.createElement('div');
+        right.className = 'header-right';
+        
+        if (!existingLeft && logo) {
+            left.appendChild(logo.cloneNode(true));
+        }
+        
+        if (!existingRight) {
+            links.forEach(a => right.appendChild(a.cloneNode(true)));
+        }
+        
+        if (left.children.length > 0 || right.children.length > 0) {
+            header.innerHTML = '';
+            if (left.children.length > 0) header.appendChild(left);
+            if (right.children.length > 0) header.appendChild(right);
+        }
+    } catch (e) {
+        console.error('خطأ في تعديل الهيدر:', e);
+    }
 }
 
 function getMenu() {

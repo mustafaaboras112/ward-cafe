@@ -1598,38 +1598,6 @@ function displayMenu(items) {
     });
 }
 
-async function checkout() {
-    if (cart.length === 0) {
-        alert('السلة فارغة. أضف صنفًا أولًا.');
-        return;
-    }
-    const createdAt = Date.now();
-    const newOrder = {
-        id: String(createdAt),
-        table: tableNumber,
-        items: cart.map(item => ({ ...item, id: String(item.id) })),
-        total: cart.reduce((sum, item) => sum + (Number(item.price) * item.qty), 0),
-        status: 'قيد التحضير',
-        createdAt,
-        time: formatWardDateTime(createdAt)
-    };
-    try {
-        const ref = getFirebaseOrdersRef();
-        if (ref) await ref.child(newOrder.id).set(newOrder);
-        else {
-            const orders = readLocalOrders();
-            orders.unshift(newOrder);
-            localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
-        }
-        showOrderSuccess(newOrder);
-        cart = [];
-        updateCartBadge();
-        toggleCart();
-    } catch (error) {
-        console.error('تعذر حفظ الطلب:', error);
-        alert('تعذر إرسال الطلب. تحقق من اتصال قاعدة البيانات ثم حاول مجددًا.');
-    }
-}
 
 function showOrderSuccess(order) {
     const existing = document.getElementById('order-success-toast');

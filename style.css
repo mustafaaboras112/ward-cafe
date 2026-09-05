@@ -181,6 +181,7 @@ header {
     position: sticky;
     top: 0;
     z-index: 1000;
+    min-height: 150px;
 }
 
 .logo h1 {
@@ -196,8 +197,8 @@ header {
 
 .logo img {
     display: block;
-    width: 260px;
-    height: 95px;
+    width: 320px;
+    height: 118px;
     object-fit: contain;
     animation: logo-float 3.2s ease-in-out infinite;
 }
@@ -571,11 +572,11 @@ body {
 }
 
 header {
-    min-height: 76px;
-    padding: 14px clamp(16px, 4vw, 52px);
+    min-height: 148px;
+    padding: 15px clamp(16px, 4vw, 52px);
     border-bottom: 1px solid rgba(233, 35, 97, 0.18);
     box-shadow: 0 5px 28px rgba(148, 30, 74, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
-    gap: 18px;
+    gap: 22px;
     background: rgba(255, 255, 255, 0.88);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
@@ -597,8 +598,8 @@ header {
 
 .logo img {
     display: block;
-    width: 260px;
-    height: 95px;
+    width: 320px;
+    height: 118px;
     object-fit: contain;
     animation: logo-float 3.2s ease-in-out infinite;
 }
@@ -1047,6 +1048,7 @@ th {
         align-items: stretch;
         flex-direction: column;
         text-align: center;
+        min-height: 160px;
     }
 
     header > div:last-child {
@@ -1077,12 +1079,12 @@ th {
         font-size: 12px;
     }
 
-    .logo img {
-        width: 210px;
-        height: 77px;
-        margin: 0 auto;
-        animation: logo-float 3.2s ease-in-out infinite;
-    }
+.logo img {
+    width: 260px;
+    height: 95px;
+    margin: 0 auto;
+    animation: logo-float 3.2s ease-in-out infinite;
+}
 
     .section-box {
         padding: 15px;
@@ -1214,14 +1216,14 @@ body:has(#menu-grid) header {
 }
 
 body.menu-page .logo img {
-    width: 240px;
-    height: 88px;
+    width: 300px;
+    height: 110px;
     animation: logo-float 3.2s ease-in-out infinite;
 }
 
 /* واجهة المنيو: هيدر أوسع وترحيب بشعاري ورد خفيفين على الجانبين. */
 body.menu-page header {
-    min-height: 82px;
+    min-height: 130px;
     padding-top: 10px;
     padding-bottom: 10px;
     background: rgba(255, 255, 255, 0.85);
@@ -1257,8 +1259,8 @@ body.menu-page .hero p {
 
 @media (max-width: 700px) {
     body.menu-page .logo img {
-        width: 200px;
-        height: 73px;
+        width: 240px;
+        height: 88px;
         animation: logo-float 3.2s ease-in-out infinite;
     }
 

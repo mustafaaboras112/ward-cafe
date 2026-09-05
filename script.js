@@ -1155,6 +1155,146 @@ function renderAccountingDashboard() {
     // 2. تحديث قسم المصروفات
     const expList = document.getElementById('expenses-list');
     if (expList) {
+        expList.innerHTML = expenses.length === 0 ? 'لا توجد مصروفات مسجلة اليوم.' : 
+            expenses.map(e => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>${e.title} (${e.category})</span><strong style="color:#e53935;">${e.amount} ليرة</strong></div>`).join('');
+    }
+
+    // 3. تحديث قسم العملاء
+    const clientList = document.getElementById('clients-list');
+    if (clientList) {
+        clientList.innerHTML = clients.length === 0 ? 'لا توجد ذمم عملاء مسجلة.' :
+            clients.map(c => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>العميل: ${c.name} (استحقاق: ${c.date})</span><div><strong style="color:var(--gold);">${c.amount} ليرة</strong> <button onclick='deleteClient(${JSON.stringify(String(c.id))})' style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[سداد/حذف]</button></div></div>`).join('');
+    }
+
+    // 4. تحديث قسم الموردين
+    const supList = document.getElementById('suppliers-list');
+    if (supList) {
+        supList.innerHTML = suppliers.length === 0 ? 'لا توجد مستحقات للموردين.' :
+            suppliers.map(s => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>المورد: ${s.name} (استحقاق: ${s.date})</span><div><strong style="color:#e65100;">${s.amount} ليرة</strong> <button onclick='deleteSupplier(${JSON.stringify(String(s.id))})' style="background:none; border:none; color:red; cursor:pointer; margin-right:8px;">[دفع/حذف]</button></div></div>`).join('');
+    }
+
+    // 5. تحديث مطابقة الصندوق ومؤشرات الأرباح والخسائر
+    const posTotalSales = document.getElementById('pos-total-sales');
+    const posTotalExp = document.getElementById('pos-total-exp');
+    const reportRevenue = document.getElementById('report-revenue');
+    const reportExpenses = document.getElementById('report-expenses');
+    const reportNet = document.getElementById('report-net');
+
+    if (posTotalSales) posTotalSales.innerText = `${totalSales} ليرة`;
+    if (posTotalExp) posTotalExp.innerText = `${totalExpenses} ليرة`;
+    if (reportRevenue) reportRevenue.innerText = `${totalSales} ليرة`;
+    if (reportExpenses) reportExpenses.innerText = `${totalExpenses + totalSuppliers} ليرة`;
+    if (reportNet) reportNet.innerText = `${totalSales - (totalExpenses + totalSuppliers)} ليرة`;
+}
+
+async function markOrderPaid(id) {
+    const order = getOrders().find(item => String(item.id) === String(id));
+    if (!order || order.status !== 'تم التوصيل' || order.paymentStatus === 'مدفوع') return;
+
+    const paidAt = Date.now();
+    const sale = {
+        orderId: String(order.id),
+        table: order.table,
+        total: Number(order.total) || 0,
+        paidAt,
+        time: formatWardDateTime(paidAt),
+        items: order.items.map(item => ({ name: item.name, qty: item.qty, price: item.price }))
+    };
+
+    try {
+        if (firebaseDatabase) {
+            await firebaseDatabase.ref().update({
+                [`orders/${String(order.id)}/paymentStatus`]: 'مدفوع',
+                [`orders/${String(order.id)}/paidAt`]: paidAt,
+                [`accounting/sales/${String(order.id)}`]: sale
+            });
+        } else {
+            const orders = readLocalOrders();
+            const localOrder = orders.find(item => String(item.id) === String(id));
+            localOrder.paymentStatus = 'مدفوع';
+            localOrder.paidAt = paidAt;
+            localStorage.setItem('cafe_ward_orders', JSON.stringify(orders));
+            const sales = getAccountingData().sales || [];
+            if (!sales.some(item => String(item.orderId) === String(order.id))) {
+                sales.unshift({ ...sale, id: String(order.id) });
+                localStorage.setItem('cafe_ward_sales', JSON.stringify(sales));
+            }
+        }
+        renderAccountingDashboard();
+    } catch (error) {
+        console.error('تعذر تسجيل دفع الفاتورة:', error);
+        alert('تعذر تأكيد الدفع. تحقق من اتصال قاعدة البيانات ثم أعد المحاولة.');
+    }
+}
+
+async function markTablePaid(table) {
+    const orderIds = getOrders()
+        .filter(order => String(order.table) === String(table) && order.status === 'تم التوصيل' && order.paymentStatus !== 'مدفوع')
+        .map(order => order.id);
+    if (!orderIds.length) return;
+    await Promise.all(orderIds.map(markOrderPaid));
+}
+
+function renderAccountingDashboard() {
+    const orders = getOrders();
+    const accounting = getAccountingData();
+    const expenses = accounting.expenses;
+    const clients = accounting.clients;
+    const suppliers = accounting.suppliers;
+    const unpaidInvoices = accounting.unpaid;
+    const cashMovements = accounting.cashMovements;
+    const salesLedger = accounting.sales || [];
+    const isClosed = accounting.dayClosed;
+
+    // المجاميع الحسابية
+    // لا تدخل المبيعات إلا بعد أن يؤكد المحاسب دفع الفاتورة.
+    let totalSales = salesLedger
+        .filter(sale => isTodayWard(sale.paidAt || sale.createdAt))
+        .reduce((sum, sale) => sum + (Number(sale.total) || 0), 0);
+    let totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    let totalSuppliers = suppliers.reduce((sum, s) => sum + s.amount, 0);
+    let totalClientsDue = clients.reduce((sum, c) => sum + c.amount, 0);
+
+    // 1. لوحة مهام اليوم
+    const tasksContainer = document.getElementById('tasks-container');
+    if (tasksContainer) {
+        tasksContainer.innerHTML = '';
+        let taskCount = 0;
+
+        if (!isClosed) {
+            taskCount++;
+            tasksContainer.innerHTML += `<article class="accounting-task task-blue"><div class="task-icon"><i class="fa-solid fa-cash-register"></i></div><div class="task-copy"><strong>إغلاق الصندوق</strong><span>المطابقة اليومية لم تُغلق بعد</span></div><button onclick="toggleCloseDay()">إغلاق الآن</button></article>`;
+        } else {
+            tasksContainer.innerHTML += `<article class="accounting-task task-green"><div class="task-icon"><i class="fa-solid fa-circle-check"></i></div><div class="task-copy"><strong>الصندوق مغلق</strong><span>تم تثبيت حسابات الوردية بنجاح</span></div><b class="task-done">مكتمل</b></article>`;
+        }
+
+        const deliveredUnpaid = orders.filter(order => order.status === 'تم التوصيل' && order.paymentStatus !== 'مدفوع');
+        if (deliveredUnpaid.length) {
+            taskCount++;
+            tasksContainer.innerHTML += `<article class="accounting-task task-orange"><div class="task-icon"><i class="fa-solid fa-receipt"></i></div><div class="task-copy"><strong>فواتير بانتظار الدفع</strong><span>${deliveredUnpaid.length} طلبات تم توصيلها وتحتاج تأكيد الحساب</span></div><a href="#restaurant-orders">عرض الفواتير</a></article>`;
+        }
+
+        if (unpaidInvoices.some(i => i.status === 'متأخرة')) {
+            taskCount++;
+            tasksContainer.innerHTML += `<article class="accounting-task task-red"><div class="task-icon"><i class="fa-solid fa-file-invoice"></i></div><div class="task-copy"><strong>فواتير متأخرة</strong><span>توجد فواتير غير مسددة تحتاج متابعة</span></div><a href="#unpaid-invoices-tbody">عرض التفاصيل</a></article>`;
+        }
+
+        if (totalSuppliers > 0) {
+            taskCount++;
+            tasksContainer.innerHTML += `<article class="accounting-task task-orange"><div class="task-icon"><i class="fa-solid fa-truck-field"></i></div><div class="task-copy"><strong>مستحقات الموردين</strong><span>إجمالي المستحقات ${totalSuppliers} ليرة</span></div><a href="#suppliers-list">عرض التفاصيل</a></article>`;
+        }
+
+        if (taskCount === 0) {
+            tasksContainer.innerHTML = '<div class="tasks-empty"><i class="fa-solid fa-circle-check"></i><strong>كل شيء مرتب</strong><span>لا توجد مهام معلقة حاليًا</span></div>';
+        }
+
+        const tasksCount = document.getElementById('tasks-count');
+        if (tasksCount) tasksCount.innerText = `${taskCount} ${taskCount === 1 ? 'مهمة' : 'مهام'}`;
+    }
+
+    // 2. تحديث قسم المصروفات
+    const expList = document.getElementById('expenses-list');
+    if (expList) {
         expList.innerHTML = expenses.length === 0 ? 'لا توجد مصروفات مسجلة.' :
             expenses.map(e => `<div style="display:flex; justify-content:space-between; background:#fafafa; padding:6px 10px; border-bottom:1px solid #eee;"><span>${e.title} (${e.category}) - ${e.time}</span><strong style="color:#e53935;">${e.amount} ليرة</strong></div>`).join('');
     }

@@ -1333,35 +1333,36 @@ body:has(#menu-grid) .hero::after { bottom: -28px; left: 8%; transform: rotate(2
 
 
 
-/* إشعار جاهزية الطلب الخاص بالزبون */
+/* إشعار جاهزية الطلب للزبون */
 .customer-ready-popup {
     position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 99999;
+    z-index: 999999;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
     background: #ffffff;
     border: 2px solid #e91e63;
-    padding: 14px 18px;
+    padding: 16px 22px;
     border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(233, 30, 99, 0.3);
+    box-shadow: 0 10px 30px rgba(233, 30, 99, 0.35);
     width: 90%;
     max-width: 400px;
+    direction: rtl;
     animation: dropDownBounce 0.5s ease forwards;
 }
 
 .customer-ready-popup .notice-icon {
     background: #e91e63;
     color: #fff;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     display: grid;
     place-items: center;
-    font-size: 18px;
+    font-size: 20px;
     flex-shrink: 0;
 }
 
@@ -1372,28 +1373,19 @@ body:has(#menu-grid) .hero::after { bottom: -28px; left: 8%; transform: rotate(2
 .customer-ready-popup .notice-text strong {
     display: block;
     color: #e91e63;
-    font-size: 14px;
-    margin-bottom: 2px;
+    font-size: 15px;
+    margin-bottom: 3px;
 }
 
 .customer-ready-popup .notice-text p {
     color: #444;
-    font-size: 12px;
+    font-size: 13px;
     margin: 0;
     line-height: 1.4;
 }
 
-.customer-ready-popup .notice-close {
-    background: transparent;
-    border: none;
-    font-size: 20px;
-    color: #888;
-    cursor: pointer;
-    padding: 0 5px;
-}
-
 @keyframes dropDownBounce {
-    0% { transform: translate(-50%, -50px); opacity: 0; }
+    0% { transform: translate(-50%, -60px); opacity: 0; }
     60% { transform: translate(-50%, 10px); opacity: 1; }
     100% { transform: translate(-50%, 0); opacity: 1; }
 }

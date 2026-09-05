@@ -2212,6 +2212,98 @@ body.menu-page .header-right {
 .hero-petal:nth-child(9) { left: 42%; width: 18px; height: 26px; animation-duration: 4.5s; animation-delay: 0.9s; }
 .hero-petal:nth-child(10) { left: 70%; width: 14px; height: 20px; animation-duration: 5.1s; animation-delay: 2.0s; }
 
+/* ===== تنسيق لوحة التحكم ===== */
+.admin-navbar, .top-buttons-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    background: #ffffff;
+    padding: 15px 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.admin-navbar button, .top-buttons-container a, .top-buttons-container button {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.admin-navbar button:hover, .top-buttons-container button:hover {
+    background-color: #e91e63;
+    color: white;
+    border-color: #e91e63;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(233, 30, 99, 0.2);
+}
+
+.products-list-container, .admin-box {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.product-row, .admin-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+}
+
+.product-row:hover {
+    background-color: #fafafa;
+}
+
+.product-row:last-child, .admin-item-row:last-child {
+    border-bottom: none;
+}
+
+.product-info, .admin-item-info {
+    font-size: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.product-price-tag {
+    color: #e91e63;
+    font-weight: bold;
+    margin-left: 15px;
+}
+
+.delete-btn, button.delete {
+    background-color: #fff1f2;
+    color: #e11d48;
+    border: 1px solid #fecdd3;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.delete-btn:hover, button.delete:hover {
+    background-color: #e11d48;
+    color: white;
+    box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);
+}
+
 
 
 

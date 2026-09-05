@@ -346,11 +346,11 @@ function filterMenu(category) {
     }
 }
 
-async function changeTable(value) {
+function changeTable(value) {
     const newTable = String(value);
-    const status = await getTableStatus(newTable);
+    const status = getLocalTableStatus(newTable);
     
-    if (status.status === 'occupied') {
+    if (status && status.status === 'occupied') {
         alert(`الطاولة رقم ${newTable} محجوزة حالياً. يرجى اختيار طاولة أخرى.`);
         const selector = document.getElementById('table-selector');
         if (selector) selector.value = tableNumber;
@@ -371,8 +371,9 @@ function updateTableLabel() {
 
 function addToCart(id) {
     const menu = getMenu();
-    const item = menu.find(i => i.id === id);
-    const existing = cart.find(i => i.id === id);
+    const item = menu.find(i => String(i.id) === String(id));
+    if (!item) return;
+    const existing = cart.find(i => String(i.id) === String(id));
     if (existing) {
         existing.qty += 1;
     } else {

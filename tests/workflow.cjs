@@ -12,17 +12,31 @@ function create(page='pos', remote=false, options={}){
  if(nodes.has('pos-method'))nodes.get('pos-method').value='cash';
  const localStorage=options.localStorage || storage(), sessionStorage=options.sessionStorage || storage();sessionStorage.setItem('isLoggedIn','true');
  const header=html.includes('<header>')?new Element():null;
- let state={orders:{},tables:{},accounting:{sales:{}}},reject=false;
- const snapshot=path=>{const value=path?state[path]:state;return {val:()=>structuredClone(value),exists:()=>!!value};};
- const db={ref:(path='')=>({once:async()=>snapshot(path),on:()=>{},transaction:async change=>{
-   if(reject)throw Error('PERMISSION_DENIED');
-   const next=change(structuredClone(state));if(next===undefined)return {committed:false};state=next;return {committed:true};
- }})};
+ const remoteStore=options.remoteStore || {state:{orders:{},tables:{},accounting:{sales:{}}},listeners:[]};
+ let reject=false;
+ const read=path=>path.split('/').filter(Boolean).reduce((value,key)=>value?.[key],remoteStore.state) ?? null;
+ const snapshot=path=>{const value=structuredClone(read(path));return {val:()=>value,exists:()=>value!==null};};
+ const ref=(path='')=>({
+   child:key=>ref([path,String(key)].filter(Boolean).join('/')),
+   once:async()=>snapshot(path),
+   on:(event,callback)=>{remoteStore.listeners.push({path,callback});callback(snapshot(path));},
+   transaction:async change=>{
+     const next=change(structuredClone(read(path)));
+     if(next===undefined)return {committed:false,snapshot:snapshot(path)};
+     if(reject)throw Error('PERMISSION_DENIED'); // Reject the entire proposed write, not individual fields.
+     if(!path)remoteStore.state=next;
+     else {const keys=path.split('/'),leaf=keys.pop();let parent=remoteStore.state;for(const key of keys)parent=parent[key] ||= {};parent[leaf]=next;}
+     const committed=snapshot(path);
+     for(const listener of remoteStore.listeners)listener.callback(snapshot(listener.path));
+     return {committed:true,snapshot:committed};
+   }
+ });
+ const db={ref};
  const context=vm.createContext({console:{log(){},warn(){},error(){}},crypto:webcrypto,localStorage,sessionStorage,URLSearchParams,Intl,Date,Math,Map,Set,JSON,Event,Number,Promise,navigator:{locks:{request:async(_,fn)=>fn()}},setTimeout:()=>0,clearTimeout(){},setInterval:()=>0,alert(){},confirm:()=>true,prompt:()=>null,
   document:{body:new Element(),getElementById:id=>nodes.get(id)||null,createElement:()=>new Element(),querySelector:selector=>selector==='header'?header:null,querySelectorAll:()=>[],addEventListener(){}},location:{pathname:'/'+(page==='menu'?'index':page)+'.html',search:options.search ?? '?table=12'},firebaseDatabase:remote?db:null,firebaseConfigured:remote});
  context.window=context;context.addEventListener=(name,fn)=>(events[name] ||= []).push(fn);context.dispatchEvent=event=>{for(const fn of events[event.type]||[])fn(event);};
  for(const file of ['common',page])vm.runInContext(fs.readFileSync('js/'+file+'.js','utf8'),context,{filename:file+'.js'});
- return {context,nodes,run:code=>vm.runInContext(code,context),state:()=>remote?state:{orders:JSON.parse(localStorage.getItem('cafe_ward_orders')||'[]'),tables:Object.fromEntries(Array.from({length:20},(_,i)=>[i+1,JSON.parse(localStorage.getItem('cafe_ward_table_'+(i+1))||'null')])),accounting:{sales:JSON.parse(localStorage.getItem('cafe_ward_sales')||'[]')}},setReject:()=>reject=true};
+ return {context,nodes,remoteStore,run:code=>vm.runInContext(code,context),state:()=>remote?remoteStore.state:{orders:JSON.parse(localStorage.getItem('cafe_ward_orders')||'[]'),tables:Object.fromEntries(Array.from({length:20},(_,i)=>[i+1,JSON.parse(localStorage.getItem('cafe_ward_table_'+(i+1))||'null')])),accounting:{sales:JSON.parse(localStorage.getItem('cafe_ward_sales')||'[]')}},setReject:()=>reject=true};
 }
 async function workflow(remote){
  const t=create('pos',remote),run=t.run;
@@ -45,6 +59,7 @@ async function workflow(remote){
  await assert.rejects(()=>run("collectTablePayment('18',139,'cash')"));
  assert.equal(Object.values(t.state().accounting.sales).length,0);
  const receipt=await run("collectTablePayment('18',150,'cash')");assert.equal(receipt.total,140);assert.equal(receipt.change,10);
+ assert.ok(!t.state().tables['18'],'Payment must free the table in the same commit');
  assert.equal(Object.values(t.state().accounting.sales).length,2);
  await assert.rejects(()=>run("collectTablePayment('18',150,'cash')"));assert.equal(Object.values(t.state().accounting.sales).length,2);
  await run("releaseTable('18')");assert.ok(!t.state().tables['18']);
@@ -57,33 +72,36 @@ async function posInterface() {
  const order=await t.run("submitOrder('12',[{id:1,qty:2}])");t.context.orderId=order.id;
  await t.run("transitionOrder(orderId,'قيد التحضير','جاهز')");
  await t.run("transitionOrder(orderId,'جاهز','تم التوصيل')");
- t.run("selectPosTable('12');setPosAmount(posTotal())");
- assert.equal(t.nodes.get('pos-received').value,'80.00');
+ const amount=value=>{t.nodes.get('pos-received').value=String(value);t.run('updatePosChange()');};
+ t.run("selectPosTable('12')");amount(80);
+ assert.match(t.nodes.get('pos-items').innerHTML,/سعر الوحدة: 40.00/);
+ assert.match(t.nodes.get('pos-items').innerHTML,new RegExp(order.id));
+ assert.match(t.nodes.get('pos-items').innerHTML,/الكمية: 2/);
+ assert.match(t.nodes.get('pos-items').innerHTML,/حالة الطلب: تم التوصيل/);
  assert.equal(t.nodes.get('pos-change').textContent,'0.00 ليرة');
- assert.ok(t.nodes.get('pos-amounts').children.some(button=>button.textContent==='100 ليرة'));
- t.run('setPosAmount(100)');assert.equal(t.nodes.get('pos-change').textContent,'20.00 ليرة');
- t.run('setPosAmount(50)');assert.match(t.nodes.get('pos-shortfall').textContent,/30.00/);
+ amount(100);assert.equal(t.nodes.get('pos-change').textContent,'20.00 ليرة');
+ amount(50);
  await t.run('paySelectedTable()');assert.equal(t.state().accounting.sales.length,0);
- assert.equal(t.nodes.get('pos-success').hidden,true);
- t.run("setPosMethod('card')");assert.equal(t.nodes.get('pos-cash-fields').hidden,true);
- assert.equal(t.nodes.get('pos-card').getAttribute('aria-pressed'),'true');
- t.run("setPosMethod('cash');setPosAmount(100)");
+ assert.match(t.nodes.get('pos-feedback').textContent,/أقل من إجمالي/);
+ t.run("setPosMethod('card')");assert.equal(t.nodes.get('pos-received').disabled,true);
+ t.run("setPosMethod('cash')");amount(100);
  let releaseSave, attempts=0;
  t.context.navigator.locks.request=async(name,change)=>{attempts++;await new Promise(resolve=>{releaseSave=resolve;});return change();};
  const pending=t.run("handlePosShortcut({key:'F9',preventDefault(){}})");
  assert.equal(t.run('paymentBusy'),true);
- for(const id of ['pos-pay','pos-cash','pos-card','pos-exact','pos-received'])assert.equal(t.nodes.get(id).disabled,true,id);
+ for(const id of ['pos-pay','pos-method','pos-received'])assert.equal(t.nodes.get(id).disabled,true,id);
  assert.equal(t.nodes.get('pos-payment').getAttribute('aria-busy'),'true');
  assert.ok(t.nodes.get('pos-tables').children.every(button=>button.disabled));
  await t.run('paySelectedTable()');
- t.run("selectPosTable('5');setPosMethod('card');setPosAmount(200)");
+ t.run("selectPosTable('5');setPosMethod('card')");
  assert.equal(t.run('selectedTable'),'12');assert.equal(t.nodes.get('pos-method').value,'cash');
  assert.equal(attempts,1);assert.equal(t.state().accounting.sales.length,0);
- assert.equal(t.nodes.get('pos-success').hidden,true);
+ assert.doesNotMatch(t.nodes.get('pos-feedback').textContent,/تم الدفع/);
  releaseSave();await pending;
  assert.equal(t.state().accounting.sales.length,1);
- assert.equal(t.nodes.get('pos-success').hidden,false);
- assert.match(t.nodes.get('pos-success-details').textContent,/80.00.*20.00.*نقداً/);
+ assert.match(t.nodes.get('pos-feedback').textContent,/تم الدفع.*80.00.*20.00.*نقداً/);
+ assert.equal(t.state().tables['12'],null);
+ assert.equal(t.nodes.get('pos-tables').children.length,0);
  assert.match(t.nodes.get('pos-title').textContent,/فاتورة مدفوعة/);
  assert.equal(t.nodes.get('pos-payment').hidden,true);
  assert.equal(t.run('paymentBusy'),false);
@@ -93,19 +111,70 @@ async function posInterface() {
  await t.run("transitionOrder(orderId,'قيد التحضير','جاهز')");await t.run("transitionOrder(orderId,'جاهز','تم التوصيل')");
  t.run("selectPosTable('5');setPosMethod('card')");
  assert.equal(t.nodes.get('pos-payment').hidden,false);
- assert.equal(t.nodes.get('pos-success').hidden,true);
+ assert.doesNotMatch(t.nodes.get('pos-feedback').textContent,/تم الدفع/);
  t.run("handlePosShortcut({key:'F12',preventDefault(){throw Error('F12 must remain native')}})");
  assert.equal(t.state().accounting.sales.length,1);
  t.context.navigator.locks.request=async()=>{throw Error('حفظ غير متاح');};
  await t.run('paySelectedTable()');
- assert.equal(t.nodes.get('pos-success').hidden,true);assert.equal(t.state().accounting.sales.length,1);
+ assert.doesNotMatch(t.nodes.get('pos-feedback').textContent,/تم الدفع/);assert.equal(t.state().accounting.sales.length,1);
+ assert.ok(t.state().tables['5']);
  assert.equal(t.nodes.get('pos-pay').disabled,false);assert.equal(t.run('paymentBusy'),false);
  assert.match(t.nodes.get('pos-feedback').textContent,/حفظ غير متاح/);
  t.context.navigator.locks.request=async(name,change)=>change();
  await t.run('paySelectedTable()');
  assert.equal(t.state().accounting.sales.length,2);
- assert.match(t.nodes.get('pos-success-details').textContent,/40.00.*0.00.*بطاقة/);
- console.log('PASS POS cash shortcuts/change, F9, card, save locking, success receipt and retry after failure');
+ assert.match(t.nodes.get('pos-feedback').textContent,/40.00.*0.00.*بطاقة/);
+ assert.equal(t.state().tables['5'],null);
+ console.log('PASS POS current select/input UI, order details, F9, cash/card, save locking, receipt and retry after failure');
+}
+async function posAtomicAndLegacy() {
+ const t=create('pos',true);t.context.dispatchEvent(new Event('DOMContentLoaded'));
+ // Legacy storage keys differ from logical IDs; another order has no id at all.
+ t.state().orders={legacyKey:{table:'12',status:'تم التوصيل',total:40,items:[{name:'لاتيه',qty:1,price:40}]},otherKey:{id:'logical-2',table:'12',status:'تم التوصيل',total:60,items:[{name:'كيك',qty:2,price:30}]}};
+ t.state().tables={'12':{status:'occupied',table:'12'}};
+ // Read the current snapshot using the same public subscription as the page.
+ t.run('ordersRealtimeStarted=false;startOrdersRealtime();selectPosTable("12")');
+ assert.match(t.nodes.get('pos-items').innerHTML,/legacyKey/);assert.match(t.nodes.get('pos-items').innerHTML,/logical-2/);
+ assert.match(t.nodes.get('pos-items').innerHTML,/سعر الوحدة: 30.00/);
+ const before=JSON.stringify(t.state());
+ const failing=create('pos',true,{remoteStore:t.remoteStore});failing.context.dispatchEvent(new Event('DOMContentLoaded'));
+ failing.run('selectPosTable("12")');failing.nodes.get('pos-received').value='100';failing.setReject();
+ await failing.run('paySelectedTable()');
+ assert.equal(JSON.stringify(t.state()),before);assert.match(failing.nodes.get('pos-feedback').textContent,/لم يتم تأكيد الدفع/);
+ assert.doesNotMatch(failing.nodes.get('pos-feedback').textContent,/تم الدفع وتسجيل/);
+ assert.equal(failing.run('selectedTable'),'12');assert.ok(t.state().tables['12']);
+ const second=create('pos',true,{remoteStore:t.remoteStore});second.context.dispatchEvent(new Event('DOMContentLoaded'));
+ const results=await Promise.allSettled([t.run("collectTablePayment('12',100,'cash')"),second.run("collectTablePayment('12',100,'cash')")]);
+ assert.equal(results.filter(result=>result.status==='fulfilled').length,1);
+ assert.equal(Object.keys(t.state().accounting.sales).length,2);assert.ok(!t.state().tables['12']);
+ assert.equal(t.state().orders.legacyKey.id,undefined,'No legacy ID migration');
+ assert.equal(t.state().orders.otherKey.id,'logical-2');
+ for(const key of ['legacyKey','otherKey']) {assert.equal(t.state().orders[key].paymentStatus,'مدفوع');assert.equal(t.state().orders[key].paymentMethod,'cash');assert.ok(t.state().orders[key].paidAt);}
+ assert.equal(t.state().accounting.sales.legacyKey.orderId,'legacyKey');assert.equal(t.state().accounting.sales['logical-2'].total,60);
+ assert.equal(t.run("payableOrders('12').length"),0);
+ // Verify legacy explicit firebaseKey in local storage as well.
+ const local=create('pos');local.context.localStorage.setItem('cafe_ward_orders',JSON.stringify([{firebaseKey:'old-key',table:'3',status:'تم التوصيل',total:50,items:[]}]));
+ local.run("setLocalTableStatus('3',{table:'3',status:'occupied'})");
+ const saved=local.context.localStorage.setItem;let failed=false;
+ local.context.localStorage.setItem=(key,value)=>{if(key==='cafe_ward_sales'&&!failed){failed=true;throw Error('Storage full');}saved(key,value);};
+ await assert.rejects(()=>local.run("collectTablePayment('3',50,'cash')"));
+ assert.notEqual(local.state().orders[0].paymentStatus,'مدفوع');assert.ok(local.state().tables['3']);assert.equal(local.state().accounting.sales.length,0);
+ local.context.localStorage.setItem=saved;
+ await local.run("collectTablePayment('3',0,'card')");
+ assert.equal(local.state().accounting.sales[0].orderId,'old-key');assert.equal(local.state().accounting.sales[0].paymentMethod,'card');assert.equal(local.state().tables['3'],null);
+ // A new order arriving after the cashier reviewed the bill must not be charged silently.
+ const stale=create('pos');const order=await stale.run("submitOrder('4',[{id:1,qty:1}])");stale.context.orderId=order.id;
+ await stale.run("transitionOrder(orderId,'قيد التحضير','جاهز')");await stale.run("transitionOrder(orderId,'جاهز','تم التوصيل')");
+ stale.run("selectPosTable('4')");stale.nodes.get('pos-received').value='100';
+ let commit;stale.context.navigator.locks.request=async(name,change)=>{await new Promise(resolve=>{commit=resolve;});return change();};
+ const pending=stale.run('paySelectedTable()');
+ stale.run("localStorage.setItem('cafe_ward_orders',JSON.stringify([...readLocalOrders(),{id:'new-order',table:'4',status:'تم التوصيل',total:40,items:[]}]))");
+ commit();await pending;
+ assert.equal(stale.state().accounting.sales.length,0);assert.ok(stale.state().tables['4']);assert.match(stale.nodes.get('pos-feedback').textContent,/تغيّرت طلبات/);
+ // Every literal element dependency must exist in the current POS, not a retired design.
+ const html=fs.readFileSync('pos.html','utf8'),source=fs.readFileSync('js/pos.js','utf8');
+ for(const match of source.matchAll(/getElementById\('([^']+)'\)/g))assert.ok(html.includes('id="'+match[1]+'"'),match[1]);
+ console.log('PASS POS legacy keys, missing IDs, concurrent cashiers, atomic Firebase rejection/local rollback, changed invoice and DOM contract');
 }
 async function menuInterface() {
  for(const value of ['1','12','20']) {
@@ -215,6 +284,7 @@ async function waiterInterface() {
 (async()=>{
  for(const remote of [false,true])await workflow(remote);
  await posInterface();
+ await posAtomicAndLegacy();
  await menuInterface();
  await waiterInterface();
  const accounting=create('accounting');

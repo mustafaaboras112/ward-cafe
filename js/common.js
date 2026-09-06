@@ -17,6 +17,26 @@ function customerId() {
     return id;
 }
 
+// The storage key is not necessarily the displayed legacy order ID.
+function getOrderIdentity(order, storedKey) {
+    const firebaseKey = String(storedKey ?? order.firebaseKey ?? order.id ?? '');
+    return {firebaseKey, orderId: String(order.id || firebaseKey)};
+}
+
+// Local multi-key writes stay logically uncommitted until the journal is removed.
+function readWardStorage(key) {
+    const journal = JSON.parse(localStorage.getItem('cafe_ward_pending_write') || 'null');
+    return journal && Object.prototype.hasOwnProperty.call(journal, key) ? journal[key] : localStorage.getItem(key);
+}
+function recoverWardWrite() {
+    const journal = JSON.parse(localStorage.getItem('cafe_ward_pending_write') || 'null');
+    if (!journal) return;
+    for (const [key, value] of Object.entries(journal)) {
+        if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value);
+    }
+    localStorage.removeItem('cafe_ward_pending_write');
+}
+
 // A single transaction keeps reservations, orders and paid sales consistent.
 // With Firebase configured, failures are surfaced; no local success is fabricated.
 async function changeCafeState(change) {
@@ -33,19 +53,44 @@ async function changeCafeState(change) {
             catch (error) { failure = error; return undefined; }
         }, undefined, false);
         if (!result.committed) throw failure || new Error('تعذر حفظ العملية، أعد المحاولة.');
+        // Use the committed snapshot, including legacy keys, before refreshing POS.
+        const saved = result.snapshot.val() || {};
+        liveOrders = Object.entries(saved.orders || {}).map(([key, order]) => ({...order, id:getOrderIdentity(order,key).orderId, firebaseKey:key}));
+        liveAccounting.sales = Object.entries(saved.accounting?.sales || {}).map(([id,sale])=>({...sale,id}));
+        try {
+            for (let n=1;n<=TABLE_COUNT;n++) {
+                if(saved.tables?.[n]) setLocalTableStatus(n,saved.tables[n]); else clearLocalTableStatus(n);
+            }
+        } catch(error) { console.warn('تم الحفظ في Firebase، لكن تعذر تحديث نسخة الطاولات المحلية.',error); }
+        renderAllOrderScreens(); updateTableSelectorUI();
+        window.dispatchEvent(new Event('ward:accounting'));
         return;
     }
     const perform = () => {
+        recoverWardWrite();
         const state = {
-            orders: Object.fromEntries(readLocalOrders().map(order => [String(order.id), order])),
+            orders: Object.fromEntries(readLocalOrders().map(order => [getOrderIdentity(order).firebaseKey, order])),
             tables: {}, accounting: { dayClosed:getAccountingData().dayClosed, sales: Object.fromEntries(getAccountingData().sales.map(sale => [String(sale.orderId || sale.id), sale])) }
         };
         for (let n=1; n<=TABLE_COUNT; n++) { const table=getLocalTableStatus(n); if(table) state.tables[n]=table; }
         change(state);
-        localStorage.setItem('cafe_ward_orders',JSON.stringify(Object.values(state.orders)));
-        localStorage.setItem('cafe_ward_sales',JSON.stringify(Object.values(state.accounting.sales || {})));
+        const writes = {
+            cafe_ward_orders: JSON.stringify(Object.values(state.orders)),
+            cafe_ward_sales: JSON.stringify(Object.values(state.accounting.sales || {}))
+        };
         for(let n=1;n<=TABLE_COUNT;n++) {
-            if(state.tables[n]) setLocalTableStatus(n,state.tables[n]); else clearLocalTableStatus(n);
+            writes['cafe_ward_table_'+n] = state.tables[n] ? JSON.stringify(state.tables[n]) : null;
+        }
+        const previous = Object.fromEntries(Object.keys(writes).map(key=>[key,localStorage.getItem(key)]));
+        localStorage.setItem('cafe_ward_pending_write',JSON.stringify(previous));
+        try {
+            for(const [key,value] of Object.entries(writes)) {
+                if(value===null) localStorage.removeItem(key);else localStorage.setItem(key,value);
+            }
+            localStorage.removeItem('cafe_ward_pending_write');
+        } catch(error) {
+            try {recoverWardWrite();} catch { /* Readers keep using the journal's pre-payment values. */ }
+            throw error;
         }
         renderAllOrderScreens(); updateTableSelectorUI();
         window.dispatchEvent(new Event('ward:accounting'));
@@ -343,7 +388,7 @@ function getAccountingData() {
         clients: JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]'),
         suppliers: JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]'),
         unpaid: JSON.parse(localStorage.getItem('cafe_ward_unpaid') || '[]'),
-        sales: JSON.parse(localStorage.getItem('cafe_ward_sales') || '[]'),
+        sales: JSON.parse(readWardStorage('cafe_ward_sales') || '[]'),
         cashMovements: JSON.parse(localStorage.getItem('cafe_ward_cash_mov') || '[]'),
         dayClosed: localStorage.getItem('cafe_ward_day_closed') === 'true'
     };
@@ -390,7 +435,7 @@ async function removeAccountingRecord(collection, id) {
 }
 
 function readLocalOrders() {
-    return JSON.parse(localStorage.getItem('cafe_ward_orders') || '[]');
+    return JSON.parse(readWardStorage('cafe_ward_orders') || '[]');
 }
 
 function renderAllOrderScreens() { window.dispatchEvent(new Event('ward:orders')); }
@@ -412,7 +457,7 @@ function startOrdersRealtime() {
 
     ordersRef.on('value', snapshot => {
         liveOrders = Object.entries(snapshot.val() || {})
-            .map(([key, order]) => ({ ...order, id: order.id || key, firebaseKey: key }))
+            .map(([key, order]) => ({ ...order, id: getOrderIdentity(order,key).orderId, firebaseKey: key }))
             .sort((first, second) => (second.createdAt || 0) - (first.createdAt || 0));
         renderAllOrderScreens();
 
@@ -511,7 +556,7 @@ function addCafeNavigation() {
 }
 
 function getLocalTableStatus(tableNumber) {
-    const stored = localStorage.getItem(`cafe_ward_table_${String(tableNumber)}`);
+    const stored = readWardStorage(`cafe_ward_table_${String(tableNumber)}`);
     return stored ? JSON.parse(stored) : null;
 }
 

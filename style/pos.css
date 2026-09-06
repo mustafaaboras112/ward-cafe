@@ -409,3 +409,4 @@
         width: 100%;
     }
 }
+.pos-page [hidden]{display:none!important}.pos-order{padding:16px 0;border-bottom:2px solid #efdae2}.pos-order h3{font-size:17px;overflow-wrap:anywhere}.pos-order-status{color:#805364;font-size:14px;margin:8px 0}.pos-order .pos-line{display:flex;justify-content:space-between;align-items:start;gap:12px;padding:10px 0}.pos-order .pos-line>div{min-width:0;overflow-wrap:anywhere}.pos-order small{display:block;margin-top:6px;line-height:1.7}.pos-order-total{font-weight:800;text-align:end}.pos-empty{padding:18px;color:#806a72}.pos-feedback{white-space:normal;overflow-wrap:anywhere}.pos-page button:disabled{cursor:not-allowed;opacity:.6}@media print{.pos-shell-header,.pos-hero,.pos-tables-panel,.pos-payment-card,.pos-print-btn{display:none!important}.pos-workspace{display:block}.pos-checkout-panel{box-shadow:none;border:0}}

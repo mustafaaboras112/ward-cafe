@@ -1,102 +1,57 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كافيه ورد — الكاشير</title>
+    <title>كافيه ورد — نقطة البيع</title>
     <link rel="stylesheet" href="style/common.css">
     <link rel="stylesheet" href="style/pos.css">
 </head>
 <body class="pos-page">
     <header class="pos-shell-header">
-        <div class="logo" aria-label="شعار كافيه ورد">
-            <img src="q.png" alt="كافيه ورد">
-        </div>
+        <div class="pos-brand"><img src="q.png" alt="كافيه ورد"><span>نقطة البيع<small>WARD CAFÉ · POS</small></span></div>
+        <div class="pos-account"><strong id="pos-header-table">اختر طاولة</strong><span id="pos-account-status">جاهز للعمل</span></div>
+        <nav id="cafe-main-nav" aria-label="تنقل الكاشير"><a href="index.html">رجوع</a><button id="pos-back-tables" type="button">▦ العودة للطاولات</button></nav>
+        <time id="pos-clock" aria-label="الوقت الحالي"></time>
     </header>
-
     <main class="pos-shell">
-        <section class="pos-hero">
-            <div>
-                <span class="pos-eyebrow">نقطة البيع</span>
-                <h1>الكاشير</h1>
-                <p>اختَر الطاولة، راجع الفاتورة، ثم ثبّت عملية الدفع.</p>
-            </div>
-            <div class="pos-hero-badge">كافيه ورد</div>
-        </section>
-
-        <div class="pos-workspace">
-            <aside class="pos-tables-panel">
-                <div class="pos-panel-heading">
-                    <div>
-                        <span class="pos-section-kicker">الطاولات</span>
-                        <h2>الحسابات المفتوحة</h2>
-                    </div>
-                </div>
-                <p class="pos-panel-note">الحساب يصبح جاهزاً للتحصيل بعد تأكيد التوصيل من الكارسون.</p>
+        <section class="pos-catalog-panel" aria-label="الطاولات والأصناف">
+            <div class="pos-catalog-heading"><div><p class="pos-kicker">مساحة العمل</p><h1 id="pos-work-title">اختر الطاولة</h1></div><div class="pos-view-switch"><button id="pos-show-tables" type="button" aria-pressed="true">الطاولات</button><button id="pos-show-menu" type="button" aria-pressed="false">الأصناف</button></div></div>
+            <section id="pos-tables-view" class="pos-table-view" aria-label="قائمة الطاولات">
+                <div class="pos-table-legend"><span class="empty">فارغة</span><span class="occupied">مشغولة</span><span class="ready">جاهزة للدفع</span></div>
                 <div id="pos-tables" class="pos-table-list"></div>
-            </aside>
-
-            <section class="pos-checkout-panel">
-                <div class="pos-invoice-head">
-                    <div>
-                        <span class="pos-section-kicker">الفاتورة الحالية</span>
-                        <h2 id="pos-title">اختر طاولة لعرض الفاتورة</h2>
-                    </div>
-                    <button id="pos-print" class="pos-print-btn" type="button">طباعة الفاتورة</button>
-                </div>
-
-                <div class="pos-receipt">
-                    <div class="pos-receipt-labels">
-                        <span>الصنف</span>
-                        <span>القيمة</span>
-                    </div>
-                    <div id="pos-items" class="pos-items"></div>
-
-                    <div class="pos-total-card">
-                        <span>الإجمالي</span>
-                        <strong id="pos-total">0.00 ليرة</strong>
-                    </div>
-                </div>
-
-                <form id="pos-payment" class="pos-payment-card">
-                    <div class="pos-payment-title">
-                        <div>
-                            <span class="pos-section-kicker">الدفع</span>
-                            <h3>إتمام التحصيل</h3>
-                        </div>
-                        <span class="pos-secure-badge">عملية واحدة</span>
-                    </div>
-
-                    <div class="pos-field">
-                        <label for="pos-method">طريقة الدفع</label>
-                        <select id="pos-method">
-                            <option value="cash">نقداً</option>
-                            <option value="card">بطاقة — تم التحصيل على الجهاز</option>
-                        </select>
-                    </div>
-
-                    <div class="pos-cash-grid">
-                        <div class="pos-field">
-                            <label for="pos-received">المبلغ المستلم نقداً</label>
-                            <input id="pos-received" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00">
-                        </div>
-                        <div class="pos-change-box">
-                            <span>الباقي للعميل</span>
-                            <strong id="pos-change">0.00 ليرة</strong>
-                        </div>
-                    </div>
-
-                    <button id="pos-pay" class="pos-pay-btn" type="submit" disabled>
-                        <span>تأكيد استلام الدفع</span>
-                        <small>إغلاق الفاتورة وتسجيل المبيعات</small>
-                    </button>
-
-                </form>
-                <p id="pos-feedback" class="pos-feedback" role="status" aria-live="polite"></p>
+                <p class="pos-panel-note">التحصيل متاح بعد تأكيد توصيل جميع طلبات الطاولة.</p>
             </section>
-        </div>
+            <section id="pos-menu-view" class="pos-menu-view" aria-label="اختيار الأصناف" hidden>
+                <label class="pos-search"><span>⌕</span><input id="pos-search" type="search" placeholder="ابحث عن صنف…" aria-label="بحث سريع عن صنف"></label>
+                <div id="pos-categories" class="pos-categories" aria-label="تصنيفات المنيو"></div>
+                <div id="pos-products" class="pos-product-grid"></div>
+                <div class="pos-catalog-footer"><span id="pos-product-count"></span><span>لمسة واحدة لإضافة الصنف</span></div>
+            </section>
+        </section>
+        <aside class="pos-checkout-panel" aria-label="الفاتورة الحالية">
+            <div class="pos-print-heading"><img src="q.png" alt="كافيه ورد"><strong>كافيه ورد</strong></div>
+            <div class="pos-invoice-head"><div><p class="pos-kicker">الفاتورة الحالية</p><h2 id="pos-title">لم تُحدَّد طاولة</h2></div><span id="pos-item-count" class="pos-count">0 صنف</span></div>
+            <p id="pos-receipt-meta" class="pos-print-meta"></p>
+            <div class="pos-receipt-labels" aria-hidden="true"><span>الصنف / سعر الوحدة</span><span>الكمية</span><span>المجموع</span></div>
+            <div id="pos-items" class="pos-items"></div>
+            <div class="pos-settlement">
+                <p id="pos-draft-note" class="pos-draft-note" hidden>الأصناف الجديدة لم تُرسل للمطبخ بعد.</p>
+                <div id="pos-discount-row" class="pos-discount" hidden><span>الخصم المسجل</span><strong id="pos-discount"></strong></div>
+                <div class="pos-total-card"><span>الإجمالي <small>ليرة</small></span><strong id="pos-total">0.00</strong></div>
+                <form id="pos-payment" class="pos-payment-card">
+                    <label class="pos-sr-only" for="pos-method">طريقة الدفع</label><select id="pos-method" hidden><option value="cash">نقدي</option><option value="card">بطاقة</option></select>
+                    <div class="pos-methods" role="group" aria-label="طريقة الدفع"><button id="pos-cash" type="button" aria-pressed="true">▤ نقدي</button><button id="pos-card" type="button" aria-pressed="false">▣ بطاقة</button></div>
+                    <div class="pos-cash-grid"><div class="pos-field"><label for="pos-received">المبلغ المستلم</label><div class="pos-received-input"><input id="pos-received" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><button id="pos-exact" type="button" title="استلام المبلغ المطابق للإجمالي">المطابق</button></div></div><div class="pos-change-box"><span>الباقي للعميل</span><strong id="pos-change">0.00 ليرة</strong></div></div>
+                    <p id="pos-payment-hint" class="pos-payment-hint"></p>
+                    <button id="pos-pay" class="pos-pay-btn" type="submit" disabled>تأكيد الدفع · F9</button>
+                </form>
+                <button id="pos-send" class="pos-send-btn" type="button" hidden>إرسال الطلب للمطبخ</button>
+                <div class="pos-actions"><button id="pos-print" type="button" disabled>طباعة الفاتورة</button><button id="pos-hold" type="button" disabled>تعليق الحساب</button><button id="pos-cancel" type="button" disabled>إلغاء السلة</button></div>
+                <p id="pos-feedback" class="pos-feedback" role="status" aria-live="polite"></p>
+            </div>
+        </aside>
     </main>
-
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>

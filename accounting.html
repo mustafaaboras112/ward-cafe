@@ -3,227 +3,1131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام المحاسبي الذكي - كافيه ورد</title>
-    <link rel="stylesheet" href="style/common.css">
+
     <link rel="stylesheet" href="style/accounting.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <title>كافيه ورد — النظام المحاسبي</title>
 </head>
-<body>
-    <header>
-        <div class="logo" aria-label="شعار كافيه ورد"><img src="q.png" alt="كافيه ورد"></div>
+
+</body>
+</html>
+
+
+
+<div class="app">
+
+<!-- =========================
+     القائمة
+========================= -->
+
+
+<aside class="sidebar">
+
+    <div class="brand">
+
+        <div class="logo">🌸</div>
+
         <div>
-            <a href="admin.html" style="background:var(--primary); color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">لوحة الإدارة</a>
-            <a href="waiter.html" style="background:#333; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">شاشة الكارسون</a>
-            <a href="index.html" style="background:#555; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold;">المنيو</a>
+            <strong>كافيه ورد</strong>
+            <small>النظام المحاسبي</small>
         </div>
-    </header>
 
-    <main style="max-width: 1200px; margin: 30px auto; padding: 0 20px;">
+    </div>
 
-        <section class="dashboard-kpis" aria-label="ملخص اليوم">
-            <div class="kpi-card kpi-sales">
-                <span>إجمالي المبيعات</span>
-                <strong id="dashboard-sales">0 ليرة</strong>
-                <small>إيرادات الطلبات المسجلة</small>
-            </div>
-            <div class="kpi-card kpi-expenses">
-                <span>إجمالي المصروفات</span>
-                <strong id="dashboard-expenses">0 ليرة</strong>
-                <small>المصروفات التشغيلية</small>
-            </div>
-            <div class="kpi-card kpi-suppliers">
-                <span>مستحقات الموردين</span>
-                <strong id="dashboard-suppliers">0 ليرة</strong>
-                <small>دفعات تحتاج متابعة</small>
-            </div>
-            <div class="kpi-card kpi-profit">
-                <span>صافي الربح</span>
-                <strong id="dashboard-profit">0 ليرة</strong>
-                <small>بعد خصم المصروفات</small>
-            </div>
-        </section>
 
-        <!-- مركز المهام والتنبيهات -->
-        <div class="section-box accounting-tasks-box">
-            <div class="tasks-heading">
+    <nav class="nav">
+
+        <button class="active" data-page="dashboard">
+            🏠 <span>الرئيسية</span>
+        </button>
+
+        <button data-page="sales">
+            🧾 <span>المبيعات</span>
+        </button>
+
+        <button data-page="purchases">
+            🛒 <span>المشتريات</span>
+        </button>
+
+        <button data-page="cashbox">
+            💰 <span>الصندوق</span>
+        </button>
+
+        <button data-page="expenses">
+            💸 <span>المصروفات</span>
+        </button>
+
+        <button data-page="customers">
+            👥 <span>العملاء</span>
+        </button>
+
+        <button data-page="suppliers">
+            🚚 <span>الموردون</span>
+        </button>
+
+        <button data-page="inventory">
+            📦 <span>المخزون</span>
+        </button>
+
+        <button data-page="reports">
+            📊 <span>التقارير</span>
+        </button>
+
+    </nav>
+
+
+    <div class="sidebar-bottom">
+
+        <button
+            class="btn"
+            onclick="location.href='pos.html'"
+            style="width:100%"
+        >
+            🧮 الكاشير
+        </button>
+
+    </div>
+
+</aside>
+
+
+<!-- =========================
+     المحتوى
+========================= -->
+
+<main class="main">
+
+<div class="topbar">
+
+    <div class="title">
+
+        <h1 id="page-title">
+            لوحة الملخص
+        </h1>
+
+        <p id="page-description">
+            نظرة سريعة على حركة كافيه ورد
+        </p>
+
+    </div>
+
+    <div class="actions">
+
+        <button class="btn">
+            🖨️ طباعة
+        </button>
+
+        <button class="btn btn-primary">
+            + عملية جديدة
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     الرئيسية
+========================= -->
+
+<section
+    id="dashboard"
+    class="page active"
+>
+
+<div class="cards">
+
+    <div class="card metric">
+
+        <span>
+            مبيعات اليوم
+        </span>
+
+        <strong>
+            8,420 ليرة
+        </strong>
+
+        <small>
+            ↑ 12% عن أمس
+        </small>
+
+    </div>
+
+
+    <div class="card metric">
+
+        <span>
+            النقد في الصندوق
+        </span>
+
+        <strong>
+            4,180 ليرة
+        </strong>
+
+        <small>
+            نقد فعلي
+        </small>
+
+    </div>
+
+
+    <div class="card metric">
+
+        <span>
+            مبيعات البطاقة
+        </span>
+
+        <strong>
+            3,740 ليرة
+        </strong>
+
+        <small>
+            منفصلة عن النقد
+        </small>
+
+    </div>
+
+
+    <div class="card metric">
+
+        <span>
+            عدد الطلبات
+        </span>
+
+        <strong>
+            67
+        </strong>
+
+        <small>
+            اليوم
+        </small>
+
+    </div>
+
+</div>
+
+
+<div class="two-columns">
+
+    <div class="card">
+
+        <div class="section-title">
+
+            <div>
+
+                <h2>
+                    آخر العمليات
+                </h2>
+
+                <p>
+                    أحدث المبيعات والمصاريف
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>النوع</th>
+                        <th>المرجع</th>
+                        <th>البيان</th>
+                        <th>الدفع</th>
+                        <th>المبلغ</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>بيع</td>
+                        <td>#1028</td>
+                        <td>طاولة 3</td>
+                        <td>نقدي</td>
+                        <td>420</td>
+                    </tr>
+
+                    <tr>
+                        <td>بيع</td>
+                        <td>#1027</td>
+                        <td>طاولة 8</td>
+                        <td>بطاقة</td>
+                        <td>380</td>
+                    </tr>
+
+                    <tr>
+                        <td>مصروف</td>
+                        <td>#E20</td>
+                        <td>مستلزمات</td>
+                        <td>نقدي</td>
+                        <td>120</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="section-title">
+
+            <div>
+
+                <h2>
+                    تنبيهات
+                </h2>
+
+                <p>
+                    أمور تحتاج متابعة
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="list">
+
+            <div class="list-item">
+
                 <div>
-                    <h3><i class="fa-solid fa-list-check"></i> مهام اليوم</h3>
-                    <p>الأمور التي تحتاج متابعة قبل نهاية الوردية</p>
+
+                    <b>
+                        مورد القهوة
+                    </b>
+
+                    <small>
+                        فاتورة مستحقة
+                    </small>
+
                 </div>
-                <strong id="tasks-count" class="tasks-count">0 مهام</strong>
+
+                <span class="status orange">
+                    2200
+                </span>
+
             </div>
-            <div id="tasks-container"></div>
-        </div>
 
-        <div class="section-box" id="cashier-tables">
-            <h3><i class="fa-solid fa-cash-register"></i> كاشير الطاولات</h3>
-            <p style="color:#666; margin-top:0;">حساب كل طاولة ظاهر هنا. لا يمكن تحصيل الطلب قبل أن يسلّمه الكارسون.</p>
-            <div id="cashier-tables-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:15px;"></div>
-        </div>
 
-        <div class="section-box" id="restaurant-orders">
-            <h3><i class="fa-solid fa-receipt"></i> فواتير الطاولات والطلبات</h3>
-            <p style="color:#666; margin-top:0;">تظهر كل الطلبات هنا. بعد «تم التوصيل» يؤكد المحاسب الدفع؛ عندها فقط تُسجل القيمة ضمن مبيعات اليوم.</p>
-            <div id="restaurant-orders-list" style="margin-top:15px;"></div>
-        </div>
+            <div class="list-item">
 
-        <!-- 1. إدارة المصروفات -->
-        <div class="section-box">
-            <h3><i class="fa-solid fa-file-invoice-dollar"></i> 1. إدارة المصروفات (إيجار، رواتب، كهرباء، مشتريات...)</h3>
-            <form id="expense-form" onsubmit="addExpense(event)" class="form-grid">
-                <input type="text" id="exp-title" placeholder="بيان المصروف" required>
-                <select id="exp-category">
-                    <option value="تشغيلي">مشتريات تشغيلية</option>
-                    <option value="كهرباء ومياه">كهرباء ومياه</option>
-                    <option value="إيجار">إيجار</option>
-                    <option value="رواتب">رواتب</option>
-                    <option value="أخرى">أخرى</option>
-                </select>
-                <input type="number" id="exp-amount" placeholder="المبلغ (ليرة)" required>
-                <button type="submit" class="btn-action">تسجيل المصروف</button>
-            </form>
-            <div id="expenses-list" style="margin-top:15px; font-size:14px; color:#555;"></div>
-        </div>
-
-        <!-- 2. العملاء والدفعات المستحقة -->
-        <div class="section-box">
-            <h3><i class="fa-solid fa-users"></i> 2. العملاء والدفعات المستحقة</h3>
-            <form id="client-form" onsubmit="addClientDebt(event)" class="form-grid">
-                <input type="text" id="client-name" placeholder="اسم العميل" required>
-                <input type="number" id="client-debt" placeholder="المبلغ (ليرة)" required>
-                <input type="date" id="client-date" required>
-                <button type="submit" class="btn-action" style="background:#28a745;">تسجيل ذمة عميل</button>
-            </form>
-            <div id="clients-list" style="margin-top:15px;"></div>
-        </div>
-
-        <!-- 3. فواتير ومستحقات الموردين -->
-        <div class="section-box">
-            <h3><i class="fa-solid fa-truck-field"></i> 3. فواتير ومستحقات الموردين</h3>
-            <form id="supplier-form" onsubmit="addSupplierBill(event)" class="form-grid">
-                <input type="text" id="supplier-name" placeholder="اسم المورد" required>
-                <input type="number" id="supplier-amount" placeholder="المبلغ (ليرة)" required>
-                <input type="date" id="supplier-date" required>
-                <button type="submit" class="btn-action" style="background:#e65100;">إضافة فاتورة مورد</button>
-            </form>
-            <div id="suppliers-list" style="margin-top:15px;"></div>
-        </div>
-
-        <!-- 4. تسوية وإغلاق الصندوق -->
-        <div class="section-box">
-            <h3><i class="fa-solid fa-cash-register"></i> 4. تسوية وإغلاق الصندوق</h3>
-            <div class="form-grid" style="align-items: center; background: #fafafa; padding: 15px; border-radius: 8px;">
                 <div>
-                    <label style="font-size:12px; color:#666; display:block;">الرصيد الافتتاحي للصندوق:</label>
-                    <input type="number" id="opening-balance" value="500" oninput="calculateCashSettlement()" style="width:100%;">
+
+                    <b>
+                        مخزون الحليب
+                    </b>
+
+                    <small>
+                        الكمية منخفضة
+                    </small>
+
                 </div>
-                <div>
-                    <label style="font-size:12px; color:#666; display:block;">الرصيد الفعلي (المعدود بالدرج):</label>
-                    <input type="number" id="actual-balance" placeholder="أدخل المبلغ الفعلي" oninput="calculateCashSettlement()" style="width:100%;">
-                </div>
-                <div>
-                    <span style="font-size:12px; color:#666; display:block;">الرصيد المتوقع:</span>
-                    <strong id="expected-balance-val" style="font-size:16px; color:var(--primary);">0 ليرة</strong>
-                </div>
-                <div>
-                    <span style="font-size:12px; color:#666; display:block;">فرق الصندوق (العجز/الزيادة):</span>
-                    <strong id="diff-balance-val" style="font-size:16px; color:#333;">0 ليرة</strong>
-                </div>
+
+                <span class="status red">
+                    8
+                </span>
+
             </div>
+
         </div>
 
-        <!-- 5. الفواتير غير المسددة -->
-        <div class="section-box">
-            <h3><i class="fa-solid fa-file-invoice"></i> 5. متابعة الفواتير غير المسددة</h3>
-            <form id="unpaid-form" onsubmit="addUnpaidInvoice(event)" class="form-grid">
-                <input type="text" id="inv-num" placeholder="رقم الفاتورة (مثال: #102)" required>
-                <input type="text" id="inv-client" placeholder="اسم العميل" required>
-                <input type="number" id="inv-total" placeholder="قيمة الفاتورة" required>
-                <input type="number" id="inv-paid" placeholder="المدفوع حالياً" required>
-                <input type="date" id="inv-duedate" required>
-                <button type="submit" class="btn-action" style="background:#555;">إضافة فاتورة</button>
-            </form>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>رقم الفاتورة</th>
-                            <th>العميل</th>
-                            <th>القيمة</th>
-                            <th>المدفوع</th>
-                            <th>المتبقي</th>
-                            <th>تاريخ الاستحقاق</th>
-                            <th>الحالة</th>
-                            <th>إجراء</th>
-                        </tr>
-                    </thead>
-                    <tbody id="unpaid-invoices-tbody">
-                        <tr><td colspan="8" style="color:#888;">لا توجد فواتير غير مسددة مسجلة.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    </div>
 
-        <!-- 6. تقرير الأرباح والخسائر -->
-        <div class="section-box" style="background: #fbf9f5; border-color: #d4af37;">
-            <h3><i class="fa-solid fa-chart-line"></i> 6. تقرير الأرباح والخسائر التلقائي</h3>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; text-align:center;">
-                <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid #eee;">
-                    <span style="color:#666; font-size:13px; display:block; margin-bottom:5px;">إجمالي المبيعات</span>
-                    <strong id="rep-sales" style="color:#2e7d32; font-size:20px;">0 ليرة</strong>
-                </div>
-                <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid #eee;">
-                    <span style="color:#666; font-size:13px; display:block; margin-bottom:5px;">التزامات ومشتريات موردين</span>
-                    <strong id="rep-suppliers" style="color:#e65100; font-size:20px;">0 ليرة</strong>
-                </div>
-                <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid #eee;">
-                    <span style="color:#666; font-size:13px; display:block; margin-bottom:5px;">إجمالي المصروفات</span>
-                    <strong id="rep-expenses" style="color:#c62828; font-size:20px;">0 ليرة</strong>
-                </div>
-                <div style="background:#fff; padding:15px; border-radius:8px; border:1px solid #eee;">
-                    <span style="color:#666; font-size:13px; display:block; margin-bottom:5px;">صافي الربح</span>
-                    <strong id="rep-netprofit" style="color:var(--gold); font-size:22px;">0 ليرة</strong>
-                </div>
-            </div>
-        </div>
+</div>
 
-        <!-- 7. حركة الحسابات النقدية -->
-        <div class="section-box">
-            <h3><i class="fa-solid fa-wallet"></i> 7. حركة الحسابات النقدية (قبض، صرف، تحويل)</h3>
-            <form id="cash-movement-form" onsubmit="addCashMovement(event)" class="form-grid">
-                <select id="cash-type">
-                    <option value="قبض">سند قبض (+)</option>
-                    <option value="صرف">سند صرف (-)</option>
-                    <option value="تحويل">تحويل بنكي / داخلي</option>
-                </select>
-                <input type="text" id="cash-desc" placeholder="البيان / السبب" required>
-                <input type="number" id="cash-val" placeholder="المبلغ" required>
-                <button type="submit" class="btn-action" style="background:#00796b;">تسجيل الحركة</button>
-            </form>
-            <div id="cash-movements-list" style="margin-top:15px; max-height:150px; overflow-y:auto; font-size:13px;"></div>
-        </div>
+</section>
 
-        <!-- 8. الإقفال اليومي -->
-        <div class="section-box" style="background: #f0f7ff; border-color: #90caf9;">
-            <h3><i class="fa-solid fa-lock"></i> 8. الإقفال اليومي وإغلاق الوردية</h3>
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;">
-                <div id="daily-closing-summary" style="font-size:14px; color:#333; line-height: 1.6;">
-                    <!-- تفاصيل الإقفال -->
-                </div>
-                <div>
-                    <button onclick="executeDailyClosing()" id="close-day-main-btn" class="btn-action" style="background:#1565c0; padding:12px 25px; font-size:15px;">إغلاق اليوم وتثبيت الحسابات ✅</button>
-                </div>
-            </div>
-        </div>
 
-    </main>
+<!-- =========================
+     المبيعات
+========================= -->
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="firebase-config.js"></script>
-    <script src="js/common.js"></script>
-    <script src="js/accounting.js"></script>
+<section
+    id="sales"
+    class="page"
+>
 
+<div class="card">
+
+<div class="section-title">
+
+<div>
+
+<h2>
+حلقة المبيعات
+</h2>
+
+<p>
+كل عملية دفع من الكاشير تظهر هنا
+</p>
+
+</div>
+
+<button class="btn btn-primary">
+فاتورة بيع جديدة
+</button>
+
+</div>
+
+
+<div class="toolbar">
+
+<input
+class="input"
+placeholder="بحث عن فاتورة..."
+>
+
+<select>
+<option>
+كل طرق الدفع
+</option>
+
+<option>
+نقدي
+</option>
+
+<option>
+بطاقة
+</option>
+</select>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>الفاتورة</th>
+<th>الطاولة</th>
+<th>الوقت</th>
+<th>الإجمالي</th>
+<th>الدفع</th>
+<th>الحالة</th>
+</tr>
+
+</thead>
+
+<tbody id="sales-body">
+
+<tr>
+<td>#1028</td>
+<td>3</td>
+<td>19:30</td>
+<td>420</td>
+<td>نقدي</td>
+
+<td>
+<span class="status green">
+مدفوع
+</span>
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     المشتريات
+========================= -->
+
+<section
+id="purchases"
+class="page"
+>
+
+<div class="card">
+
+<div class="section-title">
+
+<div>
+
+<h2>
+حلقة المشتريات
+</h2>
+
+<p>
+فواتير الموردين والمبالغ المستحقة
+</p>
+
+</div>
+
+<button class="btn btn-primary">
++ فاتورة شراء
+</button>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>الفاتورة</th>
+<th>المورد</th>
+<th>المبلغ</th>
+<th>المدفوع</th>
+<th>المتبقي</th>
+<th>الحالة</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>#P101</td>
+
+<td>
+مورد المشروبات
+</td>
+
+<td>
+1850
+</td>
+
+<td>
+1000
+</td>
+
+<td>
+850
+</td>
+
+<td>
+<span class="status orange">
+مستحق
+</span>
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     الصندوق
+========================= -->
+
+<section
+id="cashbox"
+class="page"
+>
+
+<div class="cards">
+
+<div class="card metric">
+
+<span>
+الرصيد الافتتاحي
+</span>
+
+<strong>
+1000
+</strong>
+
+</div>
+
+
+<div class="card metric">
+
+<span>
+مبيعات نقدية
+</span>
+
+<strong>
+4180
+</strong>
+
+</div>
+
+
+<div class="card metric">
+
+<span>
+مصروفات نقدية
+</span>
+
+<strong>
+620
+</strong>
+
+</div>
+
+
+<div class="card metric">
+
+<span>
+الرصيد المتوقع
+</span>
+
+<strong>
+4560
+</strong>
+
+</div>
+
+</div>
+
+
+<div class="card"
+style="margin-top:14px"
+>
+
+<div class="section-title">
+
+<div>
+
+<h2>
+حركة الصندوق
+</h2>
+
+<p>
+النقد الداخل والخارج
+</p>
+
+</div>
+
+<button
+class="btn btn-primary"
+>
+إغلاق اليوم
+</button>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>الوقت</th>
+<th>النوع</th>
+<th>البيان</th>
+<th>داخل</th>
+<th>خارج</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>19:30</td>
+<td>بيع</td>
+<td>طاولة 3</td>
+<td>420</td>
+<td>-</td>
+</tr>
+
+<tr>
+<td>18:00</td>
+<td>مصروف</td>
+<td>تنظيف</td>
+<td>-</td>
+<td>120</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     المصروفات
+========================= -->
+
+<section
+id="expenses"
+class="page"
+>
+
+<div class="card">
+
+<div class="section-title">
+
+<div>
+
+<h2>
+المصروفات
+</h2>
+
+<p>
+المصاريف اليومية
+</p>
+
+</div>
+
+<button class="btn btn-primary">
++ مصروف
+</button>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>التاريخ</th>
+<th>التصنيف</th>
+<th>البيان</th>
+<th>طريقة الدفع</th>
+<th>المبلغ</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>06/09/2026</td>
+<td>تشغيل</td>
+<td>مستلزمات تنظيف</td>
+<td>نقدي</td>
+<td>120</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     العملاء
+========================= -->
+
+<section
+id="customers"
+class="page"
+>
+
+<div class="card">
+
+<div class="section-title">
+
+<div>
+
+<h2>
+العملاء والذمم
+</h2>
+
+<p>
+الحسابات الآجلة وسجل السداد
+</p>
+
+</div>
+
+<button class="btn btn-primary">
++ عميل
+</button>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>العميل</th>
+<th>الهاتف</th>
+<th>الرصيد</th>
+<th>آخر حركة</th>
+<th>الإجراء</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+أحمد
+</td>
+
+<td>
+05xx xxx xx xx
+</td>
+
+<td>
+650
+</td>
+
+<td>
+اليوم
+</td>
+
+<td>
+
+<button class="btn">
+تسجيل سداد
+</button>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     الموردين
+========================= -->
+
+<section
+id="suppliers"
+class="page"
+>
+
+<div class="card">
+
+<div class="section-title">
+
+<div>
+
+<h2>
+الموردون
+</h2>
+
+<p>
+الفواتير والدفعات والمستحقات
+</p>
+
+</div>
+
+<button class="btn btn-primary">
++ مورد
+</button>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>المورد</th>
+<th>الفواتير</th>
+<th>المدفوع</th>
+<th>المتبقي</th>
+<th>الإجراء</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+مورد القهوة
+</td>
+
+<td>
+5600
+</td>
+
+<td>
+3400
+</td>
+
+<td>
+2200
+</td>
+
+<td>
+
+<button class="btn">
+تسجيل دفعة
+</button>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     المخزون
+========================= -->
+
+<section
+id="inventory"
+class="page"
+>
+
+<div class="card">
+
+<div class="section-title">
+
+<div>
+
+<h2>
+المخزون
+</h2>
+
+<p>
+متابعة المواد والكميات
+</p>
+
+</div>
+
+<button class="btn btn-primary">
++ مادة
+</button>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>المادة</th>
+<th>الوحدة</th>
+<th>المتوفر</th>
+<th>حد الطلب</th>
+<th>الحالة</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+بن
+</td>
+
+<td>
+كغ
+</td>
+
+<td>
+14
+</td>
+
+<td>
+5
+</td>
+
+<td>
+
+<span class="status green">
+جيد
+</span>
+
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+حليب
+</td>
+
+<td>
+علبة
+</td>
+
+<td>
+8
+</td>
+
+<td>
+10
+</td>
+
+<td>
+
+<span class="status red">
+منخفض
+</span>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     التقارير
+========================= -->
+
+<section
+id="reports"
+class="page"
+>
+
+<div class="two-columns">
+
+<div class="card">
+
+<h2>
+الأرباح والخسائر
+</h2>
+
+<div class="list">
+
+<div class="list-item">
+<b>المبيعات</b>
+<strong>8420</strong>
+</div>
+
+<div class="list-item">
+<b>المشتريات</b>
+<strong>2900</strong>
+</div>
+
+<div class="list-item">
+<b>المصروفات</b>
+<strong>620</strong>
+</div>
+
+<div class="list-item">
+<b>صافي الربح</b>
+<strong style="color:var(--green)">
+4900
+</strong>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+طرق الدفع
+</h2>
+
+<div class="list">
+
+<div class="list-item">
+<b>نقدي</b>
+<strong>4180</strong>
+</div>
+
+<div class="list-item">
+<b>بطاقة</b>
+<strong>3740</strong>
+</div>
+
+<div class="list-item">
+<b>آجل</b>
+<strong>500</strong>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+</div>
+
+
+
+<script src="firebase-config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/accounting.js"></script>
 </body>
 </html>

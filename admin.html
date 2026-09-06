@@ -3,47 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم كافيه ورد</title>
+    <title>إدارة المنيو | كافيه ورد</title>
     <link rel="stylesheet" href="style/common.css">
     <link rel="stylesheet" href="style/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <header>
-    <div class="logo" aria-label="شعار كافيه ورد"><img src="q.png" alt="كافيه ورد"></div>
-    <div class="top-buttons-container">
-        <a href="waiter.html">شاشة الكارسون</a>
-        <a href="kitchen.html">شاشة المطبخ</a>
-        <a href="index.html">عرض المنيو</a>
-        <a href="accounting.html">شاشة المحاسبة</a>
-        <a href="pos.html">الكاشير POS</a>
-    </div>
+<body class="ward-admin">
+    <header class="admin-header">
+        <div class="admin-brand"><img src="q.png" alt="كافيه ورد"><span>لوحة الإدارة</span></div>
     </header>
-
-    <main>
-        <div class="admin-box">
-            <h2>إضافة صنف جديد للمنيو</h2>
-            <form id="add-item-form" onsubmit="addNewItem(event)" class="admin-form">
-                <input type="text" id="item-name" placeholder="اسم الصنف (مثال: قهوة لاتيه)" required>
-                <select id="item-cat" required>
-                    <option value="hot">مشروبات ساخنة</option>
-                    <option value="cold">مشروبات باردة</option>
-                    <option value="sweets">حلويات</option>
-                    <option value="food">مأكولات</option>
-                </select>
-                <input type="number" id="item-price" placeholder="السعر (بالليرة)" required>
-                <input type="text" id="item-desc" placeholder="وصف قصير للصنف" required>
-                <input type="url" id="item-img" placeholder="رابط صورة الصنف (URL)" required>
-                <button type="submit">إضافة الصنف</button>
-            </form>
+    <main class="admin-main">
+        <div class="page-heading">
+            <div><p class="eyebrow">كافيه ورد / إدارة المنيو</p><h1>منيو مرتب. إدارة أسهل.</h1><p>أضف أصنافك وحدّث تفاصيلها من مكان واحد.</p></div>
+            <button class="primary-button" id="new-item-button" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> إضافة صنف</button>
         </div>
-
-        <div class="products-list-container">
-            <h2>الأصناف الحالية في المنيو</h2>
-            <div id="admin-menu-list"></div>
+        <div class="menu-summary" aria-label="ملخص المنيو">
+            <div><span class="summary-icon"><i class="fa-solid fa-utensils" aria-hidden="true"></i></span><div><strong id="total-items">—</strong><span>إجمالي الأصناف</span></div></div>
+            <div><span class="summary-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></span><div><strong id="total-categories">—</strong><span>تصنيفات مستخدمة</span></div></div>
+            <div class="summary-note"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i><span>كل تفاصيل الصنف<br><b>جاهزة للتعديل بلمسة</b></span></div>
+        </div>
+        <p id="admin-feedback" role="status" aria-live="polite" hidden></p>
+        <div class="admin-workspace">
+            <section class="menu-panel" aria-labelledby="menu-title">
+                <div class="panel-heading"><div><h2 id="menu-title">الأصناف</h2><p id="result-count" aria-live="polite">جاري تحميل المنيو…</p></div><span class="panel-tag">إدارة المنيو</span></div>
+                <div class="menu-tools">
+                    <label class="search-field"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input id="menu-search" type="search" placeholder="ابحث عن اسم أو وصف الصنف…" aria-label="البحث في الأصناف"></label>
+                    <select id="category-filter" aria-label="فلترة حسب التصنيف"><option value="">كل التصنيفات</option><option value="hot">مشروبات ساخنة</option><option value="cold">مشروبات باردة</option><option value="sweets">حلويات</option><option value="food">مأكولات</option></select>
+                </div>
+                <div class="list-heading" aria-hidden="true"><span>الصنف / التفاصيل</span><span>السعر</span><span>الإجراءات</span></div>
+                <div id="admin-menu-list"><p class="empty-state">جاري تحميل الأصناف…</p></div>
+            </section>
+            <section class="editor-panel" id="item-editor" aria-labelledby="editor-title">
+                <div class="panel-heading"><div><p class="eyebrow" id="editor-mode">صنف جديد</p><h2 id="editor-title">إضافة صنف للمنيو</h2></div><span class="editor-icon"><i class="fa-solid fa-plus" aria-hidden="true"></i></span></div>
+                <form id="add-item-form" class="admin-form">
+                    <fieldset id="item-fields">
+                        <label for="item-name">اسم الصنف</label><input type="text" id="item-name" placeholder="مثال: لاتيه كافيه ورد" required maxlength="150">
+                        <div class="form-pair"><div><label for="item-cat">التصنيف</label><select id="item-cat" required><option value="hot">مشروبات ساخنة</option><option value="cold">مشروبات باردة</option><option value="sweets">حلويات</option><option value="food">مأكولات</option></select></div><div><label for="item-price">السعر <small>(ليرة)</small></label><input type="number" id="item-price" placeholder="0.00" min="0" step="0.01" inputmode="decimal" required></div></div>
+                        <label for="item-desc">وصف الصنف</label><textarea id="item-desc" rows="3" placeholder="المكونات أو تفاصيل تميز الصنف…" required></textarea>
+                        <label for="item-img">رابط الصورة</label><input type="url" id="item-img" dir="ltr" placeholder="https://example.com/photo.jpg" required aria-describedby="image-help"><small id="image-help">استخدم رابطًا مباشرًا للصورة، كما في المنيو الحالي.</small>
+                        <div class="image-preview"><img id="item-preview" src="q.png" alt="معاينة صورة الصنف"><div><strong>معاينة الصورة</strong><small id="preview-caption">تظهر الصورة هنا عند إدخال الرابط</small></div></div>
+                        <div class="form-actions"><button type="submit" id="save-item-button" class="primary-button">إضافة الصنف</button><button type="button" id="cancel-edit-button" class="secondary-button" hidden>إلغاء التعديل</button></div>
+                    </fieldset>
+                </form>
+            </section>
         </div>
     </main>
-
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>

@@ -1,62 +1,1034 @@
 ﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شاشة الكارسون والطلبات - كافيه ورد</title>
+
+    <title>شاشة الغرسون - كافيه ورد</title>
+
     <link rel="stylesheet" href="style/common.css">
     <link rel="stylesheet" href="style/waiter.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+
+    <style>
+        :root {
+            --waiter-primary: #e91e63;
+            --waiter-primary-dark: #c2185b;
+            --waiter-soft: #fff1f6;
+            --waiter-border: #f1d0dc;
+            --waiter-text: #30242a;
+            --waiter-muted: #81727a;
+            --waiter-green: #249765;
+            --waiter-green-soft: #eaf7f1;
+            --waiter-orange: #d58d13;
+            --waiter-orange-soft: #fff3dc;
+            --waiter-blue: #3d7fd1;
+            --waiter-blue-soft: #edf5ff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body.waiter-page {
+            margin: 0;
+            background: #fff9fb;
+            color: var(--waiter-text);
+            font-family: Tahoma, Arial, sans-serif;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .waiter-topbar {
+            min-height: 76px;
+            padding: 12px 24px;
+            background: #fff;
+            border-bottom: 1px solid var(--waiter-border);
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .waiter-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .waiter-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--waiter-soft);
+            display: grid;
+            place-items: center;
+        }
+
+        .waiter-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .waiter-brand-text strong {
+            display: block;
+            font-size: 21px;
+        }
+
+        .waiter-brand-text span {
+            display: block;
+            margin-top: 3px;
+            color: var(--waiter-muted);
+            font-size: 13px;
+        }
+
+        .waiter-header-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .waiter-header-link {
+            text-decoration: none;
+            border-radius: 11px;
+            padding: 10px 14px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: .15s;
+        }
+
+        .waiter-header-link:hover {
+            transform: translateY(-1px);
+        }
+
+        .waiter-header-link.kitchen {
+            background: var(--waiter-primary);
+            color: #fff;
+        }
+
+        .waiter-header-link.menu {
+            background: #302a2d;
+            color: #fff;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .waiter-main {
+            width: min(1450px, calc(100% - 32px));
+            margin: 24px auto 50px;
+        }
+
+        .waiter-page-heading {
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .waiter-page-heading h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .waiter-page-heading p {
+            margin: 7px 0 0;
+            color: var(--waiter-muted);
+            line-height: 1.7;
+        }
+
+        /* =========================
+           BELL
+        ========================= */
+
+        .waiter-bell-box {
+            background: #fff;
+            border: 1px solid var(--waiter-border);
+            border-radius: 18px;
+            padding: 14px 16px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+
+            margin-bottom: 18px;
+        }
+
+        .waiter-bell-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .waiter-bell-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: var(--waiter-soft);
+            color: var(--waiter-primary);
+            display: grid;
+            place-items: center;
+            font-size: 20px;
+        }
+
+        .waiter-bell-info strong {
+            display: block;
+        }
+
+        .waiter-bell-info small {
+            display: block;
+            margin-top: 4px;
+            color: var(--waiter-muted);
+            line-height: 1.6;
+        }
+
+        #enable-bell-btn {
+            border: 0;
+            background: var(--waiter-primary);
+            color: #fff;
+            border-radius: 12px;
+            padding: 11px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* =========================
+           LAYOUT
+        ========================= */
+
+        .waiter-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(350px, .7fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .waiter-panel {
+            background: #fff;
+            border: 1px solid var(--waiter-border);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 8px 25px rgba(140, 40, 80, .05);
+        }
+
+        .waiter-panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .waiter-panel-head h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .waiter-panel-head p {
+            margin: 5px 0 0;
+            color: var(--waiter-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .waiter-panel-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+        }
+
+        .waiter-panel-icon.orders {
+            background: var(--waiter-green-soft);
+            color: var(--waiter-green);
+        }
+
+        .waiter-panel-icon.tables {
+            background: var(--waiter-soft);
+            color: var(--waiter-primary);
+        }
+
+        /* =========================
+           ORDER GROUPS GENERATED
+           BY waiter.js
+        ========================= */
+
+        #orders-container {
+            display: grid;
+            gap: 16px;
+        }
+
+        .waiter-order-group {
+            border-radius: 17px;
+            padding: 14px;
+        }
+
+        .waiter-order-group.waiter-ready {
+            background: #f5fff9;
+            border: 1px solid #bfe5d2;
+        }
+
+        .waiter-order-group.waiter-preparing {
+            background: #fffbf4;
+            border: 1px solid #f0d8aa;
+        }
+
+        .waiter-order-group > h2 {
+            margin: 0 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 17px;
+        }
+
+        .waiter-order-group > h2 span {
+            min-width: 30px;
+            height: 30px;
+            padding: 0 9px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            background: #fff;
+            font-size: 13px;
+        }
+
+        .waiter-order {
+            background: #fff;
+            border: 1px solid #eee2e7;
+            border-radius: 15px;
+            padding: 14px;
+            margin-top: 10px;
+        }
+
+        .waiter-order-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f4e4ea;
+        }
+
+        .waiter-order-head h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .waiter-order-head small {
+            color: var(--waiter-muted);
+        }
+
+        .waiter-order ul {
+            margin: 12px 0;
+            padding: 0 20px 0 0;
+            line-height: 1.9;
+        }
+
+        .waiter-order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding-top: 11px;
+            border-top: 1px solid #f4e4ea;
+        }
+
+        .waiter-order-footer strong {
+            font-size: 17px;
+            color: var(--waiter-primary-dark);
+        }
+
+        .waiter-order-footer span {
+            color: #976811;
+            background: var(--waiter-orange-soft);
+            padding: 8px 11px;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        .waiter-order-footer .btn-action {
+            border: 0;
+            border-radius: 11px;
+            padding: 10px 16px;
+            background: var(--waiter-green);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .waiter-order-footer .btn-action:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .waiter-empty {
+            color: var(--waiter-muted);
+            line-height: 1.7;
+        }
+
+        /* =========================
+           TABLES GENERATED
+        ========================= */
+
+        #waiter-tables-container {
+            display: grid;
+            gap: 12px;
+            outline: none;
+        }
+
+        .waiter-table-card {
+            background: #fffafc;
+            border: 1px solid var(--waiter-border);
+            border-radius: 16px;
+            padding: 14px;
+        }
+
+        .waiter-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .waiter-table-number {
+            font-size: 18px;
+        }
+
+        .waiter-table-badge {
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .waiter-table-badge.occupied {
+            background: var(--waiter-orange-soft);
+            color: #95640d;
+        }
+
+        .waiter-table-summary {
+            margin: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .waiter-table-summary > div {
+            background: #fff;
+            border: 1px solid #f1e5e9;
+            border-radius: 11px;
+            padding: 10px;
+        }
+
+        .waiter-table-summary dt {
+            color: var(--waiter-muted);
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .waiter-table-summary dd {
+            margin: 0;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .waiter-table-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .waiter-table-actions button {
+            min-height: 42px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .waiter-table-actions .btn-action {
+            border: 0;
+            background: var(--waiter-primary);
+            color: #fff;
+        }
+
+        .release-table-btn {
+            background: #fff;
+            color: var(--waiter-text);
+            border: 1px solid var(--waiter-border);
+        }
+
+        .waiter-table-card .waiter-empty {
+            margin: 10px 0 0;
+            font-size: 12px;
+        }
+
+        .waiter-table-card .waiter-empty a {
+            color: var(--waiter-primary);
+            font-weight: bold;
+        }
+
+        /* =========================
+           FEEDBACK
+        ========================= */
+
+        #waiter-feedback {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            z-index: 100;
+            max-width: min(420px, calc(100% - 40px));
+            margin: 0;
+        }
+
+        #waiter-feedback:not(:empty) {
+            background: #242124;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.18);
+        }
+
+        /* =========================
+           READY NOTIFICATION
+        ========================= */
+
+        .ready-notification {
+            position: fixed;
+            left: 20px;
+            top: 95px;
+            z-index: 150;
+
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            background: var(--waiter-green);
+            color: #fff;
+
+            padding: 14px 18px;
+            border-radius: 14px;
+            box-shadow: 0 12px 35px rgba(0,0,0,.2);
+
+            animation: waiterNotice .25s ease;
+        }
+
+        .ready-notification i {
+            font-size: 20px;
+        }
+
+        @keyframes waiterNotice {
+            from {
+                transform: translateY(-12px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* =========================
+           MOVE MODAL
+        ========================= */
+
+        .waiter-modal[hidden] {
+            display: none !important;
+        }
+
+        .waiter-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+
+            background: rgba(28, 20, 24, .42);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 18px;
+        }
+
+        .waiter-modal-card {
+            width: min(500px, 100%);
+            background: #fff;
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.22);
+        }
+
+        .waiter-modal-card h2 {
+            margin: 0 0 8px;
+        }
+
+        .waiter-modal-card > p {
+            margin: 0 0 18px;
+            color: var(--waiter-muted);
+            line-height: 1.7;
+        }
+
+        #move-table-form label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        #move-table-target {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 12px;
+            border: 1px solid var(--waiter-border);
+            border-radius: 11px;
+            background: #fff;
+            font: inherit;
+        }
+
+        #move-table-error {
+            color: #c62828;
+            min-height: 20px;
+            font-size: 13px;
+        }
+
+        #move-table-empty {
+            color: var(--waiter-muted);
+        }
+
+        #move-table-form .waiter-table-actions {
+            margin-top: 16px;
+        }
+
+        #move-table-submit {
+            background: var(--waiter-primary);
+            color: #fff;
+            border: 0;
+        }
+
+        #move-table-cancel {
+            background: #fff;
+            color: var(--waiter-text);
+            border: 1px solid var(--waiter-border);
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 950px) {
+            .waiter-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .waiter-tables-panel {
+                order: 2;
+            }
+
+            .waiter-orders-panel {
+                order: 1;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .waiter-topbar {
+                padding: 10px 12px;
+                align-items: flex-start;
+            }
+
+            .waiter-logo {
+                width: 45px;
+                height: 45px;
+            }
+
+            .waiter-brand-text strong {
+                font-size: 17px;
+            }
+
+            .waiter-brand-text span {
+                font-size: 11px;
+            }
+
+            .waiter-header-link {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .waiter-main {
+                width: calc(100% - 20px);
+                margin-top: 14px;
+            }
+
+            .waiter-page-heading h1 {
+                font-size: 23px;
+            }
+
+            .waiter-page-heading p {
+                font-size: 13px;
+            }
+
+            .waiter-bell-box {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            #enable-bell-btn {
+                width: 100%;
+            }
+
+            .waiter-panel {
+                padding: 13px;
+                border-radius: 16px;
+            }
+
+            .waiter-table-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .waiter-order-footer {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .waiter-order-footer .btn-action {
+                width: 100%;
+                min-height: 46px;
+            }
+
+            .ready-notification {
+                top: auto;
+                bottom: 20px;
+                left: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+
 </head>
+
 <body class="waiter-page">
-    <header>
-        <div class="logo" aria-label="شعار كافيه ورد"><img src="q.png" alt="كافيه ورد"></div>
-        <div>
-            <a href="kitchen.html" style="background:var(--primary); color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold; margin-left:10px;">شاشة المطبخ</a>
-            <a href="index.html" style="background:#333; color:#fff; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:bold;">المنيو</a>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="waiter-topbar">
+
+        <div class="waiter-brand">
+
+            <div class="waiter-logo">
+                <img src="q.png" alt="كافيه ورد">
+            </div>
+
+            <div class="waiter-brand-text">
+                <strong>كافيه ورد</strong>
+                <span>واجهة الغرسون</span>
+            </div>
+
         </div>
+
+
+        <nav class="waiter-header-links">
+
+            <a
+                href="kitchen.html"
+                class="waiter-header-link kitchen"
+            >
+                <i class="fa-solid fa-fire-burner"></i>
+                المطبخ
+            </a>
+
+            <a
+                href="index.html"
+                class="waiter-header-link menu"
+            >
+                <i class="fa-solid fa-utensils"></i>
+                المنيو
+            </a>
+
+        </nav>
+
     </header>
 
-    <main style="max-width: 1000px; margin: 30px auto; padding: 0 20px;">
-        <h2>الطلبات النشطة</h2>
-        <button id="enable-bell-btn" class="btn-action" onclick="enableWaiterBell()" style="margin-top:12px;">تفعيل رنة الجرس</button>
-        <p style="color:#777; margin:8px 0 0; font-size:13px;">اضغط الزر مرة واحدة للسماح للصوت في الهاتف أو المتصفح؛ عند تجهيز المطبخ للطلب ستظهر رسالة ويصدر الجرس.</p>
-        <div id="orders-container" style="display:grid; gap:15px; margin-top:20px;">
-            <p style="color:#888;">لا توجد طلبات جديدة حالياً...</p>
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main class="waiter-main">
+
+        <section class="waiter-page-heading">
+
+            <div>
+                <h1>الطاولات والطلبات</h1>
+
+                <p>
+                    تابع الطلبات من المطبخ،
+                    وسلّم الطلبات الجاهزة للطاولات.
+                </p>
+            </div>
+
+        </section>
+
+
+        <!-- BELL -->
+
+        <section class="waiter-bell-box">
+
+            <div class="waiter-bell-info">
+
+                <div class="waiter-bell-icon">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+
+                <div>
+                    <strong>تنبيهات الطلبات الجاهزة</strong>
+
+                    <small>
+                        فعّل الجرس مرة واحدة.
+                        عند تجهيز المطبخ لأي طلب سيظهر التنبيه ويصدر الصوت.
+                    </small>
+                </div>
+
+            </div>
+
+
+            <button
+                id="enable-bell-btn"
+                type="button"
+                onclick="enableWaiterBell()"
+            >
+                <i class="fa-solid fa-volume-high"></i>
+                تفعيل رنة الجرس
+            </button>
+
+        </section>
+
+
+        <!-- CONTENT -->
+
+        <div class="waiter-layout">
+
+
+            <!-- ORDERS -->
+
+            <section class="waiter-panel waiter-orders-panel">
+
+                <div class="waiter-panel-head">
+
+                    <div>
+                        <h2>الطلبات النشطة</h2>
+
+                        <p>
+                            الطلبات الجاهزة تظهر أولاً.
+                            اضغط «تم التوصيل» بعد تسليم الطلب للطاولة.
+                        </p>
+                    </div>
+
+                    <div class="waiter-panel-icon orders">
+                        <i class="fa-solid fa-bell-concierge"></i>
+                    </div>
+
+                </div>
+
+
+                <!--
+                    waiter.js يضع هنا:
+                    جاهز
+                    قيد التحضير
+                    زر تم التوصيل
+                -->
+
+                <div id="orders-container">
+
+                    <p class="waiter-empty">
+                        جاري تحميل الطلبات...
+                    </p>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- TABLES -->
+
+            <section class="waiter-panel waiter-tables-panel">
+
+                <div class="waiter-panel-head">
+
+                    <div>
+                        <h2>الطاولات المشغولة</h2>
+
+                        <p>
+                            الحسابات المفتوحة وحالة كل طاولة.
+                        </p>
+                    </div>
+
+                    <div class="waiter-panel-icon tables">
+                        <i class="fa-solid fa-chair"></i>
+                    </div>
+
+                </div>
+
+
+                <!--
+                    waiter.js يضع هنا:
+                    الطاولات
+                    الإجمالي
+                    الحالة
+                    مدة الإشغال
+                    نقل الطاولة
+                    تفريغ الطاولة
+                -->
+
+                <div
+                    id="waiter-tables-container"
+                    tabindex="-1"
+                >
+
+                    <p class="waiter-empty">
+                        جاري تحميل حالة الطاولات...
+                    </p>
+
+                </div>
+
+            </section>
+
         </div>
 
-        <section style="margin-top:40px; padding-top:20px; border-top:2px dashed #f1c8d7;">
-            <h2><i class="fa-solid fa-chair"></i> الطاولات المشغولة</h2>
-            <p style="color:#777; margin:8px 0 0; font-size:13px;">يمكن نقل الطلبات إلى طاولة متاحة. تفريغ الطاولة متاح بعد توصيل جميع الطلبات ودفع الحساب من الكاشير.</p>
-            <div id="waiter-tables-container" tabindex="-1" style="display:grid; gap:15px; margin-top:20px;">
-                <p style="color:#888;">جاري تحميل حالة الطاولات...</p>
-            </div>
-        </section>
     </main>
 
-    <p id="waiter-feedback" role="status" aria-live="polite"></p>
-    <div id="move-table-modal" class="waiter-modal" hidden>
-        <section class="waiter-modal-card" role="dialog" aria-modal="true" aria-labelledby="move-table-title" aria-describedby="move-table-description">
-            <h2 id="move-table-title">نقل الطاولة</h2>
-            <p id="move-table-description">سيتم نقل جميع الطلبات المفتوحة والحساب إلى الطاولة المختارة.</p>
+
+
+    <!-- =========================
+         FEEDBACK
+    ========================== -->
+
+    <p
+        id="waiter-feedback"
+        role="status"
+        aria-live="polite"
+    ></p>
+
+
+
+    <!-- =========================
+         MOVE TABLE MODAL
+    ========================== -->
+
+    <div
+        id="move-table-modal"
+        class="waiter-modal"
+        hidden
+    >
+
+        <section
+            class="waiter-modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="move-table-title"
+            aria-describedby="move-table-description"
+        >
+
+            <h2 id="move-table-title">
+                نقل الطاولة
+            </h2>
+
+            <p id="move-table-description">
+                سيتم نقل جميع الطلبات المفتوحة
+                والحساب إلى الطاولة المختارة.
+            </p>
+
+
             <form id="move-table-form">
-                <label for="move-table-target">الطاولات المتاحة</label>
-                <select id="move-table-target" required></select>
-                <p id="move-table-empty" hidden>لا توجد طاولات متاحة للنقل حالياً.</p>
-                <p id="move-table-error" role="alert"></p>
+
+                <label for="move-table-target">
+                    الطاولة الجديدة
+                </label>
+
+                <select
+                    id="move-table-target"
+                    required
+                ></select>
+
+
+                <p
+                    id="move-table-empty"
+                    hidden
+                >
+                    لا توجد طاولات متاحة للنقل حالياً.
+                </p>
+
+
+                <p
+                    id="move-table-error"
+                    role="alert"
+                ></p>
+
+
                 <div class="waiter-table-actions">
-                    <button type="submit" id="move-table-submit" class="btn-action">تأكيد النقل</button>
-                    <button type="button" id="move-table-cancel">إلغاء</button>
+
+                    <button
+                        type="submit"
+                        id="move-table-submit"
+                        class="btn-action"
+                    >
+                        تأكيد النقل
+                    </button>
+
+                    <button
+                        type="button"
+                        id="move-table-cancel"
+                    >
+                        إلغاء
+                    </button>
+
                 </div>
+
             </form>
+
         </section>
+
     </div>
 
+
+
+    <!-- =========================
+         FIREBASE + PROJECT
+    ========================== -->
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <script src="firebase-config.js"></script>
+
     <script src="js/common.js"></script>
+
     <script src="js/waiter.js"></script>
 
 </body>
+
 </html>

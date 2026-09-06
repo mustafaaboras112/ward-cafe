@@ -1,0 +1,33 @@
+[17016:23904:0907/023354.358:ERROR:components\os_crypt\async\browser\os_crypt_win.cc:63] Failed to encrypt: The system cannot find the file specified. (0x2)
+[17016:24284:0907/023354.427:ERROR:chrome\installer\util\google_update_settings_win.cc:270] Failed opening key Software\Google\Update\ClientStateMedium\{8A69D345-D564-463c-AFF1-A69D9E530F96} to set usagestats; result: 5
+[17016:12752:0907/023354.560:ERROR:components\password_manager\core\browser\password_store\login_database_async_helper.cc:99] Encryption is not available.
+[17016:14288:0907/023354.583:ERROR:components\password_manager\core\browser\password_store\login_database_async_helper.cc:99] Encryption is not available.
+
+DevTools listening on ws://127.0.0.1:63093/devtools/browser/eef6b71c-d221-4546-a4f6-39adc121a112
+[17016:23904:0907/023354.720:ERROR:content\browser\gpu\gpu_process_host.cc:1035] GPU process exited unexpectedly: exit_code=-1073741790
+[17016:22592:0907/023354.720:ERROR:components\viz\host\persistent_cache_sandboxed_file_factory.cc:153] Failed to open persistent cache files in directory "C:\Users\mustafa\Desktop\مشروع عمل   كاقي ورد\.a4-review\chrome-profile-EH9Uu7\GPUPersistentCache\DawnGraphiteCache\6364HUQ4W4H7RKR7NMQK6IVM6XY564JE", error: 0: The process cannot access the file because it is being used by another process. (0x20)
+[17016:23904:0907/023354.867:ERROR:content\browser\gpu\gpu_process_host.cc:1035] GPU process exited unexpectedly: exit_code=-1073741790
+[17016:12120:0907/023354.867:ERROR:components\viz\host\persistent_cache_sandboxed_file_factory.cc:153] Failed to open persistent cache files in directory "C:\Users\mustafa\Desktop\مشروع عمل   كاقي ورد\.a4-review\chrome-profile-EH9Uu7\GPUPersistentCache\DawnGraphiteCache\6364HUQ4W4H7RKR7NMQK6IVM6XY564JE", error: 0: The process cannot access the file because it is being used by another process. (0x20)
+[17016:23904:0907/023354.977:ERROR:content\browser\gpu\gpu_process_host.cc:1035] GPU process exited unexpectedly: exit_code=-1073741790
+[17016:22592:0907/023354.983:ERROR:components\viz\host\persistent_cache_sandboxed_file_factory.cc:153] Failed to open persistent cache files in directory "C:\Users\mustafa\Desktop\مشروع عمل   كاقي ورد\.a4-review\chrome-profile-EH9Uu7\GPUPersistentCache\DawnGraphiteCache\6364HUQ4W4H7RKR7NMQK6IVM6XY564JE", error: 0: The process cannot access the file because it is being used by another process. (0x20)
+[17016:23904:0907/023355.002:ERROR:content\browser\gpu\gpu_process_host.cc:1035] GPU process exited unexpectedly: exit_code=-1073741790
+[17016:22592:0907/023355.002:ERROR:components\viz\host\persistent_cache_sandboxed_file_factory.cc:153] Failed to open persistent cache files in directory "C:\Users\mustafa\Desktop\مشروع عمل   كاقي ورد\.a4-review\chrome-profile-EH9Uu7\GPUPersistentCache\DawnGraphiteCache\6364HUQ4W4H7RKR7NMQK6IVM6XY564JE", error: 0: The process cannot access the file because it is being used by another process. (0x20)
+[17016:23904:0907/023355.036:ERROR:content\browser\gpu\gpu_process_host.cc:1035] GPU process exited unexpectedly: exit_code=-1073741790
+[17016:22592:0907/023355.098:ERROR:components\viz\host\persistent_cache_sandboxed_file_factory.cc:153] Failed to open persistent cache files in directory "C:\Users\mustafa\Desktop\مشروع عمل   كاقي ورد\.a4-review\chrome-profile-EH9Uu7\GPUPersistentCache\DawnGraphiteCache\6364HUQ4W4H7RKR7NMQK6IVM6XY564JE", error: 0: The process cannot access the file because it is being used by another process. (0x20)
+[17016:23904:0907/023355.119:ERROR:content\browser\gpu\gpu_process_host.cc:1035] GPU process exited unexpectedly: exit_code=-1073741790
+[17016:23904:0907/023355.119:FATAL:content\browser\gpu\gpu_data_manager_impl_private.cc:417] GPU process isn't usable. Goodbye.
+[17016:22592:0907/023355.122:ERROR:components\viz\host\persistent_cache_sandboxed_file_factory.cc:153] Failed to open persistent cache files in directory "C:\Users\mustafa\Desktop\مشروع عمل   كاقي ورد\.a4-review\chrome-profile-EH9Uu7\GPUPersistentCache\DawnGraphiteCache\6364HUQ4W4H7RKR7NMQK6IVM6XY564JE", error: 0: The process cannot access the file because it is being used by another process. (0x20)
+
+DevTools listening on ws://127.0.0.1:63137/devtools/browser/7304433a-3ff8-43f1-8666-455a1f05d6f4
+
+DevTools listening on ws://127.0.0.1:63186/devtools/browser/b9bdc57a-2c5a-4678-ab8a-176e3aacd8fb
+
+DevTools listening on ws://127.0.0.1:63332/devtools/browser/82122048-039b-4505-8e64-d021616cc067
+
+DevTools listening on ws://127.0.0.1:63506/devtools/browser/32937c27-3e13-4712-abef-36dba43416cf
+[4772:22636:0907/023648.138:ERROR:components\system_cpu\cpu_probe_win.cc:112] PdhAddEnglishCounter failed for '\Processor(_Total)\% Processor Time': Error (0x13D) while retrieving error. (0xC0000BB8)
+[4772:15320:0907/023648.138:ERROR:components\system_cpu\cpu_probe_win.cc:112] PdhAddEnglishCounter failed for '\Processor(_Total)\% Processor Time': Error (0x13D) while retrieving error. (0xC0000BB8)
+
+DevTools listening on ws://127.0.0.1:63613/devtools/browser/91a322c1-f86c-4a91-99c1-94219fa630bc
+[14616:3408:0907/023739.176:ERROR:components\system_cpu\cpu_probe_win.cc:112] PdhAddEnglishCounter failed for '\Processor(_Total)\% Processor Time': Error (0x13D) while retrieving error. (0xC0000BB8)
+[14616:24804:0907/023739.176:ERROR:components\system_cpu\cpu_probe_win.cc:112] PdhAddEnglishCounter failed for '\Processor(_Total)\% Processor Time': Error (0x13D) while retrieving error. (0xC0000BB8)

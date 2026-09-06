@@ -255,6 +255,8 @@ let liveMenu = null;
 let menuRealtimeStarted = false;
 let liveAccounting = {
     expenses: [],
+    purchases: [],
+    inventory: [],
     clients: [],
     suppliers: [],
     unpaid: [],
@@ -262,6 +264,7 @@ let liveAccounting = {
     cashMovements: [],
     dayClosed: false
 };
+
 let accountingRealtimeStarted = false;
 let liveOrders = [];
 let ordersRealtimeStarted = false;
@@ -383,14 +386,42 @@ function renderMenuViews() { window.dispatchEvent(new Event('ward:menu')); }
 
 function getAccountingData() {
     if (firebaseDatabase) return liveAccounting;
+
     return {
-        expenses: JSON.parse(localStorage.getItem('cafe_ward_expenses') || '[]'),
-        clients: JSON.parse(localStorage.getItem('cafe_ward_clients') || '[]'),
-        suppliers: JSON.parse(localStorage.getItem('cafe_ward_suppliers') || '[]'),
-        unpaid: JSON.parse(localStorage.getItem('cafe_ward_unpaid') || '[]'),
-        sales: JSON.parse(readWardStorage('cafe_ward_sales') || '[]'),
-        cashMovements: JSON.parse(localStorage.getItem('cafe_ward_cash_mov') || '[]'),
-        dayClosed: localStorage.getItem('cafe_ward_day_closed') === 'true'
+        expenses: JSON.parse(
+            localStorage.getItem('cafe_ward_expenses') || '[]'
+        ),
+
+        purchases: JSON.parse(
+            localStorage.getItem('cafe_ward_purchases') || '[]'
+        ),
+
+        inventory: JSON.parse(
+            localStorage.getItem('cafe_ward_inventory') || '[]'
+        ),
+
+        clients: JSON.parse(
+            localStorage.getItem('cafe_ward_clients') || '[]'
+        ),
+
+        suppliers: JSON.parse(
+            localStorage.getItem('cafe_ward_suppliers') || '[]'
+        ),
+
+        unpaid: JSON.parse(
+            localStorage.getItem('cafe_ward_unpaid') || '[]'
+        ),
+
+        sales: JSON.parse(
+            readWardStorage('cafe_ward_sales') || '[]'
+        ),
+
+        cashMovements: JSON.parse(
+            localStorage.getItem('cafe_ward_cash_mov') || '[]'
+        ),
+
+        dayClosed:
+            localStorage.getItem('cafe_ward_day_closed') === 'true'
     };
 }
 
@@ -419,21 +450,78 @@ function startAccountingRealtime() {
 
 async function saveAccountingRecord(collection, record) {
     const createdAt = record.createdAt || Date.now();
-    const completeRecord = { ...record, createdAt, time: record.time || formatWardDateTime(createdAt) };
+
+    const completeRecord = {
+        ...record,
+        createdAt,
+        time: record.time || formatWardDateTime(createdAt)
+    };
+
     const ref = getFirebaseAccountingRef();
-    if (ref) return ref.child(collection).push(completeRecord);
+
+    // Firebase
+    if (ref) {
+        return ref.child(collection).push(completeRecord);
+    }
+
+    // LocalStorage
     const records = getAccountingData()[collection] || [];
-    records.unshift({ ...completeRecord, id: String(createdAt) });
-    localStorage.setItem(`cafe_ward_${collection === 'cashMovements' ? 'cash_mov' : collection}`, JSON.stringify(records));
+
+    records.unshift({
+        ...completeRecord,
+        id: crypto.randomUUID
+            ? crypto.randomUUID()
+            : String(createdAt)
+    });
+
+    const storageKey =
+        collection === 'cashMovements'
+            ? 'cafe_ward_cash_mov'
+            : `cafe_ward_${collection}`;
+
+    localStorage.setItem(
+        storageKey,
+        JSON.stringify(records)
+    );
+
+    window.dispatchEvent(
+        new Event('ward:accounting')
+    );
 }
+
 
 async function removeAccountingRecord(collection, id) {
     const ref = getFirebaseAccountingRef();
-    if (ref) return ref.child(collection).child(String(id)).remove();
-    const records = (getAccountingData()[collection] || []).filter(item => String(item.id) !== String(id));
-    localStorage.setItem(`cafe_ward_${collection === 'cashMovements' ? 'cash_mov' : collection}`, JSON.stringify(records));
-}
 
+    // Firebase
+    if (ref) {
+        return ref
+            .child(collection)
+            .child(String(id))
+            .remove();
+    }
+
+    // LocalStorage
+    const records =
+        (getAccountingData()[collection] || [])
+            .filter(item =>
+                String(item.id) !== String(id)
+            );
+
+    const storageKey =
+        collection === 'cashMovements'
+            ? 'cafe_ward_cash_mov'
+            : `cafe_ward_${collection}`;
+
+    localStorage.setItem(
+        storageKey,
+        JSON.stringify(records)
+    );
+
+    window.dispatchEvent(
+        new Event('ward:accounting')
+    );
+}
 function readLocalOrders() {
     return JSON.parse(readWardStorage('cafe_ward_orders') || '[]');
 }

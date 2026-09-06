@@ -28,28 +28,28 @@ function renderKitchenOrders() {
     const container = document.getElementById('kitchen-orders-container');
     if (!container) return;
     const orders = getOrders();
-    const activeOrders = orders.filter(order => order.status === 'قيد التحضير' || order.status === 'جاهز')
+    const activeOrders = orders.filter(order => order.status === 'قيد التحضير' && order.paymentStatus !== 'مدفوع')
         .sort((a, b) => (Number(a.createdAt) || Infinity) - (Number(b.createdAt) || Infinity));
     for (const id of kitchenFeedback.keys()) {
-        if (!activeOrders.some(order => String(order.id) === id) && !kitchenSaving.has(id)) kitchenFeedback.delete(id);
+        if (!activeOrders.some(order => String(order.firebaseKey || order.id) === id) && !kitchenSaving.has(id)) kitchenFeedback.delete(id);
     }
     const now = Date.now();
     container.innerHTML = activeOrders.length === 0 ? '<p class="kitchen-empty">لا توجد طلبات بانتظار التحضير.</p>' : activeOrders.map(order => {
         const id = String(order.id);
         const firebaseKey = String(order.firebaseKey || order.id);
         const timing = kitchenTiming(order, now);
-        const ready = order.status === 'جاهز', saving = kitchenSaving.has(firebaseKey);
+        const saving = kitchenSaving.has(firebaseKey);
         const feedback = kitchenFeedback.get(firebaseKey);
-        return `<article class="kitchen-order ${ready ? 'is-ready' : 'wait-' + timing.urgency}" aria-busy="${saving ? 'true' : 'false'}">
+        return `<article class="kitchen-order wait-${timing.urgency}" aria-busy="${saving ? 'true' : 'false'}">
             <div class="kitchen-order-head"><h3>الطاولة رقم ${escapeHtml(order.table)}</h3><strong class="kitchen-status">${escapeHtml(order.status)}</strong></div>
             <dl class="kitchen-order-meta">
                 <div><dt>رقم الطلب</dt><dd class="kitchen-order-number">${escapeHtml(id)}</dd></div>
                 <div><dt>وقت إنشاء الطلب</dt><dd>${escapeHtml(timing.created)}</dd></div>
                 <div><dt>مدة الانتظار منذ الإنشاء</dt><dd class="kitchen-wait">${escapeHtml(timing.wait)}</dd></div>
             </dl>
-            ${!ready && timing.urgency !== 'normal' ? `<p class="kitchen-age-label">${escapeHtml(timing.label)}</p>` : ''}
+            ${timing.urgency !== 'normal' ? `<p class="kitchen-age-label">${escapeHtml(timing.label)}</p>` : ''}
             <ul class="kitchen-items">${(order.items || []).map(item => `<li><b>${escapeHtml(item.qty)}</b> × ${escapeHtml(item.name)}</li>`).join('')}</ul>
-            ${!ready ? `<button type="button" class="btn-action" data-ready-order="${kitchenAttribute(firebaseKey)}" ${saving ? 'disabled' : ''}>${saving ? 'جارٍ حفظ التجهيز…' : 'تم تجهيز الطلب'}</button>` : '<span class="ready-note">بانتظار الكارسون</span>'}
+            <button type="button" class="btn-action" data-ready-order="${kitchenAttribute(firebaseKey)}" ${saving ? 'disabled' : ''}>${saving ? 'جارٍ حفظ التجهيز…' : 'تم تجهيز الطلب'}</button>
             ${feedback ? `<p class="kitchen-feedback ${feedback.error ? 'is-error' : 'is-success'}" role="${feedback.error ? 'alert' : 'status'}">${escapeHtml(feedback.message)}</p>` : ''}
         </article>`;
     }).join('');

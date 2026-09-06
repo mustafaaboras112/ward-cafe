@@ -1,6 +1,7 @@
 let movingFrom=null;
 let moveBusy=false;
 const releasingTables=new Set();
+const waiterReadyNotices=new Map();
 function availableMoveTables(from) {
     const orders=getOrders();
     return Array.from({length:20},(_,index)=>String(index+1)).filter(table=>table!==String(from) && getLocalTableStatus(table)?.status!=='occupied' && !orders.some(order=>String(order.table)===table && order.paymentStatus!=='مدفوع'));
@@ -69,7 +70,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 function renderOrders() {
     const container=document.getElementById('orders-container');if(!container) return;
-    const orders=getOrders().filter(order=>order.paymentStatus!=='مدفوع');
+    const orders=getOrders().filter(order=>order.paymentStatus!=='مدفوع' && order.status!=='تم التوصيل');
     const groups=[['جاهز','جاهز للتوصيل','waiter-ready'],['قيد التحضير','قيد التحضير','waiter-preparing']];
     container.innerHTML=groups.map(([status,label,style])=>{
         const matching=orders.filter(order=>order.status===status).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
@@ -94,12 +95,22 @@ function startWaiterMonitor() {
 
 function notifyReadyOrders(orders) {
     if (!document.getElementById('orders-container')) return;
-    const seen = JSON.parse(sessionStorage.getItem('cafe_ward_seen_ready') || '[]');
-    orders.filter(order => order.status === 'جاهز' && !seen.includes(order.id)).forEach(order => {
+    const readyOrders = orders.filter(order => order.status === 'جاهز' && order.paymentStatus !== 'مدفوع');
+    const readyIds = new Set(readyOrders.map(order => String(order.id)));
+    for (const [id, notice] of waiterReadyNotices) {
+        if (!readyIds.has(id)) {
+            notice.remove();
+            waiterReadyNotices.delete(id);
+        }
+    }
+    const seen = new Set(JSON.parse(sessionStorage.getItem('cafe_ward_seen_ready') || '[]').map(String));
+    readyOrders.forEach(order => {
+        const id = String(order.id);
+        if (seen.has(id)) return;
         showWaiterReadyNotification(order);
-        seen.push(order.id);
+        seen.add(id);
     });
-    sessionStorage.setItem('cafe_ward_seen_ready', JSON.stringify(seen));
+    sessionStorage.setItem('cafe_ward_seen_ready', JSON.stringify([...seen]));
 }
 
 function showWaiterReadyNotification(order) {
@@ -108,7 +119,12 @@ function showWaiterReadyNotification(order) {
     notice.className = 'ready-notification';
     notice.innerHTML = `<i class="fa-solid fa-bell"></i><span>الطلب جاهز للطاولة رقم <strong>${escapeHtml(order.table)}</strong></span>`;
     document.body.appendChild(notice);
-    setTimeout(() => notice.remove(), 10000);
+    const id = String(order.id);
+    waiterReadyNotices.set(id, notice);
+    setTimeout(() => {
+        notice.remove();
+        if (waiterReadyNotices.get(id) === notice) waiterReadyNotices.delete(id);
+    }, 10000);
 }
 
 function enableWaiterBell() {
@@ -176,7 +192,7 @@ function renderWaiterTables() {
                 <button class="release-table-btn" onclick='releaseTableAndRefresh("${table}")'>تفريغ الطاولة</button>
                 <button class="btn-action" onclick='openMoveTableModal("${table}")'>نقل الطاولة</button>
             </div>
-            ${summary.count?'<p class="waiter-empty">التفريغ متاح بعد دفع جميع الطلبات. <a href="pos.html">فتح الكاشير</a></p>':''}
+            ${summary.count?'<p class="waiter-empty">التفريغ متاح بعد دفع جميع الطلبات.</p>':''}
         </article>`;
     }).join(''):'<p class="waiter-empty">لا توجد طاولات مشغولة حالياً.</p>';
 }

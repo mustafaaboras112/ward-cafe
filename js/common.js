@@ -246,7 +246,7 @@ window.addEventListener('storage', event => {
     }
 });
 window.addEventListener('DOMContentLoaded', () => {
-    initializeProtectedPage(); addCafeNavigation();
+    initializeProtectedPage(); initializeCafeHeaderClock();
     const splash=document.getElementById('splash-screen');
     if(splash) { createSplashPetals(splash); setTimeout(()=>{splash.remove();document.body.classList.remove('menu-page-loading');},1200); }
     createPetals();
@@ -615,25 +615,9 @@ function escapeHtml(value) {
     return node.innerHTML;
 }
 
-function addCafeNavigation() {
+function initializeCafeHeaderClock() {
     const header = document.querySelector('header');
-    if (!header || document.getElementById('cafe-main-nav')) return;
-    header.querySelectorAll(':scope > div').forEach(section => {
-        if (section.querySelector('a[href$=".html"]')) section.classList.add('legacy-page-links');
-    });
-
-    const navigation=document.createElement('nav');
-    navigation.id='cafe-main-nav';
-    navigation.setAttribute('aria-label','شاشات كافيه ورد');
-    header.querySelectorAll('a[href$=".html"]').forEach(link=>link.remove());
-    for(const [page,label] of [['index','المنيو'],['waiter','الكارسون'],['kitchen','المطبخ'],['pos','الكاشير'],['accounting','المحاسبة'],['admin','الإدارة']]) {
-        const link=document.createElement('a');link.href=page+'.html';link.textContent=label;
-        if(window.location.pathname.endsWith(link.getAttribute('href'))) link.className='is-current';
-        navigation.appendChild(link);
-    }
-    header.appendChild(navigation);
-
-    const currentPage = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    if (!header || document.getElementById('ward-live-clock') || document.getElementById('pos-clock')) return;
     const clock = document.createElement('div');
     clock.id = 'ward-live-clock';
     clock.setAttribute('aria-label', 'الوقت الحالي');

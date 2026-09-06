@@ -18,20 +18,21 @@ function menuFeedback(message) {
     clearTimeout(feedbackTimer);feedbackTimer=setTimeout(()=>{node.textContent='';},2200);
 }
 function customerMessage(order) {
-    if(order.paymentStatus==='مدفوع') return 'تم الدفع، شكراً لزيارتك';
-    return {'قيد التحضير':'طلبك قيد التحضير','جاهز':'طلبك في طريقه إلى الطاولة','تم التوصيل':'تم توصيل طلبك إلى الطاولة'}[order.status] || order.status;
-}
-function orderProgress(order) {
-    const step=order.paymentStatus==='مدفوع'?4:({'قيد التحضير':1,'جاهز':2,'تم التوصيل':3}[order.status] ?? 0);
-    return ['تم استلام الطلب','قيد التحضير','جاهز / في طريقه للطاولة','تم التوصيل','تم الدفع'].map((label,index)=>`<li class="${index<=step?'is-complete':''}" ${index===step?'aria-current="step"':''}>${label}</li>`).join('');
+    return {'قيد التحضير':'جاري التحضير','جاهز':'طلبك جاهز وسيتم توصيله'}[order.status] || order.status;
 }
 function renderCustomerOrders() {
     const container=document.getElementById('customer-orders');if(!container) return;
-    const owned=getOrders().filter(order=>order.clientId===customerId() || customerOrderIds().includes(String(order.id)));
-    container.innerHTML=owned.map(order=>`<article class="customer-order-status"><strong>طاولة ${escapeHtml(order.table)}</strong><p>${escapeHtml(customerMessage(order))}</p><ol class="order-progress" aria-label="مراحل الطلب">${orderProgress(order)}</ol><small>رقم الطلب: ${escapeHtml(order.id)}</small></article>`).join('');
+    const owner=String(customerId());
+    const owned=[...new Map(getOrders().filter(order=>String(order.clientId)===owner).map(order=>[String(order.id),order])).values()];
+    const visibleOrders=owned.filter(order=>order.paymentStatus!=='مدفوع' && order.status!=='تم التوصيل');
+    container.hidden=!visibleOrders.length;
+    container.innerHTML=visibleOrders.length?'<h2>متابعة طلباتك</h2>'+visibleOrders.map(order=>`<article class="customer-order-status" data-order-id="${menuAttr(order.id)}"><strong>طاولة ${escapeHtml(order.table)}</strong><p class="customer-order-message">${escapeHtml(customerMessage(order))}</p><ul class="customer-order-items">${(order.items || []).map(item=>`<li><span>${escapeHtml(item.name)}</span><span>× ${escapeHtml(item.qty)}</span></li>`).join('')}</ul><div class="customer-order-footer"><strong>الإجمالي: ${Number(order.total).toFixed(2)} ليرة</strong><small>رقم الطلب: ${escapeHtml(order.id)}</small></div></article>`).join(''):'';
+    const readyOrders=visibleOrders.filter(order=>order.status==='جاهز');
+    const existingOverlay=document.querySelector('.customer-ready-overlay');
+    if(existingOverlay && !readyOrders.some(order=>existingOverlay.id==='customer-ready-'+order.id)) existingOverlay.remove();
     const seen=JSON.parse(sessionStorage.getItem('ward-ready-seen') || '[]');
-    for(const order of owned) {
-        if((order.readyAt || order.status==='جاهز') && order.paymentStatus!=='مدفوع' && !seen.includes(String(order.id))) {
+    for(const order of readyOrders) {
+        if(!seen.includes(String(order.id))) {
             showCustomerReadyNotification(order,'customer-ready-'+order.id);seen.push(String(order.id));
         }
     }
@@ -222,7 +223,7 @@ function showCustomerReadyNotification(order, uniqueId) {
                 <div class="ready-coffee-cup"></div>
             </div>
             <h2 class="customer-ready-title" id="customer-ready-title">طلبك جاهز! ✨</h2>
-            <p class="customer-ready-message">طلبك في طريقه إلى الطاولة</p>
+            <p class="customer-ready-message">طلبك جاهز وسيتم توصيله</p>
             <span class="customer-ready-table"><i class="fa-solid fa-chair"></i> الطاولة رقم ${escapeHtml(order.table)}</span>
             <small class="customer-ready-time"><i class="fa-regular fa-clock"></i> ${escapeHtml(readyTime)}</small>
             <button type="button" class="customer-ready-close">حسناً، شكراً <i class="fa-solid fa-heart"></i></button>

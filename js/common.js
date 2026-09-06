@@ -257,30 +257,61 @@ async function submitOrder(table, items) {
 ===================================================== */
 
 async function transitionOrder(id, expected, next) {
-
     const allowed = {
         'قيد التحضير': 'جاهز',
         'جاهز': 'تم التوصيل'
     };
 
     if (allowed[expected] !== next) {
-        throw new Error(
-            'انتقال حالة غير مسموح.'
-        );
+        throw new Error('انتقال حالة غير مسموح.');
     }
 
+    const requestedId = String(id);
     let alreadyCompleted = false;
 
     await changeCafeState(state => {
+        const orders = state.orders || {};
 
-        const order = state.orders[id];
+        /*
+         * أولاً نحاول إيجاد الطلب باستخدام
+         * مفتاح Firebase نفسه.
+         */
+        let orderKey = requestedId;
+        let order = orders[orderKey];
 
+        /*
+         * إذا لم نجده:
+         * بعض الطلبات قد يكون order.id فيها
+         * مختلفاً عن المفتاح الموجود في Firebase.
+         *
+         * لذلك نبحث أيضاً داخل جميع الطلبات
+         * باستخدام order.id.
+         */
+        if (!order) {
+            const found = Object.entries(orders).find(
+                ([key, item]) => {
+                    return String(item?.id || key) === requestedId;
+                }
+            );
+
+            if (found) {
+                orderKey = found[0];
+                order = found[1];
+            }
+        }
+
+        /*
+         * الطلب فعلاً غير موجود.
+         */
         if (!order) {
             throw new Error(
-                'الطلب غير موجود.'
+                'تعذر العثور على الطلب. ستتحدث الشاشة تلقائياً.'
             );
         }
 
+        /*
+         * الطلب مدفوع ومغلق.
+         */
         if (order.paymentStatus === 'مدفوع') {
             throw new Error(
                 'تم إغلاق هذا الطلب بعد الدفع.'
@@ -288,61 +319,60 @@ async function transitionOrder(id, expected, next) {
         }
 
         /*
-         إذا جهاز آخر سبق ونفّذ نفس العملية،
-         ما نعتبرها خطأ.
-        */
-
+         * إذا جهاز آخر سبق ونفذ نفس العملية:
+         *
+         * مثلاً المطبخ ضغط "جاهز"
+         * وفي نفس اللحظة وصل تحديث Firebase.
+         *
+         * لا نعتبر هذا خطأ.
+         */
         if (order.status === next) {
             alreadyCompleted = true;
             return;
         }
 
         /*
-         الحالة تغيّرت فعلاً إلى شيء آخر
-        */
-
+         * إذا الحالة أصبحت شيئاً مختلفاً فعلاً
+         * فلا نسمح بانتقال غير صحيح.
+         */
         if (order.status !== expected) {
             throw new Error(
                 'تم تحديث حالة الطلب من جهاز آخر.'
             );
         }
 
+        /*
+         * تنفيذ تغيير الحالة.
+         */
         order.status = next;
 
+        /*
+         * تسجيل وقت تغيير الحالة.
+         */
         order[
             next === 'جاهز'
                 ? 'readyAt'
                 : 'deliveredAt'
         ] = Date.now();
+
+        /*
+         * إذا الطلب القديم لا يحتوي id داخلي،
+         * نضيفه بدون تغيير مفتاح Firebase.
+         */
+        if (!order.id) {
+            order.id = requestedId;
+        }
+
+        /*
+         * نحفظ الطلب تحت مفتاحه الحقيقي
+         * الموجود في Firebase.
+         */
+        state.orders[orderKey] = order;
     });
 
     return {
         alreadyCompleted
     };
-}
-
-
-async function releaseTable(table) {
-
-    if (!validTable(table)) {
-        throw new Error(
-            'رقم الطاولة غير صالح.'
-        );
-    }
-
-    await changeCafeState(state => {
-
-        if (
-            openTableOrders(state, table)
-                .length
-        ) {
-            throw new Error(
-                'لا يمكن تفريغ الطاولة قبل توصيل جميع الطلبات وتحصيل حسابها من الكاشير.'
-            );
-        }
-
-        delete state.tables[table];
-    });
 }
 
 

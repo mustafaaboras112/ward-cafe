@@ -8,38 +8,100 @@
     <link rel="stylesheet" href="style/pos.css">
 </head>
 <body class="pos-page">
-    <header><div class="logo"><img src="q.png" alt="كافيه ورد"></div><h1>الكاشير</h1><nav><a href="waiter.html">الكارسون</a> <a href="accounting.html">المحاسبة</a> <a href="admin.html">الإدارة</a></nav></header>
-    <main class="pos-layout">
-        <section class="pos-panel"><h2>حسابات الطاولات</h2><p>تظهر جميع الحسابات المفتوحة، ويتاح الدفع بعد تأكيد التوصيل.</p><div id="pos-tables"></div></section>
-        <section class="pos-panel pos-invoice"><h2 id="pos-title">اختر طاولة لعرض الفاتورة</h2><div id="pos-items"></div>
-            <div class="pos-line pos-total"><span>الإجمالي</span><strong id="pos-total">0.00 ليرة</strong></div>
-            <form id="pos-payment">
-                <span>طريقة الدفع</span>
-                <input id="pos-method" type="hidden" value="cash">
-                <div class="pos-methods" role="group" aria-label="طريقة الدفع">
-                    <button id="pos-cash" type="button" aria-pressed="true">نقداً</button>
-                    <button id="pos-card" type="button" aria-pressed="false">بطاقة</button>
-                </div>
-                <p id="pos-card-note" hidden>أكد الدفع بعد نجاح التحصيل على جهاز البطاقة.</p>
-                <div id="pos-cash-fields">
-                    <label for="pos-received">المبلغ المستلم نقداً</label><input id="pos-received" type="number" min="0" step="0.01" inputmode="decimal">
-                    <button id="pos-exact" type="button">المبلغ تماماً</button>
-                    <div id="pos-amounts" class="pos-amounts" role="group" aria-label="اختصارات المبلغ المستلم"></div>
-                    <div class="pos-change-box"><span>الباقي للعميل</span><strong id="pos-change">0.00 ليرة</strong></div>
-                    <p id="pos-shortfall" role="status"></p>
-                </div>
-                <button id="pos-pay" class="btn-action" type="submit" disabled>تأكيد استلام الدفع (F9)</button>
-            </form>
-            <p id="pos-feedback" role="status" aria-live="polite"></p>
-            <section id="pos-success" class="pos-success" aria-live="polite" hidden>
-                <h3>✓ تم الدفع</h3>
-                <p id="pos-success-details"></p>
-                <button id="pos-print" type="button">طباعة الفاتورة</button>
-            </section>
+    <header class="pos-shell-header">
+        <div class="logo" aria-label="شعار كافيه ورد">
+            <img src="q.png" alt="كافيه ورد">
+        </div>
+    </header>
+
+    <main class="pos-shell">
+        <section class="pos-hero">
+            <div>
+                <span class="pos-eyebrow">نقطة البيع</span>
+                <h1>الكاشير</h1>
+                <p>اختَر الطاولة، راجع الفاتورة، ثم ثبّت عملية الدفع.</p>
+            </div>
+            <div class="pos-hero-badge">كافيه ورد</div>
         </section>
+
+        <div class="pos-workspace">
+            <aside class="pos-tables-panel">
+                <div class="pos-panel-heading">
+                    <div>
+                        <span class="pos-section-kicker">الطاولات</span>
+                        <h2>الحسابات المفتوحة</h2>
+                    </div>
+                    <span class="pos-live-dot" aria-label="متصل"></span>
+                </div>
+                <p class="pos-panel-note">الحساب يصبح جاهزاً للتحصيل بعد تأكيد التوصيل من الكارسون.</p>
+                <div id="pos-tables" class="pos-table-list"></div>
+            </aside>
+
+            <section class="pos-checkout-panel">
+                <div class="pos-invoice-head">
+                    <div>
+                        <span class="pos-section-kicker">الفاتورة الحالية</span>
+                        <h2 id="pos-title">اختر طاولة لعرض الفاتورة</h2>
+                    </div>
+                    <button id="pos-print" class="pos-print-btn" type="button">طباعة الفاتورة</button>
+                </div>
+
+                <div class="pos-receipt">
+                    <div class="pos-receipt-labels">
+                        <span>الصنف</span>
+                        <span>القيمة</span>
+                    </div>
+                    <div id="pos-items" class="pos-items"></div>
+
+                    <div class="pos-total-card">
+                        <span>الإجمالي</span>
+                        <strong id="pos-total">0.00 ليرة</strong>
+                    </div>
+                </div>
+
+                <form id="pos-payment" class="pos-payment-card">
+                    <div class="pos-payment-title">
+                        <div>
+                            <span class="pos-section-kicker">الدفع</span>
+                            <h3>إتمام التحصيل</h3>
+                        </div>
+                        <span class="pos-secure-badge">عملية واحدة</span>
+                    </div>
+
+                    <div class="pos-field">
+                        <label for="pos-method">طريقة الدفع</label>
+                        <select id="pos-method">
+                            <option value="cash">نقداً</option>
+                            <option value="card">بطاقة — تم التحصيل على الجهاز</option>
+                        </select>
+                    </div>
+
+                    <div class="pos-cash-grid">
+                        <div class="pos-field">
+                            <label for="pos-received">المبلغ المستلم نقداً</label>
+                            <input id="pos-received" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00">
+                        </div>
+                        <div class="pos-change-box">
+                            <span>الباقي للعميل</span>
+                            <strong id="pos-change">0.00 ليرة</strong>
+                        </div>
+                    </div>
+
+                    <button id="pos-pay" class="pos-pay-btn" type="submit" disabled>
+                        <span>تأكيد استلام الدفع</span>
+                        <small>إغلاق الفاتورة وتسجيل المبيعات</small>
+                    </button>
+
+                    <p id="pos-feedback" class="pos-feedback" role="status" aria-live="polite"></p>
+                </form>
+            </section>
+        </div>
     </main>
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="firebase-config.js"></script><script src="js/common.js"></script><script src="js/pos.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/pos.js"></script>
 </body>
 </html>

@@ -1,0 +1,797 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>التقرير المحاسبي - كافيه ورد</title>
+
+<style>
+@page {
+    size: A4;
+    margin: 12mm;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, Tahoma, sans-serif;
+    direction: rtl;
+    color: #222;
+    background: #fff;
+    line-height: 1.4;
+}
+
+.report {
+    position: relative;
+    width: 100%;
+    max-width: 186mm;
+    margin: 0 auto;
+    border: 2px solid #b75b73;
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.report::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1px solid #ead6dc;
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+.report > * { position: relative; min-width: 0; }
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    border-bottom: 2px solid #b75b73;
+    padding: 2px 0 12px;
+    margin-bottom: 14px;
+}
+
+.brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.brand-logo { font-size: 46px; line-height: 1; }
+.brand strong { display: block; font-size: 26px; font-weight: 800; }
+.brand small { font-size: 11px; color: #666; }
+.report-title { min-width: 0; text-align: right; }
+.report-title h1 { margin: 0 0 6px; font-size: 25px; font-weight: 800; }
+.report-title p { margin: 3px 0; font-size: 11px; color: #666; }
+.report-title .period { color: #222; font-weight: 700; }
+
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.metric {
+    min-width: 0;
+    border: 1px solid #e4e4e4;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(34, 34, 34, .035);
+    padding: 14px 8px;
+    text-align: center;
+}
+
+.metric span { display: block; font-size: 11px; color: #666; margin-bottom: 5px; }
+.metric strong { display: block; font-size: 24px; line-height: 1.2; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.metric small { font-size: 10px; color: #666; }
+.metric-profit { border: 2px solid #b75b73; background: #fff8fa; padding: 13px 7px; }
+.metric-profit .profit-positive { color: #245b43; }
+.metric-profit .profit-negative { color: #b42332; }
+
+.period-summary {
+    border: 1px solid #ead6dc;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background: #fff8fa;
+}
+
+.period-summary h2, .payment-box h2 { margin: 0 0 8px; font-size: 14px; }
+.summary-items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.summary-items > div { min-width: 0; }
+.summary-items > div + div { border-inline-start: 1px solid #ead6dc; padding-inline-start: 10px; }
+.summary-items span { display: block; font-size: 10px; color: #666; }
+.summary-items strong { font-size: 15px; overflow-wrap: anywhere; }
+.summary-items small { font-size: 10px; color: #666; }
+
+.tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.box { min-width: 0; border: 1px solid #ead6dc; border-radius: 12px; overflow: hidden; }
+.box h2 { font-size: 15px; margin: 0; padding: 8px 10px; background: #fff8fa; border-bottom: 1px solid #ead6dc; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
+th, td { padding: 7px 6px; border-bottom: 1px solid #e4e4e4; text-align: right; vertical-align: top; overflow-wrap: anywhere; }
+th { background: #f5f5f5; color: #666; font-size: 10px; }
+th:first-child { width: 38%; }
+th:last-child { width: 26%; }
+tbody tr:nth-child(even) { background: #fafafa; }
+tbody tr:last-child td { border-bottom: 0; }
+.record-date, .record-time { display: block; font-size: 10px; }
+.record-time { color: #666; }
+
+.payment-box { margin-top: 12px; border: 1px solid #ead6dc; border-radius: 12px; padding: 12px; }
+.payment-bar { height: 24px; display: flex; border-radius: 8px; overflow: hidden; background: #f5f5f5; margin: 8px 0 10px; }
+.cash { background: #b75b73; }
+.card { background: #666; }
+.payment-info { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; font-size: 11px; }
+.payment-info > span { min-width: 0; overflow-wrap: anywhere; }
+.payment-label { display: inline-flex; align-items: center; gap: 5px; }
+.payment-label::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #b75b73; }
+.payment-label-card::before { background: #666; }
+.payment-percent { font-weight: 700; color: #222; }
+
+.footer {
+    border-top: 1px solid #ead6dc;
+    border-radius: 0 0 8px 8px;
+    background: #fff8fa;
+    margin-top: 14px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 10px;
+    color: #666;
+}
+
+.footer strong { color: #222; }
+.footer p { margin: 2px 0 0; }
+.page-number { white-space: nowrap; color: #b75b73; font-weight: 700; }
+
+@media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .report { page-break-inside: avoid; break-inside: avoid; }
+    .header, .metric, .period-summary, .payment-box, .footer, tr { break-inside: avoid; }
+    .box h2 { break-after: avoid; }
+    thead { display: table-header-group; }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="report">
+
+    <div class="header">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                🌸
+            </div>
+
+            <div>
+
+                <strong>
+                    كافيه ورد
+                </strong>
+
+                <small>
+                    النظام المحاسبي
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="report-title">
+
+            <h1>
+                التقرير المحاسبي
+            </h1>
+
+            <p class="period">
+                الفترة: من 2026/09/01 إلى 2026/09/07
+            </p>
+
+            <p>
+                وقت إصدار التقرير: 07‏/09‏/2026
+                02:32 ص
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="metrics">
+
+        <div class="metric">
+
+            <span>
+                إجمالي المبيعات
+            </span>
+
+            <strong>
+                3000.00
+            </strong>
+
+            <small>ليرة</small>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                المبيعات النقدية
+            </span>
+
+            <strong>
+                1800.00
+            </strong>
+
+            <small>ليرة</small>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                مبيعات البطاقة
+            </span>
+
+            <strong>
+                1200.00
+            </strong>
+
+            <small>ليرة</small>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                عدد الفواتير
+            </span>
+
+            <strong>
+                2
+            </strong>
+
+            <small>فاتورة</small>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                المشتريات
+            </span>
+
+            <strong>
+                600.00
+            </strong>
+
+            <small>ليرة</small>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                المصروفات
+            </span>
+
+            <strong>
+                150.00
+            </strong>
+
+            <small>ليرة</small>
+
+        </div>
+
+
+        <div class="metric metric-profit">
+
+            <span>
+                صافي الربح
+            </span>
+
+            <strong class="profit-positive">
+                2250.00
+            </strong>
+
+            <small>ليرة</small>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                حالة الصندوق الحالية
+            </span>
+
+            <strong style="font-size:17px">
+                مفتوح
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <section class="period-summary" aria-labelledby="period-summary-title">
+        <h2 id="period-summary-title">ملخص الفترة</h2>
+        <div class="summary-items">
+            <div><span>عدد الفواتير</span><strong>2</strong> <small>فاتورة</small></div>
+            <div><span>متوسط قيمة الفاتورة</span><strong>1500.00</strong> <small>ليرة</small></div>
+            <div><span>أعلى طريقة دفع استخدامًا</span><strong>نقدي</strong></div>
+        </div>
+    </section>
+
+    <div class="tables">
+
+        <div class="box">
+
+            <h2>
+                المشتريات
+            </h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>التاريخ والوقت</th>
+                        <th>المورد</th>
+                        <th>المبلغ</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">12:00 ص</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 1
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">02:24 ص</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 2
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">04:48 ص</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 3
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">07:12 ص</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 4
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">09:36 ص</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 5
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">12:00 م</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 6
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">02:24 م</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 7
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">04:48 م</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 8
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">07:12 م</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 9
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">09:36 م</span>
+                    </td>
+
+                    <td>
+                        مورد القهوة 10
+                    </td>
+
+                    <td>
+                        60.00
+                    </td>
+
+                </tr>
+            
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <div class="box">
+
+            <h2>
+                المصروفات
+            </h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>التاريخ والوقت</th>
+                        <th>البيان</th>
+                        <th>المبلغ</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">12:00 ص</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 1
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">02:24 ص</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 2
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">04:48 ص</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 3
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">07:12 ص</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 4
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">09:36 ص</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 5
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">12:00 م</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 6
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">02:24 م</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 7
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">04:48 م</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 8
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">07:12 م</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 9
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+                <tr>
+
+                    <td>
+                        <span class="record-date">01‏/09‏/2026</span>
+                        <span class="record-time">09:36 م</span>
+                    </td>
+
+                    <td>
+                        مستلزمات الضيافة 10
+                    </td>
+
+                    <td>
+                        15.00
+                    </td>
+
+                </tr>
+            
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <div class="payment-box">
+
+        <h2>توزيع طرق الدفع</h2>
+
+        <div class="payment-bar">
+
+            <div
+                class="cash"
+                style="
+                    width:60%
+                "
+            ></div>
+
+            <div
+                class="card"
+                style="
+                    width:40%
+                "
+            ></div>
+
+        </div>
+
+
+        <div class="payment-info">
+
+            <span>
+                <b class="payment-label">نقدي</b>
+                <bdi class="payment-percent">(60.0%)</bdi><br>
+                1800.00 ليرة
+            </span>
+
+            <span>
+                <b class="payment-label payment-label-card">بطاقة</b>
+                <bdi class="payment-percent">(40.0%)</bdi><br>
+                1200.00 ليرة
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+
+        <div>
+            <strong>كافيه ورد</strong> — تقرير صادر من النظام المحاسبي
+            <p>تاريخ ووقت الإصدار: 07‏/09‏/2026 — 02:32 ص</p>
+        </div>
+        <span class="page-number">صفحة 1</span>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+    

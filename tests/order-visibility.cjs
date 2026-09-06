@@ -134,11 +134,11 @@ async function browserChecks() {
     assert(!kitchen.d.querySelector('.kitchen-order') && !waiter.d.querySelector('.waiter-order'), 'Delivered order remains in a staff queue');
     assert(Object.keys(state.orders).length === 2 && Object.keys(state.accounting.sales).length === 0, 'Delivery removed orders or registered sales');
     pos.w.selectPosTable('12');
-    pos.w.showPosView('payment');
+    pos.w.showPosView('menu');
     assert(pos.w.payableOrders('12').length === 2 && pos.w.posTotal() === 100, 'POS account changed');
-    assert(!pos.d.getElementById('pos-pay').disabled, 'Delivered account cannot be paid');
     pos.d.getElementById('pos-received').value = '100';
     pos.d.getElementById('pos-received').dispatchEvent(new pos.w.Event('input'));
+    assert(!pos.d.getElementById('pos-pay').disabled, 'Delivered account cannot be paid');
     pos.d.getElementById('pos-payment').requestSubmit();
     pos.d.getElementById('pos-payment').requestSubmit();
     await until(() => Object.keys(state.accounting.sales).length === 2);

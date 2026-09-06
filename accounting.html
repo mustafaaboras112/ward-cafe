@@ -8,6 +8,13 @@
 <style>
 .accounting-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:grid;place-items:center;padding:20px}.accounting-modal[hidden]{display:none}.accounting-modal-card{width:min(560px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}.accounting-form{display:grid;gap:14px}.accounting-form label{display:grid;gap:7px;font-weight:700}.accounting-form input,.accounting-form select{width:100%;padding:11px 12px;border:1px solid #ddd;border-radius:10px;font:inherit}.accounting-form .actions{display:flex;gap:10px;justify-content:flex-start;margin-top:8px}
 </style>
+<style>
+.report-filter{margin-bottom:14px}
+.report-filter-fields{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.report-filter-fields label{display:grid;gap:7px;flex:1 1 180px;min-width:0;font-weight:700}
+.report-filter-fields input{width:100%;min-width:0;box-sizing:border-box;padding:11px 12px;border:1px solid #ddd;border-radius:10px;font:inherit;background:#fff}
+#report-period-label{margin:14px 0 0;overflow-wrap:anywhere}
+</style>
 </head>
 
 <body>
@@ -1042,6 +1049,16 @@ id="reports"
 class="page"
 >
 
+<div class="card report-filter">
+<div class="report-filter-fields">
+<label for="report-date-from">من تاريخ<input id="report-date-from" type="date"></label>
+<label for="report-date-to">إلى تاريخ<input id="report-date-to" type="date"></label>
+<button id="report-apply-filter" class="btn btn-primary" type="button">عرض التقرير</button>
+<button id="report-today" class="btn" type="button">اليوم</button>
+</div>
+<p id="report-period-label" aria-live="polite"></p>
+</div>
+
 <div class="two-columns">
 
 <div class="card">
@@ -1055,6 +1072,11 @@ class="page"
 <div class="list-item">
 <b>المبيعات</b>
 <strong id="report-sales">8420</strong>
+</div>
+
+<div class="list-item">
+<b>عدد الفواتير</b>
+<strong id="report-invoices">0</strong>
 </div>
 
 <div class="list-item">

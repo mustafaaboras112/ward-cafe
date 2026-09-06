@@ -547,38 +547,46 @@ function wardIsToday(value) {
 }
 
 
-function printWardAccountingReport(accounting) {
+function printWardAccountingReport(accounting, range = null) {
 
     if (!accounting) {
         alert('لا توجد بيانات محاسبية.');
         return;
     }
 
-    const sales =
-        (accounting.sales || [])
-            .filter(item =>
-                wardIsToday(
-                    item.paidAt ||
-                    item.createdAt
-                )
-            );
-
-    const purchases =
-        (accounting.purchases || [])
-            .filter(item =>
-                wardIsToday(
-                    item.createdAt
-                )
-            );
-
-    const expenses =
-        (accounting.expenses || [])
-            .filter(item =>
-                wardIsToday(
-                    item.createdAt
-                )
-            );
-
+    if (!range) {
+        const now = new Date();
+        range = {
+            startTimestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(),
+            endTimestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime()
+        };
+    }
+    if (!Number.isFinite(range.startTimestamp) || !Number.isFinite(range.endTimestamp)) {
+        alert('يرجى إدخال تاريخ صحيح.');
+        return;
+    }
+    if (range.startTimestamp > range.endTimestamp) {
+        alert('تاريخ البداية يجب أن يكون قبل تاريخ النهاية.');
+        return;
+    }
+    const inRange = value => {
+        if (value === null || value === undefined || value === '') return false;
+        const timestamp = typeof value === 'string' && /^\d+$/.test(value)
+            ? Number(value) : new Date(value).getTime();
+        return Number.isFinite(timestamp) && timestamp >= range.startTimestamp && timestamp <= range.endTimestamp;
+    };
+    const formatDay = value => {
+        const date = new Date(value);
+        return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'),
+            String(date.getDate()).padStart(2, '0')].join('/');
+    };
+    const from = formatDay(range.startTimestamp);
+    const to = formatDay(range.endTimestamp);
+    const periodLabel = from === to ? 'تقرير يوم: ' + from : 'الفترة: من ' + from + ' إلى ' + to;
+    const recordDate = value => typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
+    const sales = (accounting.sales || []).filter(item => inRange(item.paidAt || item.createdAt));
+    const purchases = (accounting.purchases || []).filter(item => inRange(item.createdAt));
+    const expenses = (accounting.expenses || []).filter(item => inRange(item.createdAt));
 
     const totalSales =
         sales.reduce(
@@ -648,13 +656,12 @@ function printWardAccountingReport(accounting) {
 
     const purchaseRows =
         purchases
-            .slice(0, 10)
             .map(item => `
                 <tr>
 
                     <td>
-                        ${wardPrintTime(
-                            item.createdAt
+                        ${wardPrintDate(recordDate(item.createdAt))} ${wardPrintTime(
+                            recordDate(item.createdAt)
                         )}
                     </td>
 
@@ -678,13 +685,12 @@ function printWardAccountingReport(accounting) {
 
     const expenseRows =
         expenses
-            .slice(0, 10)
             .map(item => `
                 <tr>
 
                     <td>
-                        ${wardPrintTime(
-                            item.createdAt
+                        ${wardPrintDate(recordDate(item.createdAt))} ${wardPrintTime(
+                            recordDate(item.createdAt)
                         )}
                     </td>
 
@@ -935,18 +941,15 @@ th {
         <div class="report-title">
 
             <h1>
-                التقرير المحاسبي اليومي
+                التقرير المحاسبي
             </h1>
 
             <p>
-                التاريخ:
-                ${wardPrintDate(
-                    generatedAt
-                )}
+                ${wardEscape(periodLabel)}
             </p>
 
             <p>
-                وقت إصدار التقرير:
+                وقت إصدار التقرير: ${wardPrintDate(generatedAt)}
                 ${wardPrintTime(
                     generatedAt
                 )}
@@ -1079,7 +1082,7 @@ th {
         <div class="metric">
 
             <span>
-                حالة الصندوق
+                حالة الصندوق الحالية
             </span>
 
             <strong style="font-size:17px">
@@ -1108,7 +1111,7 @@ th {
                 <thead>
 
                     <tr>
-                        <th>الوقت</th>
+                        <th>التاريخ والوقت</th>
                         <th>المورد</th>
                         <th>المبلغ</th>
                     </tr>
@@ -1122,7 +1125,7 @@ th {
                         `
                             <tr>
                                 <td colspan="3">
-                                    لا توجد مشتريات اليوم
+                                    لا توجد مشتريات في الفترة المحددة
                                 </td>
                             </tr>
                         `
@@ -1146,7 +1149,7 @@ th {
                 <thead>
 
                     <tr>
-                        <th>الوقت</th>
+                        <th>التاريخ والوقت</th>
                         <th>البيان</th>
                         <th>المبلغ</th>
                     </tr>
@@ -1160,7 +1163,7 @@ th {
                         `
                             <tr>
                                 <td colspan="3">
-                                    لا توجد مصروفات اليوم
+                                    لا توجد مصروفات في الفترة المحددة
                                 </td>
                             </tr>
                         `

@@ -2413,162 +2413,74 @@ function renderCashbox() {
    Reports
 ========================================================= */
 
+function accountingReportToday() {
+    const now = new Date();
+    return [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0')].join('-');
+}
+
+function getAccountingReportRange() {
+    const today = accountingReportToday();
+    const from = accSection('report-date-from')?.value || today;
+    const to = accSection('report-date-to')?.value || today;
+    const [fy, fm, fd] = from.split('-').map(Number);
+    const [ty, tm, td] = to.split('-').map(Number);
+    const startTimestamp = new Date(fy, fm - 1, fd, 0, 0, 0, 0).getTime();
+    const endTimestamp = new Date(ty, tm - 1, td, 23, 59, 59, 999).getTime();
+    if (!Number.isFinite(startTimestamp) || !Number.isFinite(endTimestamp)) {
+        alert('يرجى إدخال تاريخ صحيح.');
+        return null;
+    }
+    if (startTimestamp > endTimestamp) {
+        alert('تاريخ البداية يجب أن يكون قبل تاريخ النهاية.');
+        return null;
+    }
+    return { from, to, startTimestamp, endTimestamp };
+}
+
+function isAccountingDateInRange(value, startTimestamp, endTimestamp) {
+    if (value === null || value === undefined || value === '') return false;
+    const timestamp = typeof value === 'string' && /^\d+$/.test(value)
+        ? Number(value) : new Date(value).getTime();
+    return Number.isFinite(timestamp) && timestamp >= startTimestamp && timestamp <= endTimestamp;
+}
+
 function renderReports() {
-
-    const section =
-        accSection('reports');
-
-    if (!section) return;
-
-    const accounting =
-        accData();
-
-    const totalSales =
-        (accounting.sales || [])
-            .reduce(
-                (sum, sale) =>
-                    sum +
-                    Number(
-                        sale.total || 0
-                    ),
-                0
-            );
-
-    const totalPurchases =
-        (accounting.purchases || [])
-            .reduce(
-                (sum, item) =>
-                    sum +
-                    Number(
-                        item.total || 0
-                    ),
-                0
-            );
-
-    const totalExpenses =
-        (accounting.expenses || [])
-            .reduce(
-                (sum, item) =>
-                    sum +
-                    Number(
-                        item.amount || 0
-                    ),
-                0
-            );
-
-    const profit =
-        totalSales -
-        totalPurchases -
-        totalExpenses;
-
-
-    const cash =
-        (accounting.sales || [])
-            .filter(
-                sale =>
-                    sale.paymentMethod ===
-                    'cash'
-            )
-            .reduce(
-                (sum, sale) =>
-                    sum +
-                    Number(
-                        sale.total || 0
-                    ),
-                0
-            );
-
-    const card =
-        (accounting.sales || [])
-            .filter(
-                sale =>
-                    sale.paymentMethod ===
-                    'card'
-            )
-            .reduce(
-                (sum, sale) =>
-                    sum +
-                    Number(
-                        sale.total || 0
-                    ),
-                0
-            );
-
-    const credit =
-        (accounting.clients || [])
-            .reduce(
-                (sum, client) =>
-                    sum +
-                    Number(
-                        client.balance || 0
-                    ),
-                0
-            );
-
-
-    const lists =
-        section.querySelectorAll('.list');
-
-    if (lists[0]) {
-
-        const values =
-            lists[0].querySelectorAll(
-                'strong'
-            );
-
-        if (values[0]) {
-            values[0].textContent =
-                accMoney(totalSales);
-        }
-
-        if (values[1]) {
-            values[1].textContent =
-                accMoney(
-                    totalPurchases
-                );
-        }
-
-        if (values[2]) {
-            values[2].textContent =
-                accMoney(
-                    totalExpenses
-                );
-        }
-
-        if (values[3]) {
-            values[3].textContent =
-                accMoney(profit);
-
-            values[3].style.color =
-                profit >= 0
-                    ? 'var(--green)'
-                    : 'var(--red)';
-        }
-    }
-
-
-    if (lists[1]) {
-
-        const values =
-            lists[1].querySelectorAll(
-                'strong'
-            );
-
-        if (values[0]) {
-            values[0].textContent =
-                accMoney(cash);
-        }
-
-        if (values[1]) {
-            values[1].textContent =
-                accMoney(card);
-        }
-
-        if (values[2]) {
-            values[2].textContent =
-                accMoney(credit);
-        }
-    }
+    if (!accSection('reports')) return;
+    const range = getAccountingReportRange();
+    if (!range) return;
+    const accounting = accData();
+    const inRange = value => isAccountingDateInRange(value, range.startTimestamp, range.endTimestamp);
+    const sales = (accounting.sales || []).filter(item => inRange(item.paidAt || item.createdAt));
+    const purchases = (accounting.purchases || []).filter(item => inRange(item.createdAt));
+    const expenses = (accounting.expenses || []).filter(item => inRange(item.createdAt));
+    const sum = (items, field) => items.reduce((total, item) => total + Number(item[field] || 0), 0);
+    const totalSales = sum(sales, 'total');
+    const totalPurchases = sum(purchases, 'total');
+    const totalExpenses = sum(expenses, 'amount');
+    const profit = totalSales - totalPurchases - totalExpenses;
+    const values = {
+        'report-sales': totalSales,
+        'report-purchases': totalPurchases,
+        'report-expenses': totalExpenses,
+        'report-profit': profit,
+        'report-cash': sum(sales.filter(item => item.paymentMethod === 'cash'), 'total'),
+        'report-card': sum(sales.filter(item => item.paymentMethod === 'card'), 'total'),
+        'report-credit': sum(sales.filter(item => item.paymentMethod === 'credit'), 'total')
+    };
+    Object.entries(values).forEach(([id, value]) => {
+        const element = accSection(id);
+        if (element) element.textContent = accMoney(value);
+    });
+    const profitElement = accSection('report-profit');
+    if (profitElement) profitElement.style.color = profit >= 0 ? 'var(--green)' : 'var(--red)';
+    const invoices = accSection('report-invoices');
+    if (invoices) invoices.textContent = sales.length;
+    const label = accSection('report-period-label');
+    const from = range.from.replaceAll('-', '/');
+    const to = range.to.replaceAll('-', '/');
+    if (label) label.textContent = range.from === range.to
+        ? 'اليوم: ' + from : 'الفترة: ' + from + ' — ' + to;
 }
 
 
@@ -2658,6 +2570,15 @@ function renderAccounting() {
 
 function bindAccountingButtons() {
 
+    accSection('report-apply-filter')?.addEventListener('click', renderReports);
+    accSection('report-today')?.addEventListener('click', () => {
+        ['report-date-from', 'report-date-to'].forEach(id => {
+            const input = accSection(id);
+            if (input) input.value = accountingReportToday();
+        });
+        renderReports();
+    });
+
     document
         .querySelectorAll('.nav button')
         .forEach(button => {
@@ -2690,9 +2611,10 @@ function bindAccountingButtons() {
             if (
                 typeof printWardAccountingReport === 'function'
             ) {
-                printWardAccountingReport(
-                    accData()
-                );
+                const range = getAccountingReportRange();
+                if (!range) return;
+                renderReports();
+                printWardAccountingReport(accData(), range);
             } else {
                 alert('ملف الطباعة غير محمّل.');
             }
@@ -2992,6 +2914,10 @@ window.addEventListener(
     'DOMContentLoaded',
     () => {
 
+        ['report-date-from', 'report-date-to'].forEach(id => {
+            const input = accSection(id);
+            if (input && !input.value) input.value = accountingReportToday();
+        });
         bindAccountingButtons();
 
         openAccountingPage(

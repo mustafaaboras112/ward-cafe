@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style/waiter.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body class="waiter-page">
     <header>
         <div class="logo" aria-label="شعار كافيه ورد"><img src="q.png" alt="كافيه ورد"></div>
         <div>
@@ -28,11 +28,29 @@
         <section style="margin-top:40px; padding-top:20px; border-top:2px dashed #f1c8d7;">
             <h2><i class="fa-solid fa-chair"></i> الطاولات المشغولة</h2>
             <p style="color:#777; margin:8px 0 0; font-size:13px;">يمكن نقل الطلبات إلى طاولة متاحة. تفريغ الطاولة متاح بعد توصيل جميع الطلبات ودفع الحساب من الكاشير.</p>
-            <div id="waiter-tables-container" style="display:grid; gap:15px; margin-top:20px;">
+            <div id="waiter-tables-container" tabindex="-1" style="display:grid; gap:15px; margin-top:20px;">
                 <p style="color:#888;">جاري تحميل حالة الطاولات...</p>
             </div>
         </section>
     </main>
+
+    <p id="waiter-feedback" role="status" aria-live="polite"></p>
+    <div id="move-table-modal" class="waiter-modal" hidden>
+        <section class="waiter-modal-card" role="dialog" aria-modal="true" aria-labelledby="move-table-title" aria-describedby="move-table-description">
+            <h2 id="move-table-title">نقل الطاولة</h2>
+            <p id="move-table-description">سيتم نقل جميع الطلبات المفتوحة والحساب إلى الطاولة المختارة.</p>
+            <form id="move-table-form">
+                <label for="move-table-target">الطاولات المتاحة</label>
+                <select id="move-table-target" required></select>
+                <p id="move-table-empty" hidden>لا توجد طاولات متاحة للنقل حالياً.</p>
+                <p id="move-table-error" role="alert"></p>
+                <div class="waiter-table-actions">
+                    <button type="submit" id="move-table-submit" class="btn-action">تأكيد النقل</button>
+                    <button type="button" id="move-table-cancel">إلغاء</button>
+                </div>
+            </form>
+        </section>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>

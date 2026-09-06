@@ -164,7 +164,20 @@ function renderWaiterTables() {
     const tables=Array.from({length:20},(_,index)=>String(index+1)).filter(table=>getLocalTableStatus(table)?.status==='occupied'||getOrders().some(order=>String(order.table)===table&&order.paymentStatus!=='مدفوع'));
     container.innerHTML=tables.length?tables.map(table=>{
         const summary=waiterTableSummary(table);
-        return '<article class="waiter-table-card occupied-table"><div class="waiter-table-header"><strong class="waiter-table-number">طاولة '+table+'</strong><span class="waiter-table-badge occupied">مشغولة</span></div><dl class="waiter-table-summary"><div><dt>الطلبات المفتوحة</dt><dd>'+summary.count+'</dd></div><div><dt>إجمالي الحساب الحالي</dt><dd>'+summary.total.toFixed(2)+' ليرة</dd></div><div><dt>آخر حالة</dt><dd>'+escapeHtml(summary.status)+'</dd></div><div><dt>مدة الإشغال</dt><dd>'+summary.duration+'</dd></div></dl><div class="waiter-table-actions"><button class="release-table-btn" onclick='releaseTableAndRefresh("'+table+'")'>تفريغ الطاولة</button><button class="btn-action" onclick='openMoveTableModal("'+table+'")'>نقل الطاولة</button></div>'+(summary.count?'<p class="waiter-empty">التفريغ متاح بعد دفع جميع الطلبات. <a href="pos.html">فتح الكاشير</a></p>':'')+'</article>';
+        return `<article class="waiter-table-card occupied-table">
+            <div class="waiter-table-header"><strong class="waiter-table-number">طاولة ${table}</strong><span class="waiter-table-badge occupied">مشغولة</span></div>
+            <dl class="waiter-table-summary">
+                <div><dt>الطلبات المفتوحة</dt><dd>${summary.count}</dd></div>
+                <div><dt>إجمالي الحساب الحالي</dt><dd>${summary.total.toFixed(2)} ليرة</dd></div>
+                <div><dt>آخر حالة</dt><dd>${escapeHtml(summary.status)}</dd></div>
+                <div><dt>مدة الإشغال</dt><dd>${summary.duration}</dd></div>
+            </dl>
+            <div class="waiter-table-actions">
+                <button class="release-table-btn" onclick='releaseTableAndRefresh("${table}")'>تفريغ الطاولة</button>
+                <button class="btn-action" onclick='openMoveTableModal("${table}")'>نقل الطاولة</button>
+            </div>
+            ${summary.count?'<p class="waiter-empty">التفريغ متاح بعد دفع جميع الطلبات. <a href="pos.html">فتح الكاشير</a></p>':''}
+        </article>`;
     }).join(''):'<p class="waiter-empty">لا توجد طاولات مشغولة حالياً.</p>';
 }
 

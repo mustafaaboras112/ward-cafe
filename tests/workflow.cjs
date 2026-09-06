@@ -162,10 +162,61 @@ async function menuInterface() {
  const html=fs.readFileSync('index.html','utf8');assert.match(html,/<html lang="ar" dir="rtl">/);assert.doesNotMatch(html,/\son\w+=|<script>/);
  console.log('PASS menu QR validation, cart actions, unavailable products, safe rendering, single submission, save failure, refresh and moved-session tracking');
 }
+async function waiterInterface() {
+ const t=create('waiter');t.context.dispatchEvent(new Event('DOMContentLoaded'));
+ const one=await t.run("submitOrder('12',[{id:1,qty:1}])");
+ const two=await t.run("submitOrder('12',[{id:2,qty:1}])");
+ t.context.orderId=two.id;await t.run("transitionOrder(orderId,'قيد التحضير','جاهز')");
+ const markup=t.nodes.get('orders-container').innerHTML;
+ assert.ok(markup.indexOf('waiter-ready')<markup.indexOf('waiter-preparing'));
+ assert.match(markup,/جاهز للتوصيل/);assert.ok(markup.includes(two.id));
+ assert.equal(t.run("waiterTableSummary('12').count"),2);
+ assert.equal(t.run("waiterTableSummary('12').total"),100);
+ t.context.now=Date.now();t.run("setLocalTableStatus('12',{status:'occupied',table:'12',reservedAt:now-75*60000})");
+ assert.equal(t.run("waiterTableSummary('12',now).duration"),'1 ساعة و15 دقيقة');
+ assert.equal(t.run("waiterTableSummary('20').duration"),'غير متاحة');
+ t.run("setLocalTableStatus('5',{status:'occupied',table:'5'})");
+ // Even an order lacking a table reservation must exclude that target.
+ t.run("localStorage.setItem('cafe_ward_orders',JSON.stringify([...readLocalOrders(),{id:'orphan',table:'6',total:5,status:'تم التوصيل',items:[]}]))");
+ t.run("openMoveTableModal('12')");assert.equal(t.nodes.get('move-table-modal').hidden,false);
+ for(const table of ['12','5','6'])assert.ok(!t.run("availableMoveTables('12')").includes(table));
+ t.nodes.get('move-table-target').value='18';
+ t.run("setLocalTableStatus('18',{status:'occupied',table:'18'})");
+ await t.run('submitTableMove()');assert.match(t.nodes.get('move-table-error').textContent,/لم تعد متاحة/);
+ assert.equal(t.state().orders.find(order=>order.id===one.id).table,'12');
+ t.run("clearLocalTableStatus('18');refreshMoveOptions()");t.nodes.get('move-table-target').value='18';
+ const before=t.state().orders.filter(order=>order.table==='12');
+ let releaseSave,attempts=0;
+ t.context.navigator.locks.request=async(name,change)=>{attempts++;await new Promise(resolve=>{releaseSave=resolve;});return change();};
+ const pending=t.run('submitTableMove()');
+ assert.equal(t.nodes.get('move-table-submit').disabled,true);
+ await t.run('submitTableMove()');t.run('closeMoveTableModal()');
+ assert.equal(t.nodes.get('move-table-modal').hidden,false);assert.equal(attempts,1);
+ releaseSave();await pending;
+ assert.equal(t.nodes.get('move-table-modal').hidden,true);
+ const after=t.state().orders.filter(order=>order.table==='18');
+ assert.deepEqual(after.map(order=>order.id).sort(),before.map(order=>order.id).sort());
+ assert.deepEqual(after.map(order=>order.items),before.map(order=>order.items));
+ assert.equal(after.reduce((sum,order)=>sum+order.total,0),100);
+ let confirmations=0;t.context.confirm=()=>{confirmations++;return true;};
+ await t.run("releaseTableAndRefresh('18')");assert.equal(confirmations,0);assert.ok(t.state().tables['18']);
+ t.context.navigator.locks.request=async(name,change)=>change();
+ // A paid reservation may be released, but cancellation must retain it.
+ t.run("setLocalTableStatus('10',{status:'occupied',table:'10'})");
+ t.context.confirm=message=>{assert.match(message,/تأكيد تفريغ الطاولة 10/);return false;};
+ await t.run("releaseTableAndRefresh('10')");assert.ok(t.state().tables['10']);
+ t.context.confirm=()=>true;await t.run("releaseTableAndRefresh('10')");assert.equal(t.state().tables['10'],null);
+ // No vacancy: disable submit and show a useful message.
+ for(let table=1;table<=20;table++)t.run(`setLocalTableStatus('${table}',{status:'occupied',table:'${table}'})`);
+ t.run("openMoveTableModal('18')");assert.equal(t.nodes.get('move-table-empty').hidden,false);assert.equal(t.nodes.get('move-table-submit').disabled,true);
+ assert.doesNotMatch(fs.readFileSync('js/waiter.js','utf8'),/\bprompt\s*\(/);
+ console.log('PASS waiter ready-first groups, table summaries/duration, available-only modal, transfer preservation, race rejection and confirmed unpaid-safe release');
+}
 (async()=>{
  for(const remote of [false,true])await workflow(remote);
  await posInterface();
  await menuInterface();
+ await waiterInterface();
  const accounting=create('accounting');
  const now=Date.now();
  const accountingOrders=[

@@ -1,0 +1,304 @@
+
+
+.accounting-tasks-box {
+    border-color: var(--primary-light);
+    background: #fff;
+}
+
+
+.tasks-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+
+.tasks-heading h3 {
+    margin-bottom: 3px;
+}
+
+
+.tasks-heading p {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+
+.tasks-count {
+    min-width: 74px;
+    padding: 8px 10px;
+    color: var(--primary-dark);
+    background: #fff0f5;
+    border-radius: 7px;
+    text-align: center;
+    font-size: 12px;
+}
+
+
+.accounting-task {
+    display: grid;
+    grid-template-columns: 42px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    margin-top: 10px;
+    border: 1px solid #f0e0e6;
+    border-right: 4px solid var(--primary);
+    border-radius: 8px;
+    background: #fff;
+}
+
+
+.accounting-task.task-blue { border-right-color: #1976d2; }
+
+.accounting-task.task-orange { border-right-color: #ef6c00; }
+
+.accounting-task.task-red { border-right-color: #c62828; }
+
+.accounting-task.task-green { border-right-color: #2e8b57; background: #f7fff9; }
+
+
+.task-icon {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    color: var(--primary);
+    background: #fff0f5;
+    border-radius: 8px;
+}
+
+
+.task-copy strong,
+.task-copy span {
+    display: block;
+}
+
+
+.task-copy strong {
+    color: var(--text-main);
+    font-size: 14px;
+}
+
+
+.task-copy span {
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+
+.accounting-task button,
+.accounting-task a {
+    padding: 7px 11px;
+    border: 0;
+    border-radius: 6px;
+    color: #fff;
+    background: var(--primary);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+
+.accounting-task a {
+    color: var(--primary-dark);
+    background: #fff0f5;
+}
+
+
+.task-done {
+    color: #2e8b57;
+    font-size: 12px;
+}
+
+
+.tasks-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px;
+    color: #2e8b57;
+}
+
+
+.tasks-empty span {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+
+.dashboard-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+
+.kpi-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 132px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+}
+
+
+.kpi-card::after {
+    content: '';
+    position: absolute;
+    inset: auto -20px -32px auto;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(237, 35, 97, 0.08);
+}
+
+
+.kpi-card span,
+.kpi-card small {
+    display: block;
+    color: var(--text-muted);
+}
+
+
+.kpi-card span {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.kpi-card strong {
+    display: block;
+    margin: 12px 0 8px;
+    color: var(--primary-dark);
+    font-size: clamp(20px, 2.4vw, 28px);
+}
+
+
+.kpi-card small {
+    font-size: 11px;
+}
+
+
+.kpi-expenses strong { color: #d64545; }
+
+.kpi-suppliers strong { color: #d87820; }
+
+.kpi-profit strong { color: #2e8b57; }
+@media (max-width: 700px){
+
+
+    .tasks-heading {
+        align-items: flex-start;
+    }
+
+
+    .accounting-task {
+        grid-template-columns: 38px 1fr;
+    }
+
+
+    .accounting-task button,
+    .accounting-task a,
+    .task-done {
+        grid-column: 2;
+        justify-self: start;
+    }
+
+
+    .dashboard-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+
+    .kpi-card {
+        min-height: 116px;
+        padding: 14px;
+    }
+
+
+    .kpi-card strong {
+        margin: 9px 0 5px;
+        font-size: 19px;
+    }
+
+
+    .task-alert {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+
+        .task-alert {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .task-red { background: #ffebee; color: #c62828; border-left: 5px solid #c62828; }
+        .task-orange { background: #fff3e0; color: #ef6c00; border-left: 5px solid #ef6c00; }
+        .task-blue { background: #e3f2fd; color: #1565c0; border-left: 5px solid #1565c0; }
+        .task-green { background: #e8f5e9; color: #2e7d32; border-left: 5px solid #2e7d32; }
+
+        .section-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            margin-bottom: 25px;
+        }
+        .section-box h3 {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f5f5f5;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        input, select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+            font-size: 14px;
+        }
+        .btn-action {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-action:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: center; }
+        th { background: #f9f9f9; color: #333; }

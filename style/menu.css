@@ -1,0 +1,1100 @@
+
+
+.cart-icon {
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(233, 30, 99, 0.2);
+}
+
+
+.cart-icon span {
+    background: #fff;
+    color: var(--primary);
+    padding: 2px 8px;
+    border-radius: 50%;
+    font-size: 12px;
+}
+
+
+/* قسم الـ Hero */
+.hero {
+    text-align: center;
+    padding: 35px 20px;
+    background: linear-gradient(to bottom, #fff5f8, var(--bg-light));
+    border-bottom: 1px solid #fae1ed;
+}
+
+
+.hero h2 {
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+
+.hero p {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+
+/* الفئات والأزرار */
+.categories {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    flex-wrap: wrap;
+}
+
+
+/* بطاقات المنيو */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+.menu-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #eaeaea;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.04);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+
+.menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+
+.menu-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}
+
+
+.menu-card-body {
+    padding: 15px;
+}
+
+
+.menu-card-body h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+    color: var(--text-main);
+}
+
+
+.menu-card-body p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+}
+
+
+.price {
+    color: var(--gold);
+    font-weight: bold;
+    font-size: 16px;
+}
+
+
+.add-btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+
+.add-btn:hover {
+    background: #d81b60;
+}
+
+
+/* نافذة السلة (Modal) */
+.cart-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(3px);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+
+.cart-content {
+    background: #ffffff;
+    width: 90%;
+    max-width: 450px;
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
+    color: var(--text-main);
+}
+
+
+.cart-content h2 {
+    margin-bottom: 20px;
+    font-size: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    background: #fafafa;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+
+.cart-total {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    text-align: left;
+}
+
+
+/* شاشة التحميل موجودة مباشرة في HTML حتى لا يظهر المنيو للحظة قبل تشغيل JavaScript. */
+body.menu-page-loading > :not(#splash-screen) {
+    visibility: hidden;
+}
+
+
+.table-badge {
+    margin-inline-start: auto;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+
+.table-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.table-badge {
+    margin-inline-start: auto;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+
+.table-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.table-badge {
+    margin-inline-start: auto;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+
+.table-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.table-badge {
+    margin-inline-start: auto;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+
+.table-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.table-selector-attention {
+    position: relative;
+    min-height: 56px;
+    padding: 8px 12px;
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    background: #fff5f8;
+    box-shadow: 0 0 0 4px rgba(237, 35, 97, 0.12), 0 5px 14px rgba(148, 30, 74, 0.12);
+    animation: table-attention 2.8s ease-in-out 2;
+}
+
+
+.table-selector-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--primary-dark);
+    white-space: nowrap;
+}
+
+
+.table-selector-title i {
+    font-size: 15px;
+}
+
+
+.table-selector-attention select {
+    width: 62px;
+    min-height: 40px;
+    border: 2px solid var(--primary);
+    background: #fff;
+    font-size: 16px;
+    text-align: center;
+}
+
+
+.table-selector-attention strong {
+    min-width: 56px;
+    color: #fff;
+    background: var(--primary);
+    border-radius: 6px;
+    padding: 8px 10px;
+    text-align: center;
+    font-size: 13px;
+}
+
+
+.table-selector select {
+    width: 68px;
+    min-height: 36px;
+    padding: 5px 8px;
+    border-color: var(--primary-light);
+    color: var(--primary-dark);
+    font-weight: 700;
+}
+
+
+.hero {
+    padding: clamp(30px, 6vw, 62px) 20px;
+    background: linear-gradient(135deg, #fff0f5, #fff 70%);
+}
+
+
+.hero h2 {
+    font-size: clamp(23px, 4vw, 36px);
+}
+
+
+.categories {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+.menu-grid {
+    gap: 22px;
+    padding: 22px clamp(16px, 4vw, 30px);
+}
+
+
+.menu-card:hover {
+    transform: translateY(-4px);
+}
+
+
+.menu-card img {
+    height: 175px;
+}
+
+
+.cart-content {
+    border-radius: 12px;
+    box-shadow: 0 18px 48px rgba(56, 18, 35, 0.18);
+}
+@media (max-width: 700px){
+
+
+    .table-badge {
+        margin-inline-start: 0;
+        order: 2;
+    }
+
+
+    .table-selector {
+        justify-content: center;
+        order: 1;
+    }
+
+
+    .table-selector-attention {
+        width: min(100%, 310px);
+        margin: 0 auto;
+        justify-content: center;
+    }
+
+
+    .table-badge {
+        margin-inline-start: 0;
+        order: 2;
+    }
+
+
+    .table-selector {
+        justify-content: center;
+        order: 1;
+    }
+
+
+    .table-selector-attention {
+        width: min(100%, 310px);
+        margin: 0 auto;
+        justify-content: center;
+    }
+
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .cart-content {
+        width: calc(100% - 24px);
+        padding: 20px 16px;
+    }
+}
+
+
+body.menu-page .logo img {
+    width: 840px;
+    height: 300px;
+    animation: logo-wave 3.2s ease-in-out infinite;
+    grid-column: 2;
+    justify-self: center;
+}
+
+
+/* واجهة المنيو: هيدر أوسع وترحيب بشعاري ورد خفيفين على الجانبين. */
+body.menu-page header {
+    min-height: 320px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 5px 28px rgba(148, 30, 74, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    justify-items: center;
+    align-items: center;
+}
+
+
+body.menu-page .hero {
+    min-height: 210px;
+    padding-top: clamp(42px, 7vw, 76px);
+    padding-bottom: clamp(42px, 7vw, 76px);
+}
+
+
+.hero-brand {
+    position: absolute;
+    z-index: 0;
+    width: clamp(92px, 13vw, 180px);
+    height: auto;
+    opacity: .14;
+    pointer-events: none;
+    filter: saturate(.8);
+}
+
+
+.hero-brand-right { right: 5%; top: 50%; transform: translateY(-50%) rotate(8deg); }
+
+.hero-brand-left { left: 5%; top: 50%; transform: translateY(-50%) rotate(-8deg); }
+
+
+body.menu-page .hero h2,
+body.menu-page .hero p {
+    position: relative;
+    z-index: 1;
+}
+@media (max-width: 700px){
+
+    body.menu-page .logo img {
+        width: 660px;
+        height: 240px;
+        animation: logo-wave 3.2s ease-in-out infinite;
+    }
+
+
+    /* واجهة المنيو: هيدر أوسع وترحيب بشعاري ورد خفيفين على الجانبين. */
+    body.menu-page header {
+        min-height: 280px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        justify-items: center;
+        align-items: center;
+    }
+
+
+    body.menu-page .hero {
+        min-height: 175px;
+    }
+
+
+    .hero-brand {
+        width: 82px;
+        opacity: .11;
+    }
+
+
+    .hero-brand-right { right: -12px; }
+
+    .hero-brand-left { left: -12px; }
+}
+
+
+body:has(#menu-grid) .hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 34px 34px;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(233, 30, 99, .14) 0 5px, transparent 6px),
+        radial-gradient(circle at 84% 72%, rgba(184, 134, 11, .14) 0 7px, transparent 8px),
+        linear-gradient(135deg, #fff1f6, #fff 55%, #fff6e9);
+}
+
+
+body:has(#menu-grid) .hero::before,
+body:has(#menu-grid) .hero::after {
+    position: absolute;
+    color: rgba(181, 87, 119, .14);
+    font-size: 90px;
+    line-height: 1;
+    content: '✿';
+}
+
+
+body:has(#menu-grid) .hero::before { top: -14px; right: 7%; }
+
+body:has(#menu-grid) .hero::after { bottom: -28px; left: 8%; transform: rotate(25deg); }
+
+
+/* ===== إشعار الطلب جاهز - تصميم كافيه ورد الفاخر ===== */
+.customer-ready-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(74, 18, 42, 0.55);
+    backdrop-filter: blur(6px);
+    animation: ready-overlay-fade 0.4s ease-out;
+}
+
+
+.customer-ready-card {
+    position: relative;
+    width: min(94vw, 430px);
+    padding: 38px 28px 30px;
+    text-align: center;
+    background: linear-gradient(160deg, #fff 0%, #fff4f8 55%, #ffe9d6 100%);
+    border: 2px solid rgba(237, 35, 97, 0.25);
+    border-radius: 24px;
+    box-shadow: 0 24px 70px rgba(90, 18, 48, 0.35), inset 0 0 0 1px rgba(255,255,255,0.7);
+    animation: ready-card-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+
+/* زخارف وردية خفيفة داخل البطاقة */
+.customer-ready-card::before,
+.customer-ready-card::after {
+    content: '✿';
+    position: absolute;
+    color: rgba(237, 35, 97, 0.12);
+    font-size: 70px;
+    line-height: 1;
+    pointer-events: none;
+}
+
+
+.customer-ready-card::before { top: 6px; right: 8px; transform: rotate(15deg); }
+
+.customer-ready-card::after { bottom: -6px; left: 10px; transform: rotate(-20deg); }
+
+
+/* شعار كافيه ورد على زاوية البطاقة - مائل قليلاً */
+.customer-ready-logo {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: 74px;
+    height: 46px;
+    object-fit: contain;
+    opacity: 0.85;
+    transform: rotate(-8deg);
+    filter: drop-shadow(0 2px 6px rgba(148, 30, 74, 0.18));
+    pointer-events: none;
+    animation: ready-logo-float 3.2s ease-in-out infinite;
+}
+
+
+/* ===== الفنجان المتحرك مع البخار المتصاعد ===== */
+.ready-coffee-wrap {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 6px auto 14px;
+    animation: coffee-sway 3.4s ease-in-out infinite;
+}
+
+
+.ready-coffee-cup {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 96px;
+    height: 62px;
+    background: linear-gradient(180deg, #ffffff 0%, #f3e3e8 100%);
+    border: 3px solid #ed2361;
+    border-radius: 8px 8px 22px 22px;
+    box-shadow: 0 8px 20px rgba(148, 30, 74, 0.22);
+}
+
+
+.ready-coffee-cup::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    right: -24px;
+    width: 30px;
+    height: 24px;
+    border: 3px solid #ed2361;
+    border-left: none;
+    border-radius: 0 14px 14px 0;
+    background: #fff;
+}
+
+
+.ready-coffee-cup::after {
+    content: '';
+    position: absolute;
+    inset: 8px 9px 7px;
+    background: radial-gradient(circle at 40% 35%, #8b5a2b 0%, #6b3f1d 60%, #4a2a10 100%);
+    border-radius: 4px 4px 14px 14px;
+    box-shadow: inset 0 -5px 8px rgba(0,0,0,0.25);
+}
+
+
+/* البخار المتصاعد من الفنجان */
+.ready-steam {
+    position: absolute;
+    bottom: 68px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 62px;
+}
+
+
+.ready-steam span {
+    position: absolute;
+    bottom: 0;
+    width: 7px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.9));
+    filter: blur(1.5px);
+    opacity: 0;
+    animation: steam-rise 2.2s ease-out infinite;
+}
+
+
+.ready-steam span:nth-child(1) { left: 4px; animation-delay: 0s; }
+
+.ready-steam span:nth-child(2) { left: 30px; height: 40px; animation-delay: 0.7s; }
+
+.ready-steam span:nth-child(3) { left: 56px; animation-delay: 1.4s; }
+
+
+/* ===== واجهة المنيو بدون هيدر قديم ===== */
+body.menu-page {
+    padding-top: 0;
+}
+
+
+body.menu-page > header,
+body.menu-page .header-left,
+body.menu-page .header-right {
+    display: none !important;
+}
+
+
+.hero-no-header {
+    text-align: center;
+    padding: 50px 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+
+
+.table-selector-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+
+.confirm-table-btn {
+    background-color: #e91e63;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.3s;
+}
+
+
+.confirm-table-btn:hover {
+    background-color: #c2185b;
+}
+
+
+.cart-fab {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    z-index: 1200;
+    background: #e91e63;
+    color: #fff;
+    border: 0;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    box-shadow: 0 8px 22px rgba(233, 30, 99, 0.35);
+    cursor: pointer;
+    font-size: 22px;
+}
+
+
+.cart-fab span {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #fff;
+    color: #e91e63;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+
+/* نص الإشعار */
+.customer-ready-title {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 8px;
+    color: #b02d62;
+    font-size: 24px;
+    font-weight: 800;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+}
+
+
+.customer-ready-message {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 6px;
+    color: #5a3a48;
+    font-size: 16px;
+    line-height: 1.8;
+    font-weight: 700;
+}
+
+
+.customer-ready-table {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    margin: 10px 0 6px;
+    padding: 9px 22px;
+    color: #fff;
+    background: linear-gradient(135deg, #ed2361, #c9154d);
+    border-radius: 30px;
+    font-size: 17px;
+    font-weight: 800;
+    box-shadow: 0 6px 16px rgba(237, 35, 97, 0.3);
+    animation: ready-table-pulse 1.6s ease-in-out infinite;
+}
+
+
+.customer-ready-time {
+    position: relative;
+    z-index: 1;
+    display: block;
+    margin-top: 12px;
+    color: #a58a96;
+    font-size: 12px;
+}
+
+
+.customer-ready-close {
+    position: relative;
+    z-index: 2;
+    margin-top: 18px;
+    padding: 10px 34px;
+    color: #fff;
+    background: linear-gradient(135deg, #ed2361, #c9154d);
+    border: 0;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(237, 35, 97, 0.25);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+
+.customer-ready-close:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 9px 22px rgba(237, 35, 97, 0.35);
+}
+
+
+/* وميض جرس صغير أعلى البطاقة */
+.ready-bell-icon {
+    position: relative;
+    z-index: 1;
+    display: inline-grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 4px;
+    color: #fff;
+    background: linear-gradient(135deg, #f5b301, #e8890c);
+    border-radius: 50%;
+    font-size: 20px;
+    box-shadow: 0 5px 14px rgba(232, 137, 12, 0.35);
+    animation: bell-ring 1.4s ease-in-out infinite;
+    transform-origin: top center;
+}
+@media (max-width: 700px){
+
+    .customer-ready-card { padding: 30px 18px 24px; }
+
+    .customer-ready-logo { width: 62px; height: 40px; top: 10px; left: 10px; }
+
+    .ready-coffee-wrap { width: 130px; height: 130px; }
+
+    .customer-ready-title { font-size: 21px; }
+
+    .customer-ready-message { font-size: 14px; }
+}
+
+
+.table-selector option:disabled {
+    color: #999;
+    background: #f5f5f5;
+}
+
+
+.table-selector option:disabled::after {
+    content: " (محجوزة)";
+}
+
+
+.occupied-notice {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* ===== ورد يتساقط وراء الشعار في صفحة المنيو ===== */
+.hero-no-header {
+    position: relative;
+    overflow: hidden;
+}
+
+
+.hero-petals {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+
+.hero-petal {
+    position: absolute;
+    top: -60px;
+    background: radial-gradient(circle, #ffb6c1, #ff69b4);
+    border-radius: 150% 0 150% 0;
+    opacity: 0;
+    animation: hero-petal-fall linear infinite;
+}
+
+
+.hero-no-header .centered-logo,
+.hero-no-header .table-selector-container {
+    position: relative;
+    z-index: 1;
+}
+
+
+.hero-petal:nth-child(1) { left: 5%; width: 18px; height: 26px; animation-duration: 4.6s; animation-delay: 0s; }
+
+.hero-petal:nth-child(2) { left: 18%; width: 14px; height: 20px; animation-duration: 5.2s; animation-delay: 1.1s; }
+
+.hero-petal:nth-child(3) { left: 32%; width: 20px; height: 28px; animation-duration: 4.9s; animation-delay: 2.3s; }
+
+.hero-petal:nth-child(4) { left: 48%; width: 16px; height: 22px; animation-duration: 5.5s; animation-delay: 0.6s; }
+
+.hero-petal:nth-child(5) { left: 60%; width: 18px; height: 26px; animation-duration: 4.7s; animation-delay: 3.1s; }
+
+.hero-petal:nth-child(6) { left: 75%; width: 14px; height: 20px; animation-duration: 5.0s; animation-delay: 1.8s; }
+
+.hero-petal:nth-child(7) { left: 88%; width: 20px; height: 28px; animation-duration: 4.8s; animation-delay: 2.7s; }
+
+.hero-petal:nth-child(8) { left: 12%; width: 16px; height: 24px; animation-duration: 5.3s; animation-delay: 3.6s; }
+
+.hero-petal:nth-child(9) { left: 42%; width: 18px; height: 26px; animation-duration: 4.5s; animation-delay: 0.9s; }
+
+.hero-petal:nth-child(10) { left: 70%; width: 14px; height: 20px; animation-duration: 5.1s; animation-delay: 2.0s; }
+
+
+/* ===== صناديق التصنيفات الكبيرة ===== */
+.category-boxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+
+.category-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
+}
+
+
+.category-box:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+
+.category-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+
+.category-box h3 {
+    margin: 8px 0 6px;
+    font-size: 20px;
+    color: var(--text-main);
+}
+
+
+.category-box p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin: 0;
+}
+
+
+.category-products {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 20px;
+    transition: 0.2s;
+}
+
+
+.back-btn:hover {
+    background: #f5f5f5;
+    transform: translateX(-4px);
+}
+
+
+.category-title {
+    text-align: center;
+    color: var(--primary);
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+
+.category-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+
+.category-items-grid .menu-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    transition: 0.2s;
+}
+
+
+.category-items-grid .menu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+
+.category-items-grid .menu-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}
+
+
+.category-items-grid .menu-card-body {
+    padding: 12px;
+}
+
+
+.category-items-grid .menu-card-body h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+
+.category-items-grid .menu-card-body p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+
+.category-items-grid .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.category-items-grid .price {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+
+.category-items-grid .add-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+
+.category-items-grid .add-btn:hover {
+    background: var(--primary-dark);
+}
+
+/* menu page */
+#customer-orders{max-width:900px;margin:24px auto;padding:0 20px}.customer-order-status{padding:18px;margin:12px 0;border:1px solid #edb9ce;background:#fff6fa;border-radius:14px}.customer-order-status p{font-size:20px;color:#a52e5c}.customer-order-status small{overflow-wrap:anywhere}

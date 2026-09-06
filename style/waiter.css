@@ -1,0 +1,109 @@
+
+
+.ready-notification {
+    position: fixed;
+    top: 92px;
+    left: 50%;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: min(92vw, 430px);
+    padding: 16px 20px;
+    transform: translateX(-50%);
+    color: #fff;
+    background: #2e8b57;
+    border: 2px solid #b9f0c8;
+    border-radius: 10px;
+    box-shadow: 0 12px 30px rgba(46, 139, 87, 0.28);
+    animation: ready-notification-in 0.35s ease-out;
+    font-weight: 700;
+}
+
+
+.ready-notification i {
+    color: #fff2a8;
+    font-size: 22px;
+}
+
+
+/* ===== نظام إدارة الطاولات ===== */
+.waiter-table-card {
+    background: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+
+.waiter-table-card.occupied-table {
+    border-right: 4px solid #e91e63;
+    background: #fff5f8;
+}
+
+
+.waiter-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+
+.waiter-table-number {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--primary-dark);
+}
+
+
+.waiter-table-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+}
+
+
+.waiter-table-badge.occupied {
+    background: #e91e63;
+}
+
+
+.waiter-table-body {
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+
+
+.waiter-table-body strong {
+    color: var(--text-main);
+}
+
+
+.release-table-btn {
+    width: 100%;
+    padding: 10px;
+    background: #2e8b57;
+    color: #fff;
+    border: 0;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+
+
+.release-table-btn:hover {
+    background: #236b43;
+}
+
+/* waiter page */

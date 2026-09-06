@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>كافيه ورد - القائمة الرئيسية</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style/common.css">
+    <link rel="stylesheet" href="style/menu.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="menu-page">
@@ -20,7 +21,7 @@
         <div class="table-selector-container">
             <div class="table-select-box">
                 <label for="table-selector"><i class="fa-solid fa-chair"></i> اختر طاولتك</label>
-                <select id="table-selector" onchange="changeTable(this.value)">
+                <select id="table-selector">
                     <option value="1" selected>رقم 1</option>
                     <option value="2">رقم 2</option>
                     <option value="3">رقم 3</option>
@@ -96,86 +97,12 @@
         </div>
     </div>
 
+    <section id="customer-orders" aria-label="متابعة طلباتك" aria-live="polite"></section>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="script.js"></script>
-    <script>
-        function confirmTable() {
-            const select = document.getElementById('table-selector');
-            const badge = document.getElementById('table-badge');
-            if (select && badge) {
-                badge.textContent = 'رقم الطاولة: ' + select.value;
-            }
-            if (typeof changeTable === 'function') {
-                changeTable(select.value);
-            }
-        }
+    <script src="js/common.js"></script>
+    <script src="js/menu.js"></script>
 
-        function createHeroPetals() {
-            const container = document.getElementById('hero-petals');
-            if (!container) return;
-            for (let i = 0; i < 12; i++) {
-                const petal = document.createElement('div');
-                petal.className = 'hero-petal';
-                petal.style.left = Math.random() * 100 + '%';
-                petal.style.animationDuration = (4 + Math.random() * 2.5) + 's';
-                petal.style.animationDelay = (Math.random() * 4) + 's';
-                container.appendChild(petal);
-            }
-        }
-
-        function openCategory(category) {
-            const menu = getMenu();
-            const items = menu.filter(item => item.category === category);
-            const categoryNames = {
-                hot: 'مشروبات ساخنة',
-                cold: 'مشروبات باردة',
-                sweets: 'حلويات',
-                food: 'مأكولات'
-            };
-            
-            document.getElementById('category-boxes').style.display = 'none';
-            document.getElementById('category-products').style.display = 'block';
-            document.getElementById('category-title').textContent = categoryNames[category] || category;
-            renderCategoryItems(items);
-        }
-
-        function backToCategories() {
-            document.getElementById('category-boxes').style.display = 'grid';
-            document.getElementById('category-products').style.display = 'none';
-        }
-
-        function renderCategoryItems(items) {
-            const grid = document.getElementById('category-items-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            
-            if (items.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; color:#888; grid-column:1/-1;">لا توجد منتجات في هذا التصنيف</p>';
-                return;
-            }
-            
-            items.forEach(item => {
-                grid.innerHTML += `
-                    <div class="menu-card">
-                        <img src="${item.img}" alt="${item.name}">
-                        <div class="menu-card-body">
-                            <h3>${item.name}</h3>
-                            <p>${item.desc}</p>
-                            <div class="card-footer">
-                                <span class="price">${item.price} ليرة</span>
-                                <button class="add-btn" onclick="addToCart('${item.id}')">إضافة</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            createHeroPetals();
-        });
-    </script>
 </body>
 </html>

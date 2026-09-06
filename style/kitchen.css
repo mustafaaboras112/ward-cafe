@@ -1,0 +1,66 @@
+
+
+.kitchen-orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 16px;
+}
+
+
+.kitchen-order {
+    padding: 18px;
+    background: #fff;
+    border: 2px solid #f3c5d4;
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+}
+
+
+.kitchen-order.is-ready {
+    border-color: #72c58a;
+    background: #f4fff6;
+}
+
+
+.kitchen-order-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+
+.kitchen-order-head h3 {
+    color: var(--primary-dark);
+}
+
+
+.kitchen-order-head span {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+
+.kitchen-order ul {
+    margin: 0 0 14px;
+    padding-right: 20px;
+    color: var(--text-main);
+    line-height: 1.9;
+}
+
+
+.kitchen-status {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--primary-dark);
+}
+
+
+.ready-note {
+    display: inline-block;
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+/* kitchen page */

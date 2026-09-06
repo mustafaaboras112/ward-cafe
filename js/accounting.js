@@ -2681,16 +2681,25 @@ function bindAccountingButtons() {
             '.topbar .actions button'
         );
 
-    if (topActions[0]) {
+     if (topActions[0]) {
 
-        topActions[0]
-            .addEventListener(
-                'click',
-                () => window.print()
-            );
-    }
+    topActions[0].addEventListener(
+        'click',
+        () => {
 
+            if (
+                typeof printWardAccountingReport === 'function'
+            ) {
+                printWardAccountingReport(
+                    accData()
+                );
+            } else {
+                alert('ملف الطباعة غير محمّل.');
+            }
 
+        }
+    );
+}
     if (topActions[1]) {
 
         topActions[1]

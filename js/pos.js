@@ -1946,15 +1946,28 @@ async function paySelectedTable(
             );
 
 
-        lastReceipt =
-            receipt;
+       lastReceipt = receipt;
 
 
-        posEl(
-            'pos-feedback'
-        ).textContent =
-            `✅ تم الدفع بنجاح وتسجيل البيع وتحرير الطاولة ${receipt.table}`;
+/* =========================
+   طباعة الفاتورة تلقائياً
+========================= */
 
+if (
+    typeof printWardReceipt === 'function'
+) {
+    printWardReceipt(receipt);
+}
+
+
+/* =========================
+   رسالة نجاح الدفع
+========================= */
+
+posEl(
+    'pos-feedback'
+).textContent =
+    `✅ تم الدفع بنجاح وتسجيل البيع وتحرير الطاولة ${receipt.table}`;
 
         selectedTable =
             null;
@@ -2187,7 +2200,18 @@ window.addEventListener(
             }
         );
 
-
+posEl('pos-print').addEventListener(
+    'click',
+    () => {
+        if (
+            !posEl('pos-print').disabled &&
+            lastReceipt &&
+            typeof printWardReceipt === 'function'
+        ) {
+            printWardReceipt(lastReceipt);
+        }
+    }
+);
         posEl(
             'pos-show-tables'
         ).addEventListener(

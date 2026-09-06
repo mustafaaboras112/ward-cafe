@@ -2,7 +2,8 @@ window.addEventListener('ward:orders',renderAccountingDashboard);
 window.addEventListener('ward:accounting',renderAccountingDashboard);
 window.addEventListener('DOMContentLoaded',()=>{startOrdersRealtime();startAccountingRealtime();});
 function renderAccountingDashboard() {
-    const orders = getOrders().filter(order => order.paymentStatus === 'مدفوع');
+    const allOrders = getOrders();
+    const deliveredUnpaid = allOrders.filter(order => order.status === 'تم التوصيل' && order.paymentStatus !== 'مدفوع');
     const accounting = getAccountingData();
     const expenses = accounting.expenses;
     const clients = accounting.clients;
@@ -13,7 +14,7 @@ function renderAccountingDashboard() {
     const isClosed = accounting.dayClosed;
 
     // المجاميع الحسابية
-    // لا تدخل المبيعات إلا بعد أن يؤكد المحاسب دفع الفاتورة.
+    // مصدر التقارير هو سجل المبيعات الذي يكتبه POS بعد تأكيد الدفع فقط.
     let totalSales = salesLedger
         .filter(sale => isTodayWard(sale.paidAt || sale.createdAt))
         .reduce((sum, sale) => sum + (Number(sale.total) || 0), 0);
@@ -34,7 +35,6 @@ function renderAccountingDashboard() {
             tasksContainer.innerHTML += `<article class="accounting-task task-green"><div class="task-icon"><i class="fa-solid fa-circle-check"></i></div><div class="task-copy"><strong>الصندوق مغلق</strong><span>تم تثبيت حسابات الوردية بنجاح</span></div><b class="task-done">مكتمل</b></article>`;
         }
 
-        const deliveredUnpaid = orders.filter(order => order.status === 'تم التوصيل' && order.paymentStatus !== 'مدفوع');
         if (deliveredUnpaid.length) {
             taskCount++;
             tasksContainer.innerHTML += `<article class="accounting-task task-orange"><div class="task-icon"><i class="fa-solid fa-receipt"></i></div><div class="task-copy"><strong>فواتير بانتظار الدفع</strong><span>${deliveredUnpaid.length} طلبات تم توصيلها وتحتاج تأكيد الحساب</span></div><a href="#restaurant-orders">عرض الفواتير</a></article>`;
@@ -87,7 +87,7 @@ function renderAccountingDashboard() {
     // فواتير الطاولات: كل طلب ظاهر للمحاسب، ولا يتحول إلى سجل مبيعات قبل الدفع.
     const restaurantOrders = document.getElementById('restaurant-orders-list');
     if (restaurantOrders) {
-        restaurantOrders.innerHTML = orders.length === 0 ? '<p style="color:#888;">لا توجد طلبات مسجلة اليوم.</p>' : orders.map(order => {
+        restaurantOrders.innerHTML = allOrders.length === 0 ? '<p style="color:#888;">لا توجد طلبات مسجلة اليوم.</p>' : allOrders.map(order => {
             const paid = order.paymentStatus === 'مدفوع';
             const canPay = order.status === 'تم التوصيل' && !paid;
             const statusColor = paid ? '#1565c0' : (order.status === 'تم التوصيل' ? '#ef6c00' : '#e91e63');
@@ -103,7 +103,7 @@ function renderAccountingDashboard() {
     const cashierTables = document.getElementById('cashier-tables-list');
     if (cashierTables) {
         const tableGroups = new Map();
-        orders.filter(order => order.paymentStatus !== 'مدفوع').forEach(order => {
+        allOrders.filter(order => order.paymentStatus !== 'مدفوع').forEach(order => {
             const table = String(order.table);
             if (!tableGroups.has(table)) tableGroups.set(table, []);
             tableGroups.get(table).push(order);

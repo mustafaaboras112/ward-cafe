@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>كافيه ورد - القائمة الرئيسية</title>
     <link rel="stylesheet" href="style/common.css">
     <link rel="stylesheet" href="style/menu.css">
@@ -19,7 +19,8 @@
         </div>
 
         <div class="table-selector-container">
-            <div class="table-select-box">
+            <button id="change-table" class="change-table-btn" type="button" aria-controls="table-picker" aria-expanded="false" hidden>تغيير الطاولة</button>
+            <div class="table-select-box" id="table-picker">
                 <label for="table-selector"><i class="fa-solid fa-chair"></i> اختر طاولتك</label>
                 <select id="table-selector">
                     <option value="1" selected>رقم 1</option>
@@ -45,56 +46,59 @@
                 </select>
                 <strong id="selected-table-label">رقم الطاولة: 1</strong>
             </div>
-            <p id="table-badge" class="table-badge">رقم الطاولة: 1</p>
+            <p id="table-badge" class="table-badge">طاولتك رقم 1</p>
+            <p id="table-error" class="menu-error" role="status"></p>
         </div>
     </section>
 
-    <div class="cart-fab" onclick="toggleCart()" aria-label="سلة المشتريات">
+    <button type="button" id="open-cart" class="cart-fab" aria-label="سلة المشتريات" aria-controls="cart-modal" aria-expanded="false">
         <i class="fa-solid fa-cart-shopping"></i>
         <span id="cart-count">0</span>
-    </div>
+    </button>
 
     <main>
         <div class="category-boxes" id="category-boxes">
-            <div class="category-box hot-box" onclick="openCategory('hot')">
+            <button type="button" id="category-hot" class="category-box hot-box">
                 <div class="category-icon">☕</div>
                 <h3>مشروبات ساخنة</h3>
                 <p>قهوة، لاتيه، شاي...</p>
-            </div>
-            <div class="category-box cold-box" onclick="openCategory('cold')">
+            </button>
+            <button type="button" id="category-cold" class="category-box cold-box">
                 <div class="category-icon">🧊</div>
                 <h3>مشروبات باردة</h3>
                 <p>موهيتو، عصير، صودا...</p>
-            </div>
-            <div class="category-box sweets-box" onclick="openCategory('sweets')">
+            </button>
+            <button type="button" id="category-sweets" class="category-box sweets-box">
                 <div class="category-icon">🍰</div>
                 <h3>حلويات</h3>
                 <p>تشيز كيك، كيك، معمول...</p>
-            </div>
-            <div class="category-box food-box" onclick="openCategory('food')">
+            </button>
+            <button type="button" id="category-food" class="category-box food-box">
                 <div class="category-icon">🍔</div>
                 <h3>مأكولات</h3>
                 <p>ساندويش، برغر، فطور...</p>
-            </div>
+            </button>
         </div>
 
-        <div id="category-products" class="category-products" style="display:none;">
-            <button class="back-btn" onclick="backToCategories()">➜ الرجوع للتصنيفات</button>
+        <div id="category-products" class="category-products" hidden>
+            <button type="button" id="back-categories" class="back-btn">➜ الرجوع للتصنيفات</button>
             <h2 id="category-title" class="category-title"></h2>
             <div id="category-items-grid" class="category-items-grid"></div>
         </div>
     </main>
 
-    <div id="cart-modal" class="cart-modal" style="display:none;">
-        <div class="cart-content">
-            <span class="close-btn" onclick="toggleCart()">&times;</span>
-            <h2>سلة طلبات الطاولة</h2>
+    <p id="menu-feedback" class="menu-feedback" role="status" aria-live="polite"></p>
+    <div id="cart-modal" class="cart-modal" hidden>
+        <section class="cart-content" role="dialog" aria-modal="true" aria-labelledby="cart-title" tabindex="-1">
+            <div class="cart-heading"><h2 id="cart-title">سلة طلبات الطاولة</h2><button type="button" id="close-cart" aria-label="إغلاق السلة">×</button></div>
+            <button type="button" id="clear-cart" class="clear-cart-btn">إفراغ السلة</button>
             <div id="cart-items"></div>
-            <div class="cart-total">
-                <h3>الإجمالي: <span id="total-price">0</span> ليرة</h3>
+            <div class="cart-checkout">
+                <div class="cart-total"><strong>الإجمالي: <span id="total-price">0</span> ليرة</strong></div>
+                <p id="checkout-error" class="menu-error" role="alert"></p>
+                <button type="button" id="checkout-submit" class="checkout-btn">تأكيد وإرسال الطلب</button>
             </div>
-            <button class="checkout-btn" onclick="checkout()">تأكيد وإرسال الطلب</button>
-        </div>
+        </section>
     </div>
 
     <section id="customer-orders" aria-label="متابعة طلباتك" aria-live="polite"></section>

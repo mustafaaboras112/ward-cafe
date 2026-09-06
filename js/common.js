@@ -68,7 +68,7 @@ async function submitOrder(table, items) {
         const menu = state.menu ? Object.entries(state.menu).map(([id,item])=>({...item,id})) : getMenu();
         const lines = items.map(item => {
             const product = menu.find(product=>String(product.id)===String(item.id));
-            if (!product || !Number.isInteger(item.qty) || item.qty < 1 || !Number.isFinite(Number(product.price)) || Number(product.price)<0) throw new Error('أحد الأصناف لم يعد متاحاً أو كميته غير صحيحة.');
+            if (!product || product.available === false || !Number.isInteger(item.qty) || item.qty < 1 || !Number.isFinite(Number(product.price)) || Number(product.price)<0) throw new Error('أحد الأصناف لم يعد متاحاً أو كميته غير صحيحة.');
             return {id:String(product.id),name:product.name,price:Number(product.price),qty:item.qty};
         });
         submitted = {id,clientId:owner,table:String(table),items:lines,total:Math.round(lines.reduce((sum,item)=>sum+item.price*item.qty,0)*100)/100,status:'قيد التحضير',paymentStatus:'غير مدفوع',createdAt:now,time:formatWardDateTime(now)};

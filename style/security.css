@@ -1,0 +1,87 @@
+/* Keep all page content hidden before authorization, including before JavaScript loads. */
+body.ward-auth-pending > :not(#ward-auth-root) { display: none !important; }
+body.ward-auth-pending { min-height: 100vh; margin: 0; overflow: auto; background: #fff8fa; }
+#ward-auth-root[hidden] { display: none !important; }
+#ward-auth-root {
+    position: relative;
+    z-index: 2147483647;
+    display: grid;
+    min-height: 100vh;
+    min-height: 100dvh;
+    place-items: center;
+    padding: 28px 18px;
+    box-sizing: border-box;
+    color: #222;
+    background: #fff8fa;
+    font-family: Tahoma, Arial, sans-serif;
+    text-align: right;
+}
+#ward-auth-root *, .ward-session-bar * { box-sizing: border-box; }
+#ward-auth-root .ward-auth-panel {
+    width: min(100%, 430px);
+    padding: 32px;
+    border: 1px solid #ead6dc;
+    border-top: 4px solid #b75b73;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 12px 36px rgb(90 36 54 / 8%);
+}
+#ward-auth-root .ward-auth-flower { font-size: 35px; text-align: center; }
+#ward-auth-root .ward-auth-brand { margin: 8px 0 22px; color: #b75b73; text-align: center; font-size: 18px; font-weight: 700; }
+#ward-auth-root h1 { margin: 0 0 12px; color: #222; font-size: 23px; line-height: 1.5; }
+#ward-auth-root .ward-auth-description { margin: 0 0 22px; color: #666; font-size: 14px; line-height: 1.9; }
+#ward-auth-root .ward-auth-form { display: grid; gap: 9px; }
+#ward-auth-root label { display: block; color: #333; font-size: 13px; font-weight: 700; }
+#ward-auth-root input {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    margin: 0 0 7px;
+    border: 1px solid #ead6dc;
+    border-radius: 10px;
+    color: #222;
+    background: #fff;
+    font: inherit;
+    font-size: 16px;
+}
+#ward-auth-root button {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 10px;
+    padding: 10px 14px;
+    border: 1px solid #b75b73;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.6;
+    cursor: pointer;
+}
+#ward-auth-root .ward-auth-primary { color: #fff; background: #a54d65; }
+#ward-auth-root .ward-auth-secondary { color: #98465d; background: #fff8fa; }
+#ward-auth-root button:disabled { opacity: .6; cursor: wait; }
+#ward-auth-root :focus-visible, .ward-session-bar button:focus-visible { outline: 3px solid #b75b73; outline-offset: 3px; }
+#ward-auth-root .ward-auth-message { margin: 12px 0 0; color: #456948; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+#ward-auth-root .ward-auth-message:empty { display: none; }
+#ward-auth-root .ward-auth-message.is-error { color: #a72e38; }
+#ward-auth-root .ward-auth-note { margin: 20px 0 0; padding-top: 15px; border-top: 1px solid #ead6dc; color: #666; font-size: 12px; line-height: 1.8; }
+.ward-session-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 28px 16px 16px;
+    padding: 12px 16px;
+    border: 1px solid #ead6dc;
+    border-radius: 12px;
+    color: #666;
+    background: #fff8fa;
+    direction: rtl;
+    font-family: Tahoma, Arial, sans-serif;
+    font-size: 12px;
+}
+.ward-session-bar button { min-height: 38px; padding: 8px 12px; border: 1px solid #b75b73; border-radius: 8px; color: #98465d; background: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+@media (max-width: 480px) { #ward-auth-root .ward-auth-panel { padding: 24px 20px; } }
+@media print { .ward-session-bar { display: none !important; } }

@@ -1,0 +1,258 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "staffAccess": {
+      ".read": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin')",
+      ".write": false,
+      "$uid": {
+        ".read": "(auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && auth.uid == $uid) || (auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin'))"
+      }
+    },
+    "menu": {
+      ".read": "auth != null",
+      "$id": {
+        ".write": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin')",
+        ".validate": "newData.hasChildren(['name', 'category', 'price', 'desc', 'img', 'createdAt'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 160"
+        },
+        "category": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 80"
+        },
+        "price": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000"
+        },
+        "desc": {
+          ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 2000"
+        },
+        "img": {
+          ".validate": "newData.isString() && newData.val().length <= 2048 && newData.val().matches(/^https:\\/\\/[^\\s]+$/)"
+        },
+        "available": {
+          ".validate": "newData.isBoolean()"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 60000 && (!data.exists() || newData.val() == data.val())"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "orders": {
+      ".read": "(auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'waiter' || root.child('staffAccess').child(auth.uid).child('role').val() == 'cashier')) || (auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'kitchen') && query.orderByChild == 'status' && query.equalTo == 'قيد التحضير') || (auth != null && auth.token.firebase.sign_in_provider == 'anonymous' && query.orderByChild == 'clientId' && query.equalTo == auth.uid)",
+      ".write": false,
+      ".indexOn": [
+        "clientId",
+        "status",
+        "table"
+      ],
+      "$id": {
+        ".read": "(auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'waiter' || root.child('staffAccess').child(auth.uid).child('role').val() == 'cashier')) || (auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'kitchen') && data.child('status').val() == 'قيد التحضير') || (auth != null && auth.token.firebase.sign_in_provider == 'anonymous' && data.child('clientId').val() == auth.uid)"
+      }
+    },
+    "tables": {
+      ".read": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'waiter' || root.child('staffAccess').child(auth.uid).child('role').val() == 'cashier')",
+      ".write": false
+    },
+    "accounting": {
+      ".read": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'accountant')",
+      "sales": {
+        ".read": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'cashier')",
+        ".write": false,
+        ".indexOn": [
+          "paidAt",
+          "createdAt",
+          "orderId"
+        ]
+      },
+      "expenses": {
+        "$id": {
+          ".write": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'accountant')",
+          ".validate": "newData.hasChildren([\"category\",\"description\",\"paymentMethod\",\"amount\",\"createdAt\",\"time\"])",
+          "category": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+          },
+          "description": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000"
+          },
+          "paymentMethod": {
+            ".validate": "newData.val() == 'cash' || newData.val() == 'card'"
+          },
+          "amount": {
+            ".validate": "newData.isNumber() && newData.val() >= 0.01 && newData.val() <= 100000000"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 60000 && (!data.exists() || newData.val() == data.val())"
+          },
+          "time": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "purchases": {
+        "$id": {
+          ".write": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'accountant')",
+          ".validate": "newData.hasChildren([\"supplier\",\"total\",\"paid\",\"paymentMethod\",\"createdAt\",\"time\"]) && (newData.child('paid').val() <= newData.child('total').val())",
+          "supplier": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 160"
+          },
+          "total": {
+            ".validate": "newData.isNumber() && newData.val() >= 0.01 && newData.val() <= 100000000"
+          },
+          "paid": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "paymentMethod": {
+            ".validate": "newData.val() == 'cash' || newData.val() == 'card'"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 60000 && (!data.exists() || newData.val() == data.val())"
+          },
+          "time": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "inventory": {
+        "$id": {
+          ".write": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'accountant')",
+          ".validate": "newData.hasChildren([\"name\",\"unit\",\"quantity\",\"reorderLevel\",\"createdAt\",\"time\"])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 160"
+          },
+          "unit": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 80"
+          },
+          "quantity": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "reorderLevel": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 60000 && (!data.exists() || newData.val() == data.val())"
+          },
+          "time": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "clients": {
+        "$id": {
+          ".write": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'accountant')",
+          ".validate": "newData.hasChildren([\"name\",\"phone\",\"balance\",\"lastMovement\",\"createdAt\",\"time\"])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 160"
+          },
+          "phone": {
+            ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 80"
+          },
+          "balance": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "lastMovement": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 60000"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 60000 && (!data.exists() || newData.val() == data.val())"
+          },
+          "time": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "suppliers": {
+        "$id": {
+          ".write": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'accountant')",
+          ".validate": "newData.hasChildren([\"name\",\"phone\",\"openingBalance\",\"payments\",\"createdAt\",\"time\"])",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 160"
+          },
+          "phone": {
+            ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 80"
+          },
+          "openingBalance": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "payments": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 60000 && (!data.exists() || newData.val() == data.val())"
+          },
+          "time": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "cashMovements": {
+        "$id": {
+          ".write": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'accountant')",
+          ".validate": "newData.hasChildren([\"type\",\"description\",\"inAmount\",\"outAmount\",\"createdAt\",\"time\"]) && ((newData.child('type').val() == 'customer-payment' && newData.child('inAmount').val() > 0 && newData.child('outAmount').val() == 0) || (newData.child('type').val() == 'supplier-payment' && newData.child('outAmount').val() > 0 && newData.child('inAmount').val() == 0))",
+          "type": {
+            ".validate": "newData.val() == 'customer-payment' || newData.val() == 'supplier-payment'"
+          },
+          "description": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000"
+          },
+          "inAmount": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "outAmount": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= now + 60000 && (!data.exists() || newData.val() == data.val())"
+          },
+          "time": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "unpaid": {
+        ".write": false
+      },
+      "dayClosed": {
+        ".read": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'cashier')",
+        ".write": "auth != null && auth.token.email_verified == true && auth.token.auth_time != null && now < auth.token.auth_time * 1000 + 28800000 && root.child('staffAccess').child(auth.uid).child('active').val() == true && (!root.child('staffAccess').child(auth.uid).child('validAfter').exists() || auth.token.auth_time > root.child('staffAccess').child(auth.uid).child('validAfter').val()) && (root.child('staffAccess').child(auth.uid).child('role').val() == 'admin' || root.child('staffAccess').child(auth.uid).child('role').val() == 'accountant') && newData.isBoolean()",
+        ".validate": "newData.isBoolean()"
+      }
+    },
+    "audit": {
+      ".read": false,
+      ".write": false
+    },
+    "security": {
+      ".read": false,
+      ".write": false
+    },
+    "requests": {
+      ".read": false,
+      ".write": false
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

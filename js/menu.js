@@ -1,11 +1,17 @@
 let cart = [];
-let tableNumber = '1';
+const tableNumber = getQrTableNumber();
 let checkoutBusy = false;
 let activeCategory = null;
-let qrTable = false;
 let cartOpen = false;
 let feedbackTimer;
 const categoryNames = {hot:'مشروبات ساخنة',cold:'مشروبات باردة',sweets:'حلويات',food:'مأكولات'};
+function getQrTableNumber() {
+    const values = new URLSearchParams(location.search).getAll('table');
+    return values.length === 1 && validTable(values[0]) ? values[0] : null;
+}
+function qrTableError() {
+    return 'رابط الطاولة غير صالح. امسح رمز QR الموجود على طاولتك (من 1 إلى 20) لإرسال الطلب.';
+}
 function customerOrderIds() { return JSON.parse(sessionStorage.getItem('ward-order-ids') || '[]'); }
 function normalizeMenuId(id) { return String(id); }
 function menuAttr(value) { return escapeHtml(value).replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
@@ -23,7 +29,7 @@ function customerMessage(order) {
 function renderCustomerOrders() {
     const container=document.getElementById('customer-orders');if(!container) return;
     const owner=String(customerId());
-    const owned=[...new Map(getOrders().filter(order=>String(order.clientId)===owner).map(order=>[String(order.id),order])).values()];
+    const owned=[...new Map(getOrders().filter(order=>String(order.clientId)===owner && String(order.table)===tableNumber).map(order=>[String(order.id),order])).values()];
     const visibleOrders=owned.filter(order=>order.paymentStatus!=='مدفوع' && order.status!=='تم التوصيل');
     container.hidden=!visibleOrders.length;
     container.innerHTML=visibleOrders.length?'<h2>متابعة طلباتك</h2>'+visibleOrders.map(order=>`<article class="customer-order-status" data-order-id="${menuAttr(order.id)}"><strong>طاولة ${escapeHtml(order.table)}</strong><p class="customer-order-message">${escapeHtml(customerMessage(order))}</p><ul class="customer-order-items">${(order.items || []).map(item=>`<li><span>${escapeHtml(item.name)}</span><span>× ${escapeHtml(item.qty)}</span></li>`).join('')}</ul><div class="customer-order-footer"><strong>الإجمالي: ${Number(order.total).toFixed(2)} ليرة</strong><small>رقم الطلب: ${escapeHtml(order.id)}</small></div></article>`).join(''):'';
@@ -37,40 +43,12 @@ function renderCustomerOrders() {
         }
     }
     sessionStorage.setItem('ward-ready-seen',JSON.stringify(seen));
-    const active=owned.filter(order=>order.paymentStatus!=='مدفوع').sort((a,b)=>b.createdAt-a.createdAt)[0];
-    if(active && validTable(active.table)) {
-        tableNumber=String(active.table);localStorage.setItem('cafe_ward_table',tableNumber);
-        document.getElementById('table-selector').value=tableNumber;updateTableLabel();
-    }
-}
-function renderCustomerTables() {
-    const selector=document.getElementById('table-selector');if(!selector) return;
-    for(const option of selector.options) {
-        const status=getLocalTableStatus(option.value);
-        option.disabled=status?.status==='occupied' && status.clientId!==customerId();
-        option.textContent=`طاولة ${option.value}${option.disabled?' (محجوزة)':''}`;
-    }
-}
-function changeTable(value) {
-    const error=document.getElementById('table-error');
-    if(checkoutBusy) {document.getElementById('table-selector').value=tableNumber;return;}
-    if(!validTable(value)) {error.textContent='اختر رقم طاولة من 1 إلى 20.';document.getElementById('table-selector').value=tableNumber;return;}
-    const status=getLocalTableStatus(value);
-    if(status?.status==='occupied' && status.clientId!==customerId()) {
-        error.textContent='الطاولة محجوزة حالياً. اختر طاولة متاحة.';
-        document.getElementById('table-selector').value=tableNumber;return;
-    }
-    error.textContent='';tableNumber=String(value);localStorage.setItem('cafe_ward_table',tableNumber);updateTableLabel();
-    if(qrTable) setTablePicker(false);
-}
-function setTablePicker(open) {
-    document.getElementById('table-picker').hidden=!open;
-    document.getElementById('change-table').setAttribute('aria-expanded',String(open));
-    if(open) document.getElementById('table-selector').focus();
 }
 function updateTableLabel() {
-    document.getElementById('selected-table-label').textContent=`طاولتك رقم ${tableNumber}`;
-    document.getElementById('table-badge').textContent=`طاولتك رقم ${tableNumber}`;
+    const valid = validTable(tableNumber);
+    document.getElementById('table-badge').textContent=valid ? `طاولتك ${tableNumber}` : 'امسح رمز QR الخاص بطاولتك';
+    document.getElementById('table-error').textContent=valid ? '' : qrTableError();
+    if(!valid) document.getElementById('checkout-error').textContent=qrTableError();
 }
 function quantityControls(item, quantity, allowRemove=false) {
     const id=menuAttr(item.id), name=menuAttr(item.name);
@@ -139,12 +117,17 @@ function renderCartItems() {
         return `<article class="cart-item"><div class="cart-item-copy"><h3>${escapeHtml(item.name)}</h3><p>${Number(item.price).toFixed(2)} ليرة × ${item.qty} = <strong>${(item.price*item.qty).toFixed(2)} ليرة</strong></p>${!current || current.available===false?'<span class="unavailable-badge">غير متوفر — احذفه لإرسال الطلب</span>':''}</div>${quantityControls({...item,available:!!current && current.available!==false},item.qty,true)}</article>`;
     }).join(''):'<p class="empty-menu">السلة فارغة حالياً</p>';
     document.getElementById('total-price').innerText=cart.reduce((sum,item)=>sum+item.price*item.qty,0).toFixed(2);
-    const submit=document.getElementById('checkout-submit');submit.disabled=checkoutBusy || !cart.length;
+    const submit=document.getElementById('checkout-submit');submit.disabled=checkoutBusy || !cart.length || !validTable(tableNumber);
     submit.textContent=checkoutBusy?'جاري إرسال الطلب...':'تأكيد وإرسال الطلب';
     document.getElementById('cart-modal').setAttribute('aria-busy',String(checkoutBusy));
-    for(const id of ['clear-cart','close-cart','table-selector','change-table']) document.getElementById(id).disabled=checkoutBusy;
+    for(const id of ['clear-cart','close-cart']) document.getElementById(id).disabled=checkoutBusy;
 }
 async function checkout() {
+    if(!validTable(tableNumber) || getQrTableNumber() !== tableNumber) {
+        document.getElementById('checkout-error').textContent=qrTableError();
+        document.getElementById('table-error').textContent=qrTableError();
+        return;
+    }
     if(checkoutBusy || !cart.length) return;
     checkoutBusy=true;document.getElementById('checkout-error').textContent='';refreshCartViews();
     try {
@@ -165,19 +148,8 @@ function handleCartKeyboard(event) {
     }
 }
 window.addEventListener('ward:orders',renderCustomerOrders);
-window.addEventListener('ward:tables',renderCustomerTables);
 window.addEventListener('ward:menu',refreshCartViews);
 window.addEventListener('DOMContentLoaded',()=>{
-    const requested=new URLSearchParams(location.search).get('table');
-    qrTable=validTable(requested);
-    const saved=localStorage.getItem('cafe_ward_table');
-    tableNumber=qrTable?String(requested):validTable(saved)?String(saved):'1';
-    document.getElementById('table-picker').hidden=qrTable;
-    document.getElementById('change-table').hidden=!qrTable;
-    if(requested!==null && !qrTable) document.getElementById('table-error').textContent='رقم الطاولة في الرابط غير صالح. اختر طاولة من 1 إلى 20.';
-    const selector=document.getElementById('table-selector');selector.value=tableNumber;
-    selector.addEventListener('change',event=>changeTable(event.target.value));
-    document.getElementById('change-table').addEventListener('click',()=>setTablePicker(document.getElementById('table-picker').hidden));
     for(const category of Object.keys(categoryNames)) document.getElementById('category-'+category).addEventListener('click',()=>openCategory(category));
     document.getElementById('back-categories').addEventListener('click',backToCategories);
     document.getElementById('open-cart').addEventListener('click',toggleCart);
@@ -187,7 +159,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     for(const id of ['category-items-grid','cart-items']) document.getElementById(id).addEventListener('click',handleCartAction);
     document.getElementById('cart-modal').addEventListener('click',event=>{if(event.target===event.currentTarget) setCartOpen(false);});
     document.addEventListener('keydown',handleCartKeyboard);
-    updateTableLabel();refreshCartViews();renderCustomerTables();
+    updateTableLabel();refreshCartViews();
     startMenuRealtime();startOrdersRealtime();startTablesRealtime();
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if(!reduced) {

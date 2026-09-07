@@ -58,9 +58,9 @@ function screen(name) {
     const events = {}, sessionStorage = storage(), localStorage = storage();
     sessionStorage.setItem('ward-client-id', 'client-one');
     if (nodes.has('pos-method')) nodes.get('pos-method').value = 'cash';
-    const ctx = vm.createContext({ console, Date, Intl, crypto: webcrypto, Event, sessionStorage, localStorage, navigator: {},
+    const ctx = vm.createContext({ console, Date, Intl, URLSearchParams, crypto: webcrypto, Event, sessionStorage, localStorage, navigator: {},
         firebaseConfigured: true, firebaseDatabase: { ref }, setTimeout: () => 0, clearTimeout() {}, setInterval: () => 0,
-        alert: message => { throw Error(message); }, location: { pathname: '/' + name + '.html' },
+        alert: message => { throw Error(message); }, location: { pathname: '/' + name + '.html', search: '?table=12' },
         document: { getElementById: id => nodes.get(id) || null, createElement: () => new Element(), body: new Element(), querySelector: () => null, querySelectorAll: () => [] }
     });
     ctx.window = ctx;

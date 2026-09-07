@@ -434,18 +434,77 @@ function startAccountingRealtime() {
         return;
     }
     accountingRef.on('value', snapshot => {
-        const data = snapshot.val() || {};
-        liveAccounting = {
-            expenses: Object.entries(data.expenses || {}).map(([id, item]) => ({ ...item, id })),
-            clients: Object.entries(data.clients || {}).map(([id, item]) => ({ ...item, id })),
-            suppliers: Object.entries(data.suppliers || {}).map(([id, item]) => ({ ...item, id })),
-            unpaid: Object.entries(data.unpaid || {}).map(([id, item]) => ({ ...item, id })),
-            sales: Object.entries(data.sales || {}).map(([id, item]) => ({ ...item, id })),
-            cashMovements: Object.entries(data.cashMovements || {}).map(([id, item]) => ({ ...item, id })),
-            dayClosed: data.dayClosed === true
-        };
-        window.dispatchEvent(new Event('ward:accounting'));
-    });
+
+    const data = snapshot.val() || {};
+
+    liveAccounting = {
+
+        expenses:
+            Object.entries(data.expenses || {})
+                .map(([id, item]) => ({
+                    ...item,
+                    id
+                })),
+
+        purchases:
+            Object.entries(data.purchases || {})
+                .map(([id, item]) => ({
+                    ...item,
+                    id
+                })),
+
+        inventory:
+            Object.entries(data.inventory || {})
+                .map(([id, item]) => ({
+                    ...item,
+                    id
+                })),
+
+        clients:
+            Object.entries(data.clients || {})
+                .map(([id, item]) => ({
+                    ...item,
+                    id
+                })),
+
+        suppliers:
+            Object.entries(data.suppliers || {})
+                .map(([id, item]) => ({
+                    ...item,
+                    id
+                })),
+
+        unpaid:
+            Object.entries(data.unpaid || {})
+                .map(([id, item]) => ({
+                    ...item,
+                    id
+                })),
+
+        sales:
+            Object.entries(data.sales || {})
+                .map(([id, item]) => ({
+                    ...item,
+                    id
+                })),
+
+        cashMovements:
+            Object.entries(data.cashMovements || {})
+                .map(([id, item]) => ({
+                    ...item,
+                    id
+                })),
+
+        dayClosed:
+            data.dayClosed === true
+
+    };
+
+    window.dispatchEvent(
+        new Event('ward:accounting')
+    );
+
+});
 }
 
 async function saveAccountingRecord(collection, record) {

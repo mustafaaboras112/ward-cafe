@@ -57,7 +57,8 @@ function moveModalKeyboard(event) {
 }
 window.addEventListener('ward:orders',()=>{renderOrders();renderWaiterTables();refreshMoveOptions();notifyReadyOrders(getOrders());});
 window.addEventListener('ward:tables',()=>{renderWaiterTables();refreshMoveOptions();});
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded',async () => {
+    if(window.WardAuth) await WardAuth.ready;
     document.getElementById('orders-container').addEventListener('click',event=>{const button=event.target.closest('[data-deliver]');if(button&&!button.disabled)updateOrderStatus(button.dataset.deliver,button);});
     document.getElementById('move-table-form').addEventListener('submit',submitTableMove);
     document.getElementById('move-table-cancel').addEventListener('click',closeMoveTableModal);

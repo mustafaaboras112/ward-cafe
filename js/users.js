@@ -1,0 +1,31 @@
+window.addEventListener('DOMContentLoaded',async()=>{
+    await WardAuth.ready;
+    const panel=document.createElement('section');panel.className='security-panel';
+    panel.innerHTML=`<h2>المستخدمون والصلاحيات</h2><p>حساب مستقل لكل موظف، وصلاحيات تناسب مهامه.</p><small>المدير: إدارة كاملة • الكاشير: المبيعات والتحصيل • المحاسب: السجلات المالية • الكارسون: توصيل الطلبات • المطبخ: تجهيز الطلبات</small><form id="user-create"><div class="security-fields"><label>الاسم<input name="name" required minlength="2" maxlength="100" autocomplete="off"></label><label>رقم المستخدم<input name="number" type="text" inputmode="numeric" pattern="[0-9٠-٩۰-۹]{4,12}" required minlength="4" maxlength="12" dir="ltr" autocomplete="off"></label><label>رمز الدخول<input name="pin" type="password" inputmode="numeric" pattern="[0-9٠-٩۰-۹]{12,20}" required minlength="12" maxlength="20" dir="ltr" autocomplete="new-password"><small>من 12 إلى 20 رقمًا</small></label><label>الدور<select name="role"><option value="waiter">كارسون</option><option value="kitchen">مطبخ</option><option value="cashier">كاشير</option><option value="accountant">محاسب</option><option value="admin">مدير</option></select></label></div><button type="submit" class="security-primary">إنشاء الحساب الرقمي</button></form><p id="users-status" role="status" aria-live="polite"></p><button id="users-refresh">تحديث القائمة</button><input id="users-search" type="search" placeholder="ابحث بالاسم أو الرقم" aria-label="البحث عن مستخدم"><div class="security-table-wrap"><table><thead><tr><th>المستخدم</th><th>الدور</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="users-list"></tbody></table></div><button id="users-more" hidden>تحميل المزيد</button><small>الرموز المحفوظة لا تظهر لأي مستخدم. سلّم الرمز الجديد لصاحب الحساب بطريقة خاصة. تعديل حسابات المديرين الآخرين يتم من بيئة الخادم الموثوقة.</small>`;
+    document.querySelector('main').append(panel);
+    const status=panel.querySelector('#users-status'), list=panel.querySelector('#users-list');
+    let users=[],pageToken=null,busy=false;
+    const labels={admin:'مدير',cashier:'كاشير',accountant:'محاسب',waiter:'كارسون',kitchen:'مطبخ'};
+    const run=async fn=>{if(busy)return;busy=true;panel.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='جارٍ تنفيذ العملية…';try{await fn();}catch(e){status.textContent=e.code==='functions/unauthenticated'?'أعد تسجيل الدخول لإدارة الحسابات.':(e.message || 'تعذر تنفيذ العملية.');}finally{busy=false;panel.querySelectorAll('button').forEach(b=>b.disabled=false);}};
+    const load=async more=>{const result=await WardAuth.call('manageUsers',{action:'list',pageToken:more?pageToken:null});users=more?users.concat(result.users):result.users;pageToken=result.pageToken;panel.querySelector('#users-more').hidden=!pageToken;render();status.textContent=`تم تحميل ${users.length} حساب.`;};
+    function render(){
+        list.replaceChildren();const search=panel.querySelector('#users-search').value.toLowerCase();
+        for(const user of users.filter(u=>(u.name+' '+u.number).toLowerCase().includes(search))){
+            const row=document.createElement('tr'), identity=document.createElement('td'), roleCell=document.createElement('td'), activeCell=document.createElement('td'), actions=document.createElement('td');
+            const name=document.createElement('input');name.value=user.name;name.maxLength=100;name.setAttribute('aria-label','اسم المستخدم');const email=document.createElement('small');email.textContent=user.number;identity.append(name,email);
+            const select=document.createElement('select');select.setAttribute('aria-label','دور '+user.number);for(const [value,label] of Object.entries(labels)){const option=new Option(label,value);select.add(option);}select.value=user.role;roleCell.append(select);
+            const active=document.createElement('input');active.type='checkbox';active.checked=user.active;active.setAttribute('aria-label','تفعيل '+user.number);const activeLabel=document.createElement('label');activeLabel.append(active,document.createTextNode(user.active?'مفعّل':'معطّل'));activeCell.append(activeLabel);
+            const action=(label,fn)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=()=>run(fn);actions.append(button);};
+            action('حفظ',async()=>{await WardAuth.call('manageUsers',{action:'update',uid:user.uid,name:name.value,role:select.value,active:active.checked});await load(false);});
+            const pin=document.createElement('input');pin.type='password';pin.inputMode='numeric';pin.maxLength=20;pin.autocomplete='new-password';pin.placeholder='رمز جديد: 12–20 رقمًا';pin.setAttribute('aria-label','رمز جديد للمستخدم '+user.number);actions.append(pin);
+            action('تعيين الرمز',async()=>{const value=pin.value.replace(/[٠-٩۰-۹]/g,c=>String(c.charCodeAt(0)-(c<='٩'?1632:1776)));if(!/^[0-9]{12,20}$/.test(value)){status.textContent='أدخل من 12 إلى 20 رقمًا.';return;}await WardAuth.call('manageUsers',{action:'resetPin',uid:user.uid,pin:value});pin.value='';status.textContent='تم تغيير الرمز وإلغاء الجلسات السابقة.';});
+            action('إنهاء الجلسات',async()=>{await WardAuth.call('manageUsers',{action:'revoke',uid:user.uid});status.textContent='تم إلغاء الجلسات السابقة.';});
+            action('حذف الحساب',async()=>{if(!confirm('حذف حساب '+user.number+' نهائياً؟')){status.textContent='أُلغي الحذف.';return;}await WardAuth.call('manageUsers',{action:'delete',uid:user.uid});await load(false);});
+            row.append(identity,roleCell,activeCell,actions);list.append(row);
+        }
+        if(!list.children.length){const row=list.insertRow();const cell=row.insertCell();cell.colSpan=4;cell.textContent='لا توجد حسابات مطابقة.';}
+    }
+    panel.querySelector('#user-create').onsubmit=event=>{event.preventDefault();run(async()=>{const data=Object.fromEntries(new FormData(event.target));await WardAuth.call('manageUsers',{action:'create',...data});event.target.reset();await load(false);status.textContent='تم إنشاء الحساب الرقمي. سلّم الرمز لصاحب الحساب بطريقة خاصة.';});};
+    panel.querySelector('#users-refresh').onclick=()=>run(()=>load(false));panel.querySelector('#users-more').onclick=()=>run(()=>load(true));panel.querySelector('#users-search').oninput=render;
+    run(()=>load(false));
+});

@@ -8,10 +8,10 @@
     { id: 7, name: 'طبق فطور شرقي', category: 'food', price: 135, desc: 'بيض وجبن وزيتون وخضار طازجة', img: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=500&q=80' }
 ];
 
-const STAFF_ACCESS_CODE = '1234';
 const TABLE_COUNT = 20;
 function validTable(table) { return /^(?:[1-9]|1[0-9]|20)$/.test(String(table)); }
 function customerId() {
+    if(window.WardAuth?.user)return WardAuth.user.uid;
     let id = sessionStorage.getItem('ward-client-id');
     if (!id) { id = crypto.randomUUID(); sessionStorage.setItem('ward-client-id', id); }
     return id;
@@ -42,19 +42,10 @@ function recoverWardWrite() {
 async function changeCafeState(change) {
     if (firebaseConfigured && !firebaseDatabase) throw new Error('تعذر تحميل اتصال Firebase. تحقق من الإنترنت وأعد فتح الصفحة.');
     if (firebaseDatabase) {
-        const ref = firebaseDatabase.ref();
-        await ref.once('value');
-        let failure;
-        const result = await ref.transaction(current => {
-            failure = null;
-            const state = current || {};
-            state.orders ||= {}; state.tables ||= {}; state.accounting ||= {};
-            try { change(state); return state; }
-            catch (error) { failure = error; return undefined; }
-        }, undefined, false);
-        if (!result.committed) throw failure || new Error('تعذر حفظ العملية، أعد المحاولة.');
-        // Use the committed snapshot, including legacy keys, before refreshing POS.
-        const saved = result.snapshot.val() || {};
+        await WardAuth.ready;
+        const {state,version}=await WardAuth.call('cafeState',{action:'read'});
+        change(state);
+        const {state:saved}=await WardAuth.call('cafeState',{action:'commit',state,version});
         liveOrders = Object.entries(saved.orders || {}).map(([key, order]) => ({...order, id:getOrderIdentity(order,key).orderId, firebaseKey:key}));
         liveAccounting.sales = Object.entries(saved.accounting?.sales || {}).map(([id,sale])=>({...sale,id}));
         try {
@@ -104,6 +95,7 @@ function openTableOrders(state, table) {
 }
 
 async function submitOrder(table, items) {
+    if(firebaseDatabase){await WardAuth.ready;return WardAuth.call('customerOrder',{table:String(table),items:items.map(i=>({id:String(i.id),qty:i.qty})),id:crypto.randomUUID()});}
     if (!validTable(table) || !items.length) throw new Error('اختر طاولة وأضف أصنافاً أولاً.');
     const id = crypto.randomUUID(), owner = customerId(), now = Date.now();
     let submitted;
@@ -132,67 +124,8 @@ async function transitionOrder(id, expected, next) {
 
     // Firebase: حدّث الطلب نفسه مباشرة بدل transaction على جذر القاعدة.
     // هذا يمنع فشل transaction بسبب cache غير مكتمل على root مع أن /orders ظاهر realtime.
-    if (firebaseDatabase) {
-        const ordersRef = getFirebaseOrdersRef();
-        if (!ordersRef) throw new Error('تعذر الوصول إلى الطلبات.');
+    if(firebaseDatabase){await WardAuth.ready;await WardAuth.call('transitionOrder',{id:requestedId,expected,next});return;}
 
-        // ابحث عن Firebase key الحقيقي، مع دعم الطلبات القديمة التي يختلف فيها key عن order.id.
-        let firebaseKey = requestedId;
-        const cached = (liveOrders || []).find(order =>
-            String(order.firebaseKey || order.id || '') === requestedId ||
-            String(order.id || '') === requestedId
-        );
-        if (cached?.firebaseKey) firebaseKey = String(cached.firebaseKey);
-
-        let orderRef = ordersRef.child(firebaseKey);
-        let snapshot = await orderRef.once('value');
-
-        // fallback للطلبات القديمة إذا وصلنا order.id وليس Firebase key.
-        if (!snapshot.exists()) {
-            const allSnapshot = await ordersRef.once('value');
-            const found = Object.entries(allSnapshot.val() || {}).find(([key, order]) =>
-                String(order?.id || key) === requestedId
-            );
-            if (!found) throw new Error('تعذر العثور على الطلب.');
-            firebaseKey = String(found[0]);
-            orderRef = ordersRef.child(firebaseKey);
-            snapshot = await orderRef.once('value');
-        }
-
-        let failure = null;
-        const result = await orderRef.transaction(current => {
-            failure = null;
-
-            // بعد once() المفروض يكون السجل محملاً. لو اختفى فعلياً نوقف العملية.
-            if (!current) {
-                failure = new Error('تعذر العثور على الطلب.');
-                return;
-            }
-
-            if (current.paymentStatus === 'مدفوع') {
-                failure = new Error('تم إغلاق هذا الطلب بعد الدفع.');
-                return;
-            }
-
-            // Idempotent: لو جهاز آخر سبَقنا لنفس الحالة، اعتبرها نجاحاً.
-            if (current.status === next) return current;
-
-            if (current.status !== expected) {
-                failure = new Error('تم تحديث حالة الطلب من جهاز آخر.');
-                return;
-            }
-
-            const updated = { ...current, status: next };
-            updated[next === 'جاهز' ? 'readyAt' : 'deliveredAt'] = Date.now();
-            if (!updated.id) updated.id = requestedId || firebaseKey;
-            return updated;
-        }, undefined, false);
-
-        if (!result.committed) throw failure || new Error('تعذر حفظ حالة الطلب، أعد المحاولة.');
-        return;
-    }
-
-    // Local fallback
     await changeCafeState(state => {
         const orders = state.orders || {};
         let orderKey = requestedId;
@@ -245,7 +178,8 @@ window.addEventListener('storage', event => {
         window.dispatchEvent(new Event('ward:accounting'));
     }
 });
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+    if(window.WardAuth) await WardAuth.ready;
     initializeProtectedPage(); initializeCafeHeaderClock();
     const splash=document.getElementById('splash-screen');
     if(splash) { createSplashPetals(splash); setTimeout(()=>{splash.remove();document.body.classList.remove('menu-page-loading');},1200); }
@@ -269,81 +203,7 @@ let accountingRealtimeStarted = false;
 let liveOrders = [];
 let ordersRealtimeStarted = false;
 
-function initializeProtectedPage() {
-    try {
-        const pageName = window.location.pathname.split('/').pop().toLowerCase().split('?')[0].split('#')[0];
-        const isProtectedPage = pageName === 'admin.html' || pageName === 'accounting.html' || pageName === 'pos.html';
-        const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-        const legacyLogin = sessionStorage.getItem('cafe_ward_staff_unlocked') === 'true';
-
-        console.log('حماية الصفحة:', { pageName, isProtectedPage, isLoggedIn, legacyLogin });
-
-        if (!isProtectedPage || isLoggedIn || legacyLogin) return;
-
-        document.body.classList.add('page-locked');
-
-        const lockScreen = document.createElement('div');
-        lockScreen.id = 'access-lock';
-        lockScreen.innerHTML = `
-            <div class="access-card" role="dialog" aria-modal="true" aria-labelledby="access-title">
-                <img class="access-logo" src="q.png" alt="كافيه ورد">
-                <div class="access-icon"><i class="fa-solid fa-lock"></i></div>
-                <h2 id="access-title">الصفحة محمية</h2>
-                <p>أدخل رمز الموظفين للوصول إلى هذه الصفحة</p>
-                <form id="access-form">
-                    <label for="access-code">رمز الدخول</label>
-                    <input id="access-code" type="password" inputmode="numeric" autocomplete="off" required autofocus>
-                    <button type="submit">فتح الصفحة</button>
-                    <small id="access-error" role="alert"></small>
-                </form>
-            </div>
-        `;
-        document.body.appendChild(lockScreen);
-        console.log('تم إنشاء شاشة القفل');
-
-        const form = document.getElementById('access-form');
-        const codeInput = document.getElementById('access-code');
-        const error = document.getElementById('access-error');
-
-        if (!form || !codeInput || !error) {
-            console.error('عناصر شاشة القفل غير موجودة');
-            return;
-        }
-
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            try {
-
-                if (codeInput.value === STAFF_ACCESS_CODE) {
-                    console.log('الرمز صحيح!');
-                    sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('cafe_ward_staff_unlocked', 'true');
-                    document.body.classList.remove('page-locked');
-
-                    if (lockScreen && lockScreen.parentNode) {
-                        console.log('إزالة شاشة القفل...');
-                        lockScreen.remove();
-                    } else {
-                        console.warn('شاشة القفل غير موجودة أو تمت إزالتها مسبقاً');
-                    }
-
-                    console.log('تم فتح الصفحة بنجاح');
-                    return;
-                }
-
-                console.log('الرمز غير صحيح');
-                error.textContent = 'رمز الدخول غير صحيح';
-                codeInput.value = '';
-                codeInput.focus();
-            } catch (e) {
-                console.error('خطأ في معالجة نموذج الدخول:', e);
-                error.textContent = 'حدث خطأ، حاول مرة أخرى';
-            }
-        });
-    } catch (e) {
-        console.error('خطأ في تهيئة شاشة الحماية:', e);
-    }
-}
+function initializeProtectedPage() { /* WardAuth and server-side rules enforce access. */ }
 
 function getMenu() {
     if (liveMenu) return liveMenu;
@@ -355,7 +215,8 @@ function saveMenu(menu) {
     localStorage.setItem('cafe_ward_menu', JSON.stringify(menu));
 }
 
-function startMenuRealtime() {
+async function startMenuRealtime() {
+    if(window.WardAuth) await WardAuth.ready;
     if (menuRealtimeStarted) return;
     menuRealtimeStarted = true;
     const menuRef = getFirebaseMenuRef();
@@ -425,7 +286,8 @@ function getAccountingData() {
     };
 }
 
-function startAccountingRealtime() {
+async function startAccountingRealtime() {
+    if(window.WardAuth) await WardAuth.ready;
     if (accountingRealtimeStarted) return;
 
     accountingRealtimeStarted = true;
@@ -559,10 +421,12 @@ function getOrders() {
     return firebaseDatabase ? liveOrders : readLocalOrders();
 }
 
-function startOrdersRealtime() {
+async function startOrdersRealtime() {
+    if(window.WardAuth) await WardAuth.ready;
     if (ordersRealtimeStarted) return;
     ordersRealtimeStarted = true;
-    const ordersRef = getFirebaseOrdersRef();
+    let ordersRef = getFirebaseOrdersRef();
+    if(ordersRef && window.WardAuth?.user?.isAnonymous)ordersRef=ordersRef.orderByChild('clientId').equalTo(WardAuth.user.uid);
     if (!ordersRef) {
         showFirebaseSetupMessage();
         liveOrders = readLocalOrders();
@@ -677,7 +541,9 @@ function updateTableSelectorUI() { window.dispatchEvent(new Event('ward:tables')
 
 
 
-function startTablesRealtime() {
+async function startTablesRealtime() {
+    if(window.WardAuth){await WardAuth.ready;if(WardAuth.user?.isAnonymous)return;}
+    if(window.WardAuth) await WardAuth.ready;
     if (!getFirebaseTablesRef()) return;
 
     getFirebaseTablesRef().on('value', snapshot => {

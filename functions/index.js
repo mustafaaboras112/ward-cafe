@@ -22,3 +22,6 @@ exports.wardAction = onCall({
     maxInstances: 10,
     concurrency: 20
 }, makeWardHandler({ auth: getAuth(), database: getDatabase(), HttpsError, logger }));
+
+// Numeric staff login and administration services.
+Object.assign(exports, require('./numeric-services'));

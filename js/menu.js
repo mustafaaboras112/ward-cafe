@@ -149,7 +149,8 @@ function handleCartKeyboard(event) {
 }
 window.addEventListener('ward:orders',renderCustomerOrders);
 window.addEventListener('ward:menu',refreshCartViews);
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded',async () => {
+    if(window.WardAuth) await WardAuth.ready;
     for(const category of Object.keys(categoryNames)) document.getElementById('category-'+category).addEventListener('click',()=>openCategory(category));
     document.getElementById('back-categories').addEventListener('click',backToCategories);
     document.getElementById('open-cart').addEventListener('click',toggleCart);

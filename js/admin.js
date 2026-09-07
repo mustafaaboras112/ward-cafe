@@ -28,7 +28,8 @@ window.addEventListener(
 let adminFirebaseConnected = false;
 let adminConnectionStarted = false;
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+    if(window.WardAuth) await WardAuth.ready;
 
     adminElement('add-item-form')
         .addEventListener('submit', addNewItem);

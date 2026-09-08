@@ -19,8 +19,10 @@ test('payment and close-day operations are server-side transactions',()=>{
 test('browser data layer no longer writes Firebase state',()=>{
   const common=read('js/common.js');
   assert.doesNotMatch(common,/firebase\.database\(|firebase\.auth\(|\.ref\('orders'\)/);
-  assert.match(common,/\/api\/payments|\/api\/orders|\/api\/tables/);
-  assert.match(common,/changeCafeState\(\).*يجب أن تتم عبر API الخادم/s);
+  assert.match(common,/\/api\/orders|\/api\/tables/);
+  assert.match(common,/function changeCafeState\(\).*يجب أن تتم عبر API الخادم/s);
+  const overrides=read('js/mysql-overrides.js');
+  assert.match(overrides,/\/api\/payments/);
 });
 
 test('protected pages use server sessions and role checks',()=>{
@@ -30,7 +32,7 @@ test('protected pages use server sessions and role checks',()=>{
   assert.match(server,/getSession\(req\)/);
   assert.match(auth,/bcrypt\.compare/);
   assert.match(auth,/HttpOnly; SameSite=Strict/);
-  assert.match(auth,/X-CSRF|x-csrf-token/i);
+  assert.match(auth,/x-csrf-token/i);
 });
 
 test('schema keeps financial history and one payment per order',()=>{

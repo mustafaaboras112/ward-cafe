@@ -26,6 +26,16 @@ app.post('/api/auth/change-password',authRequired,csrfRequired,changePassword);
 app.use('/api',cafeRouter);
 app.use('/api/admin',adminRouter);
 
+const pageAliases={
+  '/admin':'/admin.html',
+  '/pos':'/pos.html',
+  '/accounting':'/accounting.html',
+  '/waiter':'/waiter.html',
+  '/kitchen':'/kitchen.html',
+  '/login':'/login.html'
+};
+for(const [from,to] of Object.entries(pageAliases))app.get(from,(req,res)=>res.redirect(to));
+
 const pageRoles={
   '/admin.html':['admin'],
   '/pos.html':['admin','cashier'],

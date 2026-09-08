@@ -25,6 +25,14 @@ test('browser data layer no longer writes Firebase state',()=>{
   assert.match(overrides,/\/api\/payments/);
 });
 
+test('admin menu uses MySQL API and has a working system monitor',()=>{
+  const admin=read('js/admin.js');
+  assert.match(admin,/function renderSystemMonitor\(/);
+  assert.match(admin,/\/api\/admin\/menu/);
+  assert.match(admin,/startAdminConnectionMonitor\(\)/);
+  assert.doesNotMatch(admin,/صلاحيات Firebase|adminFirebaseConnected/);
+});
+
 test('protected pages use server sessions, role checks and short aliases',()=>{
   const server=read('server/src/server.js');
   const auth=read('server/src/auth.js');

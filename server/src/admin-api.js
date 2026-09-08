@@ -34,10 +34,23 @@ router.delete('/menu/:id',csrfRequired,async(req,res,next)=>{try{
   res.json({ok:true});
 }catch(e){next(e);}});
 
+async function pinInUse(pin,exceptId=null){
+  const [rows]=await pool.execute(`SELECT id,password_hash FROM users WHERE active=1${exceptId?' AND id<>?':''}`,exceptId?[exceptId]:[]);
+  for(const row of rows){if(await bcrypt.compare(pin,row.password_hash))return true;}
+  return false;
+}
+async function nextUserNumber(){
+  const [rows]=await pool.execute("SELECT MAX(CAST(user_number AS UNSIGNED)) max_number FROM users WHERE user_number REGEXP '^[0-9]+$'");
+  return String(Math.max(1000,Number(rows[0]?.max_number||999)+1));
+}
+
 router.post('/users',csrfRequired,async(req,res,next)=>{try{
-  const number=normalizeDigits(req.body?.number).trim(),name=String(req.body?.name||'').trim(),role=String(req.body?.role||''),password=String(req.body?.password??req.body?.pin??'');
-  if(!/^[0-9]{4,12}$/.test(number)||name.length<2||name.length>100||!roles.includes(role)||password.length<8||password.length>128)throw error(400,'بيانات المستخدم غير صالحة.');
-  const passwordHash=await bcrypt.hash(password,12);
+  let number=normalizeDigits(req.body?.number).trim();
+  const name=String(req.body?.name||'').trim(),role=String(req.body?.role||''),pin=normalizeDigits(req.body?.pin??req.body?.password).trim();
+  if(!number)number=await nextUserNumber();
+  if(!/^[0-9]{4,12}$/.test(number)||name.length<2||name.length>100||!roles.includes(role)||!/^[0-9]{4,8}$/.test(pin))throw error(400,'أدخل الاسم والدور ورمزًا من 4 إلى 8 أرقام.');
+  if(await pinInUse(pin))throw error(409,'هذا الرمز مستخدم لموظف آخر. اختر رمزًا مختلفًا.');
+  const passwordHash=await bcrypt.hash(pin,10);
   try{const [result]=await pool.execute('INSERT INTO users(user_number,name,password_hash,role,active) VALUES(?,?,?,?,1)',[number,name,passwordHash,role]);res.status(201).json({uid:String(result.insertId),number,name,role,active:true});}
   catch(e){if(e.code==='ER_DUP_ENTRY')throw error(409,'رقم المستخدم مستخدم بالفعل.');throw e;}
 }catch(e){next(e);}});
@@ -60,8 +73,10 @@ router.patch('/users/:id',csrfRequired,async(req,res,next)=>{try{
 }catch(e){next(e);}});
 
 router.post('/users/:id/password',csrfRequired,async(req,res,next)=>{try{
-  const id=Number(req.params.id),password=String(req.body?.password??req.body?.pin??'');if(!validId(id)||password.length<8||password.length>128)throw error(400,'كلمة المرور الجديدة غير صالحة.');
-  const passwordHash=await bcrypt.hash(password,12);const [result]=await pool.execute('UPDATE users SET password_hash=? WHERE id=?',[passwordHash,id]);if(!result.affectedRows)throw error(404,'المستخدم غير موجود.');await pool.execute('DELETE FROM sessions WHERE user_id=?',[id]);res.json({ok:true});
+  const id=Number(req.params.id),pin=normalizeDigits(req.body?.pin??req.body?.password).trim();
+  if(!validId(id)||!/^[0-9]{4,8}$/.test(pin))throw error(400,'الرمز يجب أن يكون من 4 إلى 8 أرقام.');
+  if(await pinInUse(pin,id))throw error(409,'هذا الرمز مستخدم لموظف آخر. اختر رمزًا مختلفًا.');
+  const passwordHash=await bcrypt.hash(pin,10);const [result]=await pool.execute('UPDATE users SET password_hash=? WHERE id=?',[passwordHash,id]);if(!result.affectedRows)throw error(404,'المستخدم غير موجود.');await pool.execute('DELETE FROM sessions WHERE user_id=?',[id]);res.json({ok:true});
 }catch(e){next(e);}});
 
 router.post('/users/:id/revoke',csrfRequired,async(req,res,next)=>{try{const id=Number(req.params.id);if(!validId(id))throw error(400,'معرف المستخدم غير صالح.');await pool.execute('DELETE FROM sessions WHERE user_id=?',[id]);res.json({ok:true});}catch(e){next(e);}});

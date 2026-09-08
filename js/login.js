@@ -1,43 +1,39 @@
 'use strict';
-const loginForm=document.getElementById('login-form'),loginStatus=document.getElementById('auth-status');
-const numberField=document.getElementById('user-number'),passwordField=document.getElementById('password');
+const form=document.getElementById('login-form');
+const pin=document.getElementById('pin');
+const status=document.getElementById('auth-status');
+const submit=document.getElementById('login-submit');
+const sessionPanel=document.getElementById('session-panel');
+const sessionName=document.getElementById('session-name');
 const normalizeDigits=value=>String(value??'').replace(/[٠-٩۰-۹]/g,c=>String(c.charCodeAt(0)-(c<='٩'?1632:1776)));
-const allowed={admin:['admin.html','pos.html','accounting.html','waiter.html','kitchen.html'],cashier:['pos.html','waiter.html'],accountant:['accounting.html'],waiter:['waiter.html'],kitchen:['kitchen.html']};
 
-document.querySelectorAll('[inputmode="numeric"]').forEach(input=>input.addEventListener('input',()=>{input.value=normalizeDigits(input.value);}));
-document.getElementById('show-password').onclick=event=>{const show=passwordField.type==='password';passwordField.type=show?'text':'password';event.currentTarget.textContent=show?'إخفاء':'إظهار';event.currentTarget.setAttribute('aria-pressed',String(show));};
-document.getElementById('reset-password').onclick=()=>{loginStatus.textContent='تواصل مع مدير النظام لتعيين كلمة مرور جديدة لحسابك.';};
+function showStatus(message,error=false){status.textContent=message;status.hidden=!message;status.className='simple-status'+(error?' error':'');}
+function setPin(value){pin.value=normalizeDigits(value).replace(/\D/g,'').slice(0,8);}
 
-loginForm.onsubmit=async event=>{
-    event.preventDefault();
-    numberField.value=normalizeDigits(numberField.value).trim();
-    if(!loginForm.reportValidity())return;
-    const button=document.getElementById('login-submit');button.disabled=true;loginStatus.textContent='جارٍ التحقق من حسابك…';
-    try{
-        const result=await WardAuth.request('/api/auth/login',{method:'POST',body:{userNumber:numberField.value,password:passwordField.value},csrf:false,redirectOnAuth:false});
-        WardAuth.user={...result.user,uid:String(result.user.id),isAnonymous:false};WardAuth.profile={role:result.user.role,active:true,name:result.user.name,userNumber:result.user.userNumber};WardAuth.csrf=result.csrf;
-        const next=new URLSearchParams(location.search).get('next');
-        location.replace(allowed[result.user.role]?.includes(next)?next:result.home||WardAuth.home(result.user.role));
-    }catch(error){loginStatus.textContent=error.status===429?error.message:(error.message||'تعذر تسجيل الدخول. تحقق من البيانات ثم حاول مجدداً.');passwordField.value='';passwordField.focus();}
-    finally{button.disabled=false;}
+document.querySelectorAll('[data-digit]').forEach(button=>button.addEventListener('click',()=>{setPin(pin.value+button.dataset.digit);pin.focus();}));
+document.getElementById('pin-clear').onclick=()=>{setPin('');pin.focus();};
+document.getElementById('pin-back').onclick=()=>{setPin(pin.value.slice(0,-1));pin.focus();};
+pin.addEventListener('input',()=>setPin(pin.value));
+
+form.onsubmit=async event=>{
+  event.preventDefault();
+  setPin(pin.value);
+  if(!/^[0-9]{4,8}$/.test(pin.value)){showStatus('أدخل رمزًا من 4 إلى 8 أرقام.',true);return;}
+  submit.disabled=true;showStatus('جاري الدخول…');
+  try{
+    const result=await WardAuth.request('/api/auth/login',{method:'POST',body:{pin:pin.value},csrf:false,redirectOnAuth:false});
+    WardAuth.user={...result.user,uid:String(result.user.id),isAnonymous:false};
+    WardAuth.profile={role:result.user.role,active:true,name:result.user.name,userNumber:result.user.userNumber};
+    WardAuth.csrf=result.csrf;
+    location.replace(result.home||WardAuth.home(result.user.role));
+  }catch(error){setPin('');pin.focus();showStatus(error.message||'الرمز غير صحيح.',true);}
+  finally{submit.disabled=false;}
 };
 
 WardAuth.ready.then(()=>{
-    if(new URLSearchParams(location.search).has('denied'))loginStatus.textContent='هذا الحساب لا يملك صلاحية دخول الصفحة المطلوبة.';
-    if(!WardAuth.user)return;
-    loginForm.hidden=true;
-    const panel=document.getElementById('account-panel');panel.hidden=false;
-    document.getElementById('account-number').textContent=`${WardAuth.profile?.name||'المستخدم'} — رقم المستخدم: ${WardAuth.profile?.userNumber||''}`;
-    document.getElementById('change-pin-form').onsubmit=async event=>{
-        event.preventDefault();const button=event.currentTarget.querySelector('button');button.disabled=true;
-        try{
-            const current=document.getElementById('current-pin').value,newPassword=document.getElementById('new-pin').value;
-            await WardAuth.request('/api/auth/change-password',{method:'POST',body:{currentPassword:current,newPassword}});
-            loginStatus.textContent='تم تغيير كلمة المرور. سجّل الدخول بالكلمة الجديدة.';
-            setTimeout(()=>location.replace('login.html'),500);
-        }catch(error){loginStatus.textContent=error.message||'تعذر تغيير كلمة المرور.';}
-        finally{button.disabled=false;}
-    };
-    document.getElementById('account-home').onclick=()=>location.assign(WardAuth.home(WardAuth.profile?.role));
-    document.getElementById('account-logout').onclick=WardAuth.logout;
+  if(!WardAuth.user)return;
+  form.hidden=true;sessionPanel.hidden=false;
+  sessionName.textContent=`أنت مسجل كـ ${WardAuth.profile?.name||'موظف'}`;
+  document.getElementById('continue-button').onclick=()=>location.assign(WardAuth.home(WardAuth.profile?.role));
+  document.getElementById('logout-button').onclick=WardAuth.logout;
 });

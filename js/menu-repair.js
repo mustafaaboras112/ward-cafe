@@ -14,7 +14,7 @@
   }
 
   async function restoreDefaults(){
-    const ref=getFirebaseMenuRef?.();
+    const ref=typeof getFirebaseMenuRef==='function'?getFirebaseMenuRef():null;
     if(!ref){alert('Firebase غير متصل حالياً.');return;}
     if(!confirm('استعادة الأصناف الأساسية المفقودة فقط؟ لن يتم حذف أو تعديل الأصناف الموجودة.')) return;
     const snapshot=await ref.once('value');
@@ -32,5 +32,6 @@
     alert('تمت استعادة الأصناف الأساسية المفقودة.');
   }
 
-  window.addEventListener('DOMContentLoaded',addRecoveryButton);
+  if(document.readyState==='loading') window.addEventListener('DOMContentLoaded',addRecoveryButton,{once:true});
+  else addRecoveryButton();
 })();

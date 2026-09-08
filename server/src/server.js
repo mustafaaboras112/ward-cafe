@@ -4,7 +4,7 @@ const path=require('node:path');
 const express=require('express');
 const helmet=require('helmet');
 const {pool}=require('./db');
-const {authRequired,csrfRequired,login,logout,getSession,homeFor}=require('./auth');
+const {authRequired,csrfRequired,login,logout,changePassword,getSession,homeFor}=require('./auth');
 const {router:cafeRouter}=require('./cafe');
 
 const app=express();
@@ -21,6 +21,7 @@ app.get('/api/health',async(req,res,next)=>{try{await pool.query('SELECT 1');res
 app.post('/api/auth/login',login);
 app.get('/api/auth/me',async(req,res,next)=>{try{const user=await getSession(req);if(!user)return res.status(401).json({error:'يجب تسجيل الدخول.'});res.json({user:{id:user.id,userNumber:user.user_number,name:user.name,role:user.role},csrf:user.csrf_token,home:homeFor(user.role)});}catch(error){next(error);}});
 app.post('/api/auth/logout',authRequired,csrfRequired,logout);
+app.post('/api/auth/change-password',authRequired,csrfRequired,changePassword);
 app.use('/api',cafeRouter);
 
 const pageRoles={

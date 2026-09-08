@@ -37,25 +37,29 @@ function csrfRequired(req,res,next){
 }
 
 async function recordAttempt(userNumber,ip,success){await pool.execute('INSERT INTO login_attempts(user_number,ip_address,success) VALUES(?,?,?)',[userNumber||null,ip||null,success?1:0]);}
-async function tooManyAttempts(userNumber,ip){
-  const [rows]=await pool.execute(`SELECT COUNT(*) attempts FROM login_attempts WHERE success=0 AND attempted_at>DATE_SUB(NOW(),INTERVAL 15 MINUTE) AND (user_number=? OR ip_address=?)`,[userNumber,ip]);
-  return Number(rows[0]?.attempts||0)>=8;
+async function tooManyAttempts(ip){
+  const [rows]=await pool.execute(`SELECT COUNT(*) attempts FROM login_attempts WHERE success=0 AND attempted_at>DATE_SUB(NOW(),INTERVAL 15 MINUTE) AND ip_address=?`,[ip]);
+  return Number(rows[0]?.attempts||0)>=10;
+}
+
+async function findUserByPin(pin){
+  const [rows]=await pool.execute('SELECT id,user_number,name,password_hash,role,active FROM users WHERE active=1 ORDER BY id');
+  for(const user of rows){if(await bcrypt.compare(pin,user.password_hash))return user;}
+  return null;
 }
 
 async function login(req,res,next){
   try{
-    const userNumber=normalizeDigits(req.body?.userNumber).trim();
-    const password=String(req.body?.password??'');
+    const pin=normalizeDigits(req.body?.pin??req.body?.password).trim();
     const ip=clientIp(req);
-    if(!/^[0-9]{4,12}$/.test(userNumber)||password.length<8||password.length>128)return res.status(400).json({error:'بيانات الدخول غير صحيحة.'});
-    if(await tooManyAttempts(userNumber,ip))return res.status(429).json({error:'محاولات كثيرة. انتظر 15 دقيقة ثم حاول مجددًا.'});
-    const [rows]=await pool.execute('SELECT id,user_number,name,password_hash,role,active FROM users WHERE user_number=? LIMIT 1',[userNumber]);
-    const user=rows[0];
-    const valid=!!user?.active&&await bcrypt.compare(password,user.password_hash);
-    await recordAttempt(userNumber,ip,valid);
-    if(!valid)return res.status(401).json({error:'رقم المستخدم أو كلمة المرور غير صحيحة.'});
+    if(!/^[0-9]{4,8}$/.test(pin))return res.status(400).json({error:'الرمز يجب أن يكون من 4 إلى 8 أرقام.'});
+    if(await tooManyAttempts(ip))return res.status(429).json({error:'محاولات كثيرة. انتظر 15 دقيقة ثم حاول مجددًا.'});
+    const user=await findUserByPin(pin);
+    await recordAttempt(user?.user_number||null,ip,Boolean(user));
+    if(!user)return res.status(401).json({error:'الرمز غير صحيح.'});
     const raw=token(),csrf=token(),hours=Math.max(1,Math.min(24,Number(process.env.SESSION_HOURS||12)));
     await pool.execute('DELETE FROM sessions WHERE expires_at<=NOW()');
+    await pool.execute('DELETE FROM sessions WHERE user_id=?',[user.id]);
     await pool.execute(`INSERT INTO sessions(user_id,token_hash,csrf_token,ip_address,user_agent,expires_at) VALUES(?,?,?,?,?,DATE_ADD(NOW(),INTERVAL ? HOUR))`,[user.id,hash(raw),csrf,ip,String(req.headers['user-agent']||'').slice(0,255),hours]);
     res.setHeader('Set-Cookie',`${SESSION_COOKIE}=${encodeURIComponent(raw)}; ${cookieOptions(hours*3600)}`);
     res.json({user:{id:user.id,userNumber:user.user_number,name:user.name,role:user.role},csrf,home:homeFor(user.role)});
@@ -67,12 +71,13 @@ async function logout(req,res,next){
 }
 async function changePassword(req,res,next){
   try{
-    const current=String(req.body?.currentPassword??''),nextPassword=String(req.body?.newPassword??'');
-    if(current.length<8||current.length>128||nextPassword.length<8||nextPassword.length>128)return res.status(400).json({error:'كلمة المرور يجب أن تكون من 8 إلى 128 محرفًا.'});
-    if(current===nextPassword)return res.status(400).json({error:'اختر كلمة مرور جديدة مختلفة عن الحالية.'});
+    const current=normalizeDigits(req.body?.currentPassword??req.body?.currentPin).trim();
+    const nextPin=normalizeDigits(req.body?.newPassword??req.body?.newPin).trim();
+    if(!/^[0-9]{4,8}$/.test(current)||!/^[0-9]{4,8}$/.test(nextPin))return res.status(400).json({error:'الرمز يجب أن يكون من 4 إلى 8 أرقام.'});
+    if(current===nextPin)return res.status(400).json({error:'اختر رمزًا جديدًا مختلفًا.'});
     const [rows]=await pool.execute('SELECT password_hash FROM users WHERE id=? AND active=1 LIMIT 1',[req.user.id]);
-    if(!rows[0]||!await bcrypt.compare(current,rows[0].password_hash))return res.status(401).json({error:'كلمة المرور الحالية غير صحيحة.'});
-    const passwordHash=await bcrypt.hash(nextPassword,12);
+    if(!rows[0]||!await bcrypt.compare(current,rows[0].password_hash))return res.status(401).json({error:'الرمز الحالي غير صحيح.'});
+    const passwordHash=await bcrypt.hash(nextPin,10);
     await pool.execute('UPDATE users SET password_hash=? WHERE id=?',[passwordHash,req.user.id]);
     await pool.execute('DELETE FROM sessions WHERE user_id=?',[req.user.id]);
     res.setHeader('Set-Cookie',`${SESSION_COOKIE}=; ${cookieOptions(0)}`);

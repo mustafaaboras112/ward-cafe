@@ -52,7 +52,8 @@ test('accounting screen only exposes MySQL-backed core modules',()=>{
   const html=read('accounting.html');
   const core=read('js/accounting-core.js');
   assert.match(html,/js\/accounting-core\.js/);
-  assert.doesNotMatch(html,/js\/accounting\.js|gstatic\.com\/firebase|الموردون|المخزون|المشتريات/);
+  assert.doesNotMatch(html,/js\/accounting\.js|gstatic\.com\/firebase/);
+  assert.doesNotMatch(html,/data-accounting-nav="(?:purchases|customers|suppliers|inventory)"/);
   assert.match(core,/closeAccountingDay\(\)/);
   assert.match(core,/saveAccountingRecord\('expenses'/);
   assert.match(core,/startAccountingRealtime\(\)/);

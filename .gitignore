@@ -1,0 +1,7 @@
+server/node_modules/
+server/.env
+server/npm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+.idea/

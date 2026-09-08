@@ -1,587 +1,188 @@
-﻿const defaultMenu = [
-    { id: 1, name: 'قهوة تركية ورد', category: 'hot', price: 40, desc: 'قهوة أصيلة ساخنة برغوة غنية', img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=500&q=80' },
-    { id: 2, name: 'لاتيه كافيه ورد', category: 'hot', price: 60, desc: 'إسبريسو مع حليب ناعم', img: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=500&q=80' },
-    { id: 3, name: 'موهيتو بيري', category: 'cold', price: 75, desc: 'نكهة التوت المنعشة مع الصودا والنعناع', img: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=500&q=80' },
-    { id: 4, name: 'تشيز كيك الفراولة', category: 'sweets', price: 90, desc: 'تشيز كيك فاخر مع صوص الفراولة الطازج', img: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=500&q=80' },
-    { id: 5, name: 'ساندويش دجاج ورد', category: 'food', price: 120, desc: 'دجاج مشوي مع خضار وصوص خاص', img: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=500&q=80' },
-    { id: 6, name: 'برغر كافيه ورد', category: 'food', price: 150, desc: 'برغر لحم طازج مع الجبن والبطاطا', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80' },
-    { id: 7, name: 'طبق فطور شرقي', category: 'food', price: 135, desc: 'بيض وجبن وزيتون وخضار طازجة', img: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=500&q=80' }
+'use strict';
+
+const defaultMenu=[
+    {id:1,name:'قهوة تركية ورد',category:'hot',price:40,desc:'قهوة أصيلة ساخنة برغوة غنية',img:'q.png'},
+    {id:2,name:'لاتيه كافيه ورد',category:'hot',price:60,desc:'إسبريسو مع حليب ناعم',img:'q.png'}
 ];
+const TABLE_COUNT=20;
+const firebaseConfigured=false;
+const firebaseDatabase=null;
+const WardServerState={online:true,lastError:null,lastSuccessAt:null};
+let liveMenu=null;
+let liveOrders=[];
+let liveTables={};
+let liveAccounting={expenses:[],sales:[],dayClosed:false,closure:null};
+const pollers=new Map();
 
-const TABLE_COUNT = 20;
-function validTable(table) { return /^(?:[1-9]|1[0-9]|20)$/.test(String(table)); }
-function customerId() {
-    if(window.WardAuth?.user)return WardAuth.user.uid;
-    let id = sessionStorage.getItem('ward-client-id');
-    if (!id) { id = crypto.randomUUID(); sessionStorage.setItem('ward-client-id', id); }
-    return id;
-}
+function validTable(table){return /^(?:[1-9]|1[0-9]|20)$/.test(String(table??''));}
+function currentQrTable(){const values=new URLSearchParams(location.search).getAll('table');return values.length===1&&validTable(values[0])?String(values[0]):null;}
+function isCustomerQrPage(){const page=location.pathname.split('/').pop()||'index.html';return Boolean(currentQrTable()&&(page==='index.html'||page===''));}
+function customerId(){let id=sessionStorage.getItem('ward-client-id');if(!id){id=crypto.randomUUID();sessionStorage.setItem('ward-client-id',id);}return id;}
+function getOrderIdentity(order,storedKey){const id=String(order?.id??storedKey??'');return {firebaseKey:id,orderId:id};}
+function escapeHtml(value){const node=document.createElement('span');node.textContent=value==null?'':String(value);return node.innerHTML;}
+function formatWardDateTime(value){const date=value?new Date(value):new Date();return new Intl.DateTimeFormat('ar',{dateStyle:'short',timeStyle:'short'}).format(date);}
+function isTodayWard(value){const date=new Date(value||Date.now()),today=new Date();return date.getFullYear()===today.getFullYear()&&date.getMonth()===today.getMonth()&&date.getDate()===today.getDate();}
+function renderMenuViews(){window.dispatchEvent(new Event('ward:menu'));}
+function renderAllOrderScreens(){window.dispatchEvent(new Event('ward:orders'));}
+function updateTableSelectorUI(){window.dispatchEvent(new Event('ward:tables'));}
+function emitAccounting(){window.dispatchEvent(new Event('ward:accounting'));}
+function connectionChanged(){window.dispatchEvent(new CustomEvent('ward:connection',{detail:{...WardServerState}}));}
+function markOnline(){const changed=!WardServerState.online||WardServerState.lastError;WardServerState.online=true;WardServerState.lastError=null;WardServerState.lastSuccessAt=Date.now();if(changed)connectionChanged();}
+function markOffline(error){const message=error?.message||'تعذر الاتصال بالخادم';const changed=WardServerState.online||WardServerState.lastError!==message;WardServerState.online=false;WardServerState.lastError=message;if(changed)connectionChanged();}
 
-// The storage key is not necessarily the displayed legacy order ID.
-function getOrderIdentity(order, storedKey) {
-    const firebaseKey = String(storedKey ?? order.firebaseKey ?? order.id ?? '');
-    return {firebaseKey, orderId: String(order.id || firebaseKey)};
-}
-
-// Local multi-key writes stay logically uncommitted until the journal is removed.
-function readWardStorage(key) {
-    const journal = JSON.parse(localStorage.getItem('cafe_ward_pending_write') || 'null');
-    return journal && Object.prototype.hasOwnProperty.call(journal, key) ? journal[key] : localStorage.getItem(key);
-}
-function recoverWardWrite() {
-    const journal = JSON.parse(localStorage.getItem('cafe_ward_pending_write') || 'null');
-    if (!journal) return;
-    for (const [key, value] of Object.entries(journal)) {
-        if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value);
-    }
-    localStorage.removeItem('cafe_ward_pending_write');
-}
-
-// A single transaction keeps reservations, orders and paid sales consistent.
-// With Firebase configured, failures are surfaced; no local success is fabricated.
-async function changeCafeState(change) {
-    if (firebaseConfigured && !firebaseDatabase) throw new Error('تعذر تحميل اتصال Firebase. تحقق من الإنترنت وأعد فتح الصفحة.');
-    if (firebaseDatabase) {
-        await WardAuth.ready;
-        const {state,version}=await WardAuth.call('cafeState',{action:'read'});
-        change(state);
-        const {state:saved}=await WardAuth.call('cafeState',{action:'commit',state,version});
-        liveOrders = Object.entries(saved.orders || {}).map(([key, order]) => ({...order, id:getOrderIdentity(order,key).orderId, firebaseKey:key}));
-        liveAccounting.sales = Object.entries(saved.accounting?.sales || {}).map(([id,sale])=>({...sale,id}));
-        try {
-            for (let n=1;n<=TABLE_COUNT;n++) {
-                if(saved.tables?.[n]) setLocalTableStatus(n,saved.tables[n]); else clearLocalTableStatus(n);
-            }
-        } catch(error) { console.warn('تم الحفظ في Firebase، لكن تعذر تحديث نسخة الطاولات المحلية.',error); }
-        renderAllOrderScreens(); updateTableSelectorUI();
-        window.dispatchEvent(new Event('ward:accounting'));
-        return;
-    }
-    const perform = () => {
-        recoverWardWrite();
-        const state = {
-            orders: Object.fromEntries(readLocalOrders().map(order => [getOrderIdentity(order).firebaseKey, order])),
-            tables: {}, accounting: { dayClosed:getAccountingData().dayClosed, sales: Object.fromEntries(getAccountingData().sales.map(sale => [String(sale.orderId || sale.id), sale])) }
-        };
-        for (let n=1; n<=TABLE_COUNT; n++) { const table=getLocalTableStatus(n); if(table) state.tables[n]=table; }
-        change(state);
-        const writes = {
-            cafe_ward_orders: JSON.stringify(Object.values(state.orders)),
-            cafe_ward_sales: JSON.stringify(Object.values(state.accounting.sales || {}))
-        };
-        for(let n=1;n<=TABLE_COUNT;n++) {
-            writes['cafe_ward_table_'+n] = state.tables[n] ? JSON.stringify(state.tables[n]) : null;
+async function api(path,options={}){
+    try{
+        let result;
+        if(window.WardAuth){
+            result=await WardAuth.request(path,{...options,redirectOnAuth:options.redirectOnAuth});
+        }else{
+            const response=await fetch(path,{method:options.method||'GET',headers:{Accept:'application/json','Content-Type':'application/json',...(options.headers||{})},body:options.body===undefined?undefined:JSON.stringify(options.body),credentials:'same-origin',cache:'no-store'});
+            let data={};try{data=await response.json();}catch{}
+            if(!response.ok)throw Object.assign(new Error(data.error||`فشل الطلب (${response.status}).`),{status:response.status});
+            result=data;
         }
-        const previous = Object.fromEntries(Object.keys(writes).map(key=>[key,localStorage.getItem(key)]));
-        localStorage.setItem('cafe_ward_pending_write',JSON.stringify(previous));
-        try {
-            for(const [key,value] of Object.entries(writes)) {
-                if(value===null) localStorage.removeItem(key);else localStorage.setItem(key,value);
-            }
-            localStorage.removeItem('cafe_ward_pending_write');
-        } catch(error) {
-            try {recoverWardWrite();} catch { /* Readers keep using the journal's pre-payment values. */ }
-            throw error;
-        }
-        renderAllOrderScreens(); updateTableSelectorUI();
-        window.dispatchEvent(new Event('ward:accounting'));
-    };
-    if (navigator.locks) return navigator.locks.request('ward-state',perform);
-    return perform();
-}
-
-function openTableOrders(state, table) {
-    return Object.values(state.orders || {}).filter(order => String(order.table) === String(table) && order.paymentStatus !== 'مدفوع');
-}
-
-async function submitOrder(table, items) {
-    if(firebaseDatabase){await WardAuth.ready;return WardAuth.call('customerOrder',{table:String(table),items:items.map(i=>({id:String(i.id),qty:i.qty})),id:crypto.randomUUID()});}
-    if (!validTable(table) || !items.length) throw new Error('اختر طاولة وأضف أصنافاً أولاً.');
-    const id = crypto.randomUUID(), owner = customerId(), now = Date.now();
-    let submitted;
-    await changeCafeState(state => {
-        const reserved = state.tables[table];
-        if (reserved?.status === 'occupied' && reserved.clientId !== owner) throw new Error('الطاولة محجوزة، اختر طاولة أخرى.');
-        const menu = state.menu ? Object.entries(state.menu).map(([id,item])=>({...item,id})) : getMenu();
-        const lines = items.map(item => {
-            const product = menu.find(product=>String(product.id)===String(item.id));
-            if (!product || product.available === false || !Number.isInteger(item.qty) || item.qty < 1 || !Number.isFinite(Number(product.price)) || Number(product.price)<0) throw new Error('أحد الأصناف لم يعد متاحاً أو كميته غير صحيحة.');
-            return {id:String(product.id),name:product.name,price:Number(product.price),qty:item.qty};
-        });
-        submitted = {id,clientId:owner,table:String(table),items:lines,total:Math.round(lines.reduce((sum,item)=>sum+item.price*item.qty,0)*100)/100,status:'قيد التحضير',paymentStatus:'غير مدفوع',createdAt:now,time:formatWardDateTime(now)};
-        state.orders[id]=submitted;
-        state.tables[table]={status:'occupied',table:String(table),orderId:id,clientId:owner,reservedAt:reserved?.reservedAt || now};
-    });
-    return submitted;
-}
-
-async function transitionOrder(id, expected, next) {
-    const allowed = {'قيد التحضير': 'جاهز', 'جاهز': 'تم التوصيل'};
-    if (allowed[expected] !== next) throw new Error('انتقال حالة غير مسموح.');
-
-    const requestedId = String(id ?? '');
-    if (!requestedId) throw new Error('معرف الطلب غير صالح.');
-
-    // Firebase: حدّث الطلب نفسه مباشرة بدل transaction على جذر القاعدة.
-    // هذا يمنع فشل transaction بسبب cache غير مكتمل على root مع أن /orders ظاهر realtime.
-    if(firebaseDatabase){await WardAuth.ready;await WardAuth.call('transitionOrder',{id:requestedId,expected,next});return;}
-
-    await changeCafeState(state => {
-        const orders = state.orders || {};
-        let orderKey = requestedId;
-        let order = orders[orderKey];
-
-        if (!order) {
-            const found = Object.entries(orders).find(([key, item]) =>
-                String(item?.id || key) === requestedId
-            );
-            if (found) {
-                orderKey = found[0];
-                order = found[1];
-            }
-        }
-
-        if (!order) throw new Error('تعذر العثور على الطلب.');
-        if (order.paymentStatus === 'مدفوع') throw new Error('تم إغلاق هذا الطلب بعد الدفع.');
-        if (order.status === next) return;
-        if (order.status !== expected) throw new Error('تم تحديث حالة الطلب من جهاز آخر.');
-
-        order.status = next;
-        order[next === 'جاهز' ? 'readyAt' : 'deliveredAt'] = Date.now();
-        if (!order.id) order.id = requestedId;
-        state.orders[orderKey] = order;
-    });
-}
-
-async function releaseTable(table) {
-    if(!validTable(table)) throw new Error('رقم الطاولة غير صالح.');
-    await changeCafeState(state => {
-        if(openTableOrders(state,table).length) throw new Error('لا يمكن تفريغ الطاولة قبل توصيل جميع الطلبات وتحصيل حسابها من الكاشير.');
-        delete state.tables[table];
-    });
-}
-
-async function moveTable(from, to) {
-    if(!validTable(from)||!validTable(to)||String(from)===String(to)) throw new Error('اختر طاولة أخرى بين 1 و20.');
-    await changeCafeState(state => {
-        if(!state.tables[from]) throw new Error('الطاولة الأصلية غير محجوزة.');
-        if(state.tables[to]?.status==='occupied'||openTableOrders(state,to).length) throw new Error('الطاولة المطلوبة مشغولة.');
-        state.tables[to]={...state.tables[from],table:String(to)};
-        delete state.tables[from];
-        openTableOrders(state,from).forEach(order=>{order.table=String(to);order.movedAt=Date.now();});
-    });
-}
-
-window.addEventListener('storage', event => {
-    if (!firebaseDatabase && event.key?.startsWith('cafe_ward_')) {
-        renderAllOrderScreens(); renderMenuViews(); updateTableSelectorUI();
-        window.dispatchEvent(new Event('ward:accounting'));
+        markOnline();
+        return result;
+    }catch(error){
+        if(!error?.status||error.status>=500)markOffline(error);
+        throw error;
     }
+}
+
+function poll(key,task,interval){
+    if(pollers.has(key))return;
+    const run=()=>task().catch(()=>{});
+    run();
+    pollers.set(key,setInterval(run,interval));
+}
+
+function getMenu(){
+    if(Array.isArray(liveMenu))return liveMenu;
+    try{const cached=JSON.parse(localStorage.getItem('cafe_ward_menu_cache')||'null');if(Array.isArray(cached))return cached;}catch{}
+    return defaultMenu;
+}
+function saveMenu(menu){
+    liveMenu=Array.isArray(menu)?menu:[];
+    try{localStorage.setItem('cafe_ward_menu_cache',JSON.stringify(liveMenu));}catch{}
+    renderMenuViews();
+}
+async function refreshMenu(){
+    const rows=await api('/api/menu',{redirectOnAuth:false});
+    saveMenu(rows.filter(row=>row.available!==false).map(row=>({...row,id:String(row.id),price:Number(row.price),desc:row.desc??row.description??'',img:row.img??row.imageUrl??'q.png',available:row.available!==false})));
+    return liveMenu;
+}
+function startMenuRealtime(){poll('menu',refreshMenu,5000);}
+
+function normalizeOrder(row,extra={}){
+    return {...row,...extra,id:String(row.id),firebaseKey:String(row.id),table:String(row.table),total:Number(row.total||0),items:Array.isArray(row.items)?row.items.map(item=>({...item,id:String(item.id??item.menuItemId??''),price:Number(item.price||0),qty:Number(item.qty||0)})):[]};
+}
+function getOrders(){return liveOrders;}
+async function refreshOrders(){
+    const customerContext=isCustomerQrPage();
+    const staff=Boolean(window.WardAuth?.user)&&!customerContext;
+    if(staff){
+        const rows=await api('/api/orders');
+        liveOrders=rows.map(row=>normalizeOrder(row)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    }else{
+        const table=currentQrTable();
+        if(!table){liveOrders=[];renderAllOrderScreens();return liveOrders;}
+        const rows=await api('/api/customer/orders?table='+encodeURIComponent(table),{redirectOnAuth:false});
+        const owner=customerId();
+        liveOrders=rows.map(row=>normalizeOrder(row,{clientId:owner})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    }
+    try{localStorage.setItem('cafe_ward_orders_cache',JSON.stringify(liveOrders));}catch{}
+    renderAllOrderScreens();
+    return liveOrders;
+}
+function startOrdersRealtime(){
+    if((window.WardAuth?.user&&!isCustomerQrPage())||currentQrTable())poll('orders',refreshOrders,2200);
+    else{liveOrders=[];renderAllOrderScreens();}
+}
+
+function getLocalTableStatus(tableNumber){return liveTables[String(tableNumber)]||null;}
+function setLocalTableStatus(tableNumber,status){if(status)liveTables[String(tableNumber)]={...status,table:String(tableNumber)};updateTableCache();}
+function clearLocalTableStatus(tableNumber){delete liveTables[String(tableNumber)];updateTableCache();}
+function updateTableCache(){try{localStorage.setItem('cafe_ward_tables_cache',JSON.stringify(liveTables));}catch{}}
+async function refreshTables(){
+    if(!window.WardAuth?.user||isCustomerQrPage())return liveTables;
+    const rows=await api('/api/tables');liveTables={};
+    for(const row of rows)if(row.status==='occupied')liveTables[String(row.table)]={...row,table:String(row.table),status:'occupied'};
+    updateTableCache();updateTableSelectorUI();return liveTables;
+}
+function startTablesRealtime(){
+    if(window.WardAuth?.user&&!isCustomerQrPage())poll('tables',refreshTables,2500);
+    else{try{liveTables=JSON.parse(localStorage.getItem('cafe_ward_tables_cache')||'{}');}catch{liveTables={};}updateTableSelectorUI();}
+}
+
+async function submitOrder(table,items){
+    if(!validTable(table)||!Array.isArray(items)||!items.length)throw new Error('اختر طاولة وأضف أصنافاً أولاً.');
+    const body={id:crypto.randomUUID(),table:String(table),items:items.map(item=>({id:String(item.id),qty:Number(item.qty)}))};
+    const staff=Boolean(window.WardAuth?.user)&&!isCustomerQrPage();
+    const order=await api(staff?'/api/orders':'/api/customer/orders',{method:'POST',body,redirectOnAuth:false});
+    await refreshOrders();
+    if(staff)await refreshTables();
+    return normalizeOrder(order,staff?{}:{clientId:customerId()});
+}
+async function transitionOrder(id,expected,next){await api(`/api/orders/${encodeURIComponent(id)}/transition`,{method:'POST',body:{expected,next}});await refreshOrders();}
+async function releaseTable(table){if(!validTable(table))throw new Error('رقم الطاولة غير صالح.');await api(`/api/tables/${table}/release`,{method:'POST',body:{}});await Promise.all([refreshOrders(),refreshTables()]);}
+async function moveTable(from,to){if(!validTable(from)||!validTable(to)||String(from)===String(to))throw new Error('اختر طاولة أخرى بين 1 و20.');await api('/api/tables/move',{method:'POST',body:{from:String(from),to:String(to)}});await Promise.all([refreshOrders(),refreshTables()]);}
+async function changeCafeState(){throw new Error('هذه العملية محمية وتتم من خلال خادم MySQL فقط.');}
+
+function getAccountingData(){return liveAccounting;}
+async function refreshAccounting(){
+    if(!window.WardAuth?.user||!['admin','cashier','accountant'].includes(WardAuth.profile?.role))return liveAccounting;
+    const data=await api('/api/accounting/today');
+    liveAccounting={expenses:Array.isArray(data.expenses)?data.expenses:[],sales:Array.isArray(data.sales)?data.sales:[],dayClosed:Boolean(data.dayClosed),closure:data.closure||null};
+    emitAccounting();return liveAccounting;
+}
+function startAccountingRealtime(){if(window.WardAuth?.user&&['admin','cashier','accountant'].includes(WardAuth.profile?.role))poll('accounting',refreshAccounting,4000);else emitAccounting();}
+async function saveAccountingRecord(collection,record){
+    if(collection!=='expenses')throw new Error('هذه الوحدة غير مفعلة في إصدار MySQL الحالي. استخدم المبيعات والمصروفات والتقارير وإغلاق اليوم.');
+    const title=String(record.title||record.description||record.name||record.category||'مصروف').trim();
+    const notes=String(record.notes||record.description||'').trim();
+    const saved=await api('/api/accounting/expenses',{method:'POST',body:{title,amount:Number(record.amount),notes}});await refreshAccounting();return saved;
+}
+async function removeAccountingRecord(){throw new Error('حذف السجلات المالية غير متاح حفاظاً على سجل العمليات.');}
+async function closeAccountingDay(){const result=await api('/api/accounting/close-day',{method:'POST',body:{}});await refreshAccounting();return result;}
+
+function getFirebaseMenuRef(){return null;}
+function getFirebaseOrdersRef(){return null;}
+function getFirebaseAccountingRef(){return null;}
+function getFirebaseTablesRef(){return null;}
+function showFirebaseSetupMessage(){}
+
+function startAdminConnectionMonitor(){
+    const badge=document.getElementById('system-connection');if(!badge)return;
+    const refresh=async()=>{try{await api('/api/health',{redirectOnAuth:false});badge.textContent='متصل بالخادم';badge.dataset.state='online';}catch{badge.textContent='تعذر الاتصال بالخادم';badge.dataset.state='offline';}};
+    refresh();setInterval(refresh,5000);
+}
+function applyAccountingServerGuards(){
+    if(typeof setAccountingDayClosed==='function')setAccountingDayClosed=async value=>{if(!value)throw new Error('إعادة فتح يوم مغلق تحتاج إجراء إداري موثق.');return closeAccountingDay();};
+    if(typeof updateAccountingRecord==='function')updateAccountingRecord=async()=>{throw new Error('تعديل سجل مالي محفوظ مباشرة غير مسموح. أضف حركة تصحيح منفصلة.');};
+}
+
+function injectRuntimePolish(){
+    if(document.getElementById('ward-runtime-polish'))return;
+    const style=document.createElement('style');style.id='ward-runtime-polish';style.textContent=`
+        :where(button,a,input,select,textarea):focus-visible{outline:3px solid rgba(190,55,105,.25);outline-offset:2px}
+        button:not(:disabled){cursor:pointer} button:disabled{opacity:.52;cursor:not-allowed;filter:saturate(.65)}
+        #ward-server-banner{position:fixed;z-index:100000;left:50%;bottom:18px;transform:translateX(-50%);max-width:min(680px,calc(100% - 28px));padding:11px 16px;border-radius:14px;background:#2d2529;color:#fff;box-shadow:0 12px 35px rgba(0,0,0,.2);font:600 14px/1.5 Tahoma,Arial,sans-serif;display:none;text-align:center}
+        #ward-server-banner[data-show="true"]{display:block}
+        [aria-busy="true"]{cursor:progress}
+        .ready-notification::before,.ready-bell-icon::before{content:'🔔';margin-inline-end:6px}
+    `;document.head.appendChild(style);
+    const banner=document.createElement('div');banner.id='ward-server-banner';banner.setAttribute('role','status');banner.setAttribute('aria-live','polite');document.body.appendChild(banner);
+    const sync=()=>{banner.dataset.show=String(WardServerState.online===false);banner.textContent=WardServerState.online===false?'الاتصال بالخادم متوقف — البيانات المعروضة قد تكون آخر نسخة محفوظة.':'';};
+    window.addEventListener('ward:connection',sync);sync();
+}
+function createPetals(){if(document.querySelector('.petals-container'))return;const container=document.createElement('div');container.className='petals-container';document.body.appendChild(container);for(let i=0;i<12;i++){const petal=document.createElement('div');petal.className='petal';const size=Math.random()*10+10;petal.style.width=`${size}px`;petal.style.height=`${size*1.4}px`;petal.style.left=`${Math.random()*100}vw`;petal.style.animationDuration=`${Math.random()*6+4}s`;petal.style.animationDelay=`${Math.random()*5}s`;container.appendChild(petal);}}
+function createSplashPetals(container){const petals=document.createElement('div');petals.className='splash-petals';container.appendChild(petals);for(let i=0;i<8;i++){const petal=document.createElement('span');petal.className='splash-petal';petal.style.left=`${10+Math.random()*80}%`;petal.style.animationDelay=`${Math.random()*1.2}s`;petal.style.animationDuration=`${2.6+Math.random()*1.8}s`;petals.appendChild(petal);}}
+function initializeProtectedPage(){}
+function initializeCafeHeaderClock(){const header=document.querySelector('header');if(!header||document.getElementById('ward-live-clock')||document.getElementById('pos-clock'))return;const clock=document.createElement('div');clock.id='ward-live-clock';clock.setAttribute('aria-label','الوقت الحالي');header.append(clock);const update=()=>clock.textContent=formatWardDateTime(Date.now());update();setInterval(update,30000);}
+
+window.addEventListener('DOMContentLoaded',async()=>{
+    if(window.WardAuth)await WardAuth.ready;
+    applyAccountingServerGuards();injectRuntimePolish();initializeProtectedPage();initializeCafeHeaderClock();
+    const splash=document.getElementById('splash-screen');if(splash){createSplashPetals(splash);setTimeout(()=>{splash.remove();document.body.classList.remove('menu-page-loading');},900);}
+    if(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)createPetals();
 });
-window.addEventListener('DOMContentLoaded', async () => {
-    if(window.WardAuth) await WardAuth.ready;
-    initializeProtectedPage(); initializeCafeHeaderClock();
-    const splash=document.getElementById('splash-screen');
-    if(splash) { createSplashPetals(splash); setTimeout(()=>{splash.remove();document.body.classList.remove('menu-page-loading');},1200); }
-    createPetals();
-});
-let liveMenu = null;
-let menuRealtimeStarted = false;
-let liveAccounting = {
-    expenses: [],
-    purchases: [],
-    inventory: [],
-    clients: [],
-    suppliers: [],
-    unpaid: [],
-    sales: [],
-    cashMovements: [],
-    dayClosed: false
-};
-
-let accountingRealtimeStarted = false;
-let liveOrders = [];
-let ordersRealtimeStarted = false;
-
-function initializeProtectedPage() { /* WardAuth and server-side rules enforce access. */ }
-
-function getMenu() {
-    if (liveMenu) return liveMenu;
-    const local = localStorage.getItem('cafe_ward_menu');
-    return local ? JSON.parse(local) : defaultMenu;
-}
-
-function saveMenu(menu) {
-    localStorage.setItem('cafe_ward_menu', JSON.stringify(menu));
-}
-
-async function startMenuRealtime() {
-    if(window.WardAuth) await WardAuth.ready;
-    if (menuRealtimeStarted) return;
-    menuRealtimeStarted = true;
-    const menuRef = getFirebaseMenuRef();
-    if (!menuRef) {
-        showFirebaseSetupMessage();
-        renderMenuViews();
-        return;
-    }
-
-    menuRef.on('value', snapshot => {
-        if (!snapshot.exists()) {
-            const initialMenu = {};
-            defaultMenu.forEach(item => {
-                initialMenu[String(item.id)] = { ...item, createdAt: Date.now() };
-            });
-            // Only administration can initialize an empty menu.
-            if (document.getElementById('admin-menu-list')) menuRef.set(initialMenu);
-            else { liveMenu = []; renderMenuViews(); }
-            return;
-        }
-        const data = snapshot.val();
-        liveMenu = Object.entries(data).map(([key, item]) => ({ ...item, id: key }));
-        renderMenuViews();
-    });
-}
-
-function renderMenuViews() { window.dispatchEvent(new Event('ward:menu')); }
-
-function getAccountingData() {
-    if (firebaseDatabase) return liveAccounting;
-
-    return {
-        expenses: JSON.parse(
-            localStorage.getItem('cafe_ward_expenses') || '[]'
-        ),
-
-        purchases: JSON.parse(
-            localStorage.getItem('cafe_ward_purchases') || '[]'
-        ),
-
-        inventory: JSON.parse(
-            localStorage.getItem('cafe_ward_inventory') || '[]'
-        ),
-
-        clients: JSON.parse(
-            localStorage.getItem('cafe_ward_clients') || '[]'
-        ),
-
-        suppliers: JSON.parse(
-            localStorage.getItem('cafe_ward_suppliers') || '[]'
-        ),
-
-        unpaid: JSON.parse(
-            localStorage.getItem('cafe_ward_unpaid') || '[]'
-        ),
-
-        sales: JSON.parse(
-            readWardStorage('cafe_ward_sales') || '[]'
-        ),
-
-        cashMovements: JSON.parse(
-            localStorage.getItem('cafe_ward_cash_mov') || '[]'
-        ),
-
-        dayClosed:
-            localStorage.getItem('cafe_ward_day_closed') === 'true'
-    };
-}
-
-async function startAccountingRealtime() {
-    if(window.WardAuth) await WardAuth.ready;
-    if (accountingRealtimeStarted) return;
-
-    accountingRealtimeStarted = true;
-
-    const accountingRef = getFirebaseAccountingRef();
-
-    if (!accountingRef) {
-        window.dispatchEvent(new Event('ward:accounting'));
-        return;
-    }
-
-    accountingRef.on('value', snapshot => {
-        const data = snapshot.val() || {};
-
-        liveAccounting = {
-            expenses: Object.entries(data.expenses || {})
-                .map(([id, item]) => ({ ...item, id })),
-
-            purchases: Object.entries(data.purchases || {})
-                .map(([id, item]) => ({ ...item, id })),
-
-            inventory: Object.entries(data.inventory || {})
-                .map(([id, item]) => ({ ...item, id })),
-
-            clients: Object.entries(data.clients || {})
-                .map(([id, item]) => ({ ...item, id })),
-
-            suppliers: Object.entries(data.suppliers || {})
-                .map(([id, item]) => ({ ...item, id })),
-
-            unpaid: Object.entries(data.unpaid || {})
-                .map(([id, item]) => ({ ...item, id })),
-
-            sales: Object.entries(data.sales || {})
-                .map(([id, item]) => ({ ...item, id })),
-
-            cashMovements: Object.entries(data.cashMovements || {})
-                .map(([id, item]) => ({ ...item, id })),
-
-            dayClosed: data.dayClosed === true
-        };
-
-        window.dispatchEvent(
-            new Event('ward:accounting')
-        );
-    });
-}
-   
-
-async function saveAccountingRecord(collection, record) {
-    const createdAt = record.createdAt || Date.now();
-
-    const completeRecord = {
-        ...record,
-        createdAt,
-        time: record.time || formatWardDateTime(createdAt)
-    };
-
-    const ref = getFirebaseAccountingRef();
-
-    // Firebase
-    if (ref) {
-        return ref.child(collection).push(completeRecord);
-    }
-
-    // LocalStorage
-    const records = getAccountingData()[collection] || [];
-
-    records.unshift({
-        ...completeRecord,
-        id: crypto.randomUUID
-            ? crypto.randomUUID()
-            : String(createdAt)
-    });
-
-    const storageKey =
-        collection === 'cashMovements'
-            ? 'cafe_ward_cash_mov'
-            : `cafe_ward_${collection}`;
-
-    localStorage.setItem(
-        storageKey,
-        JSON.stringify(records)
-    );
-
-    window.dispatchEvent(
-        new Event('ward:accounting')
-    );
-}
-
-
-async function removeAccountingRecord(collection, id) {
-    const ref = getFirebaseAccountingRef();
-
-    // Firebase
-    if (ref) {
-        return ref
-            .child(collection)
-            .child(String(id))
-            .remove();
-    }
-
-    // LocalStorage
-    const records =
-        (getAccountingData()[collection] || [])
-            .filter(item =>
-                String(item.id) !== String(id)
-            );
-
-    const storageKey =
-        collection === 'cashMovements'
-            ? 'cafe_ward_cash_mov'
-            : `cafe_ward_${collection}`;
-
-    localStorage.setItem(
-        storageKey,
-        JSON.stringify(records)
-    );
-
-    window.dispatchEvent(
-        new Event('ward:accounting')
-    );
-}
-function readLocalOrders() {
-    return JSON.parse(readWardStorage('cafe_ward_orders') || '[]');
-}
-
-function renderAllOrderScreens() { window.dispatchEvent(new Event('ward:orders')); }
-
-function getOrders() {
-    return firebaseDatabase ? liveOrders : readLocalOrders();
-}
-
-async function startOrdersRealtime() {
-    if(window.WardAuth) await WardAuth.ready;
-    if (ordersRealtimeStarted) return;
-    ordersRealtimeStarted = true;
-    let ordersRef = getFirebaseOrdersRef();
-    if(ordersRef && window.WardAuth?.user?.isAnonymous)ordersRef=ordersRef.orderByChild('clientId').equalTo(WardAuth.user.uid);
-    if (!ordersRef) {
-        showFirebaseSetupMessage();
-        liveOrders = readLocalOrders();
-        renderAllOrderScreens();
-        return;
-    }
-
-    ordersRef.on('value', snapshot => {
-        liveOrders = Object.entries(snapshot.val() || {})
-            .map(([key, order]) => ({ ...order, id: getOrderIdentity(order,key).orderId, firebaseKey: key }))
-            .sort((first, second) => (second.createdAt || 0) - (first.createdAt || 0));
-        renderAllOrderScreens();
-
-    });
-}
-
-function createPetals() {
-    const container = document.createElement('div');
-    container.className = 'petals-container';
-    document.body.appendChild(container);
-
-    const petalsCount = 15; // عدد بتلات الورد المتساقطة
-    for (let i = 0; i < petalsCount; i++) {
-        const petal = document.createElement('div');
-        petal.className = 'petal';
-
-        // خصائص عشوائية للحركة والسرعة والحجم
-        const size = Math.random() * 10 + 10; // حجم البتلة
-        petal.style.width = `${size}px`;
-        petal.style.height = `${size * 1.4}px`;
-        petal.style.left = `${Math.random() * 100}vw`;
-
-        const duration = Math.random() * 6 + 4; // سرعة السقوط (بين 4 و 10 ثواني)
-        const delay = Math.random() * 5; // تأخير البدء
-        petal.style.animationDuration = `${duration}s`;
-        petal.style.animationDelay = `${delay}s`;
-
-        container.appendChild(petal);
-    }
-}
-
-function createSplashPetals(container) {
-    const petals = document.createElement('div');
-    petals.className = 'splash-petals';
-    container.appendChild(petals);
-
-    for (let i = 0; i < 8; i++) {
-        const petal = document.createElement('span');
-        petal.className = 'splash-petal';
-        petal.style.left = `${10 + Math.random() * 80}%`;
-        petal.style.animationDelay = `${Math.random() * 1.2}s`;
-        petal.style.animationDuration = `${2.6 + Math.random() * 1.8}s`;
-        petals.appendChild(petal);
-    }
-}
-
-function isTodayWard(value) {
-    const date = new Date(value || Date.now());
-    const today = new Date();
-    return date.getFullYear() === today.getFullYear() &&
-        date.getMonth() === today.getMonth() &&
-        date.getDate() === today.getDate();
-}
-
-function formatWardDateTime(value) {
-    const date = value ? new Date(value) : new Date();
-    return new Intl.DateTimeFormat('en-GB', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-        hour12: true
-    }).format(date);
-}
-
-function escapeHtml(value) {
-    const node = document.createElement('span');
-    node.textContent = value == null ? '' : String(value);
-    return node.innerHTML;
-}
-
-function initializeCafeHeaderClock() {
-    const header = document.querySelector('header');
-    if (!header || document.getElementById('ward-live-clock') || document.getElementById('pos-clock')) return;
-    const clock = document.createElement('div');
-    clock.id = 'ward-live-clock';
-    clock.setAttribute('aria-label', 'الوقت الحالي');
-    header.append(clock);
-    const updateClock = () => { clock.textContent = formatWardDateTime(Date.now()); };
-    updateClock();
-    window.setInterval(updateClock, 30000);
-}
-
-function getLocalTableStatus(tableNumber) {
-    const stored = readWardStorage(`cafe_ward_table_${String(tableNumber)}`);
-    return stored ? JSON.parse(stored) : null;
-}
-
-function setLocalTableStatus(tableNumber, status) {
-    localStorage.setItem(`cafe_ward_table_${String(tableNumber)}`, JSON.stringify(status));
-}
-
-function clearLocalTableStatus(tableNumber) {
-    localStorage.removeItem(`cafe_ward_table_${String(tableNumber)}`);
-}
-
-
-
-
-
-
-
-function updateTableSelectorUI() { window.dispatchEvent(new Event('ward:tables')); }
-
-
-
-async function startTablesRealtime() {
-    if(window.WardAuth){await WardAuth.ready;if(WardAuth.user?.isAnonymous)return;}
-    if(window.WardAuth) await WardAuth.ready;
-    if (!getFirebaseTablesRef()) return;
-
-    getFirebaseTablesRef().on('value', snapshot => {
-        const data = snapshot.val() || {};
-        const allTables = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'];
-
-        allTables.forEach(tableNum => {
-            const status = data[tableNum];
-            if (status && status.status === 'occupied') {
-                setLocalTableStatus(tableNum, status);
-            } else {
-                clearLocalTableStatus(tableNum);
-            }
-        });
-
-        updateTableSelectorUI();
-        window.dispatchEvent(new Event('ward:tables'));
-    });
-}
-
-function getFirebaseOrdersRef() {
-    return firebaseDatabase ? firebaseDatabase.ref('orders') : null;
-}
-
-function getFirebaseMenuRef() {
-    return firebaseDatabase ? firebaseDatabase.ref('menu') : null;
-}
-
-function getFirebaseAccountingRef() {
-    return firebaseDatabase ? firebaseDatabase.ref('accounting') : null;
-}
-
-function getFirebaseTablesRef() {
-    return firebaseDatabase ? firebaseDatabase.ref('tables') : null;
-}
-
-function showFirebaseSetupMessage() {
-    if (!firebaseConfigured) {
-        console.warn('Firebase is not configured. Add the project configuration to firebase-config.js.');
-    }
-}

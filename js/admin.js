@@ -1,269 +1,41 @@
-﻿/* Administration UI; uses the existing shared menu storage and Firebase reference. */
-const adminCategories = { hot: 'مشروبات ساخنة', cold: 'مشروبات باردة', sweets: 'حلويات', food: 'مأكولات' };
-let editingItemId = null;
-let adminSaving = false;
-const pendingDeletes = new Set();
-const adminElement = id => document.getElementById(id);
+'use strict';
+const categories={hot:'ساخن',cold:'بارد',sweets:'حلويات',food:'مأكولات'};
+let editingId=null,busy=false;
+const el=id=>document.getElementById(id);
 
-window.addEventListener(
-    'ward:menu',
-    renderAdminMenu
-);
+function feedback(message,error=false){const box=el('admin-feedback');if(!box)return;box.textContent=message;box.hidden=!message;box.className='simple-status '+(error?'error':'ok');}
+function safeImage(value){const source=String(value||'').trim();if(!source)return 'q.png';try{const url=new URL(source,location.href);return ['http:','https:'].includes(url.protocol)?url.href:'q.png';}catch{return 'q.png';}}
+function preview(){const img=el('item-preview');if(img)img.src=safeImage(el('item-img')?.value);}
+function resetEditor(focus=false){editingId=null;el('add-item-form')?.reset();el('editor-title').textContent='إضافة صنف';el('editor-mode').textContent='صنف جديد';el('save-item-button').textContent='حفظ';el('cancel-edit-button').hidden=true;preview();if(focus)el('item-name')?.focus();}
 
-window.addEventListener(
-    'ward:orders',
-    renderSystemMonitor
-);
+function render(){
+  const menu=typeof getMenu==='function'?getMenu():[];
+  const query=(el('menu-search')?.value||'').trim().toLowerCase();
+  const filter=el('category-filter')?.value||'';
+  const visible=menu.filter(item=>(!filter||item.category===filter)&&`${item.name||''} ${item.desc||''}`.toLowerCase().includes(query));
+  if(el('result-count'))el('result-count').textContent=`${visible.length} صنف`;
+  if(el('total-items'))el('total-items').textContent=String(menu.length);
+  const list=el('admin-menu-list');if(!list)return;list.replaceChildren();
+  if(!visible.length){const empty=document.createElement('p');empty.className='empty-state';empty.textContent='لا توجد أصناف.';list.append(empty);return;}
+  for(const item of visible){
+    const row=document.createElement('article');row.className='product-row';
+    row.innerHTML='<div class="product-details"><img class="product-image" alt=""><div class="product-copy"><strong></strong><p></p><span class="category-badge"></span></div></div><div class="product-price"></div><div class="product-actions"><button type="button" class="simple-btn secondary">تعديل</button><button type="button" class="simple-btn danger">حذف</button></div>';
+    const image=row.querySelector('img');image.src=safeImage(item.img);image.onerror=()=>image.src='q.png';
+    row.querySelector('strong').textContent=item.name||'';row.querySelector('p').textContent=item.desc||'';row.querySelector('.category-badge').textContent=categories[item.category]||item.category||'';row.querySelector('.product-price').textContent=`${Number(item.price||0).toLocaleString('ar')} ل.س`;
+    const [edit,remove]=row.querySelectorAll('button');edit.onclick=()=>editItem(item);remove.onclick=()=>removeItem(item);list.append(row);
+  }
+}
+function editItem(item){editingId=String(item.id);el('item-name').value=item.name||'';el('item-cat').value=item.category||'hot';el('item-price').value=item.price??'';el('item-desc').value=item.desc||'';el('item-img').value=item.img||'';el('editor-title').textContent='تعديل الصنف';el('editor-mode').textContent=item.name||'';el('save-item-button').textContent='حفظ التعديل';el('cancel-edit-button').hidden=false;preview();el('item-name').focus();}
+async function removeItem(item){if(busy||!confirm(`حذف ${item.name}؟`))return;busy=true;try{await WardAuth.request(`/api/admin/menu/${encodeURIComponent(item.id)}`,{method:'DELETE',body:{}});await refreshMenu();render();feedback('تم حذف الصنف.');if(editingId===String(item.id))resetEditor();}catch(e){feedback(e.message||'تعذر الحذف.',true);}finally{busy=false;}}
 
-window.addEventListener(
-    'ward:tables',
-    renderSystemMonitor
-);
-
-window.addEventListener(
-    'ward:accounting',
-    renderSystemMonitor
-);
-
-let adminFirebaseConnected = false;
-let adminConnectionStarted = false;
-
-window.addEventListener('DOMContentLoaded', async () => {
-    if(window.WardAuth) await WardAuth.ready;
-
-    adminElement('add-item-form')
-        .addEventListener('submit', addNewItem);
-
-    adminElement('menu-search')
-        .addEventListener('input', renderAdminMenu);
-
-    adminElement('category-filter')
-        .addEventListener('change', renderAdminMenu);
-
-    adminElement('new-item-button')
-        .addEventListener(
-            'click',
-            () => resetItemEditor(true)
-        );
-
-    adminElement('cancel-edit-button')
-        .addEventListener(
-            'click',
-            () => resetItemEditor(true)
-        );
-
-    adminElement('item-img')
-        .addEventListener(
-            'input',
-            updateItemPreview
-        );
-
-    adminElement('item-preview')
-        .addEventListener('error', () => {
-
-            const preview =
-                adminElement('item-preview');
-
-            if (
-                preview.getAttribute('src') !==
-                'q.png'
-            ) {
-                preview.src = 'q.png';
-            }
-
-            adminElement(
-                'preview-caption'
-            ).textContent =
-                'تعذر عرض الصورة، تحقق من الرابط';
-        });
-
-    startMenuRealtime();
-    startOrdersRealtime();
-    startTablesRealtime();
-    startAccountingRealtime();
-
-    startAdminConnectionMonitor();
-    renderSystemMonitor();
-
-    window.setInterval(
-        renderSystemMonitor,
-        30000
-    );
+el('add-item-form')?.addEventListener('submit',async event=>{
+  event.preventDefault();if(busy||!event.currentTarget.reportValidity())return;
+  const payload={name:el('item-name').value.trim(),category:el('item-cat').value,price:Number(el('item-price').value),desc:el('item-desc').value.trim(),img:el('item-img').value.trim()};
+  busy=true;el('save-item-button').disabled=true;
+  try{if(editingId)await WardAuth.request(`/api/admin/menu/${encodeURIComponent(editingId)}`,{method:'PUT',body:payload});else await WardAuth.request('/api/admin/menu',{method:'POST',body:payload});await refreshMenu();render();feedback(editingId?'تم حفظ التعديل.':'تمت إضافة الصنف.');resetEditor();}catch(e){feedback(e.message||'تعذر الحفظ.',true);}finally{busy=false;el('save-item-button').disabled=false;}
 });
 
-function adminFeedback(message, error = false) {
-    const feedback = adminElement('admin-feedback');
-    feedback.textContent = message;
-    feedback.dataset.error = String(error);
-    feedback.hidden = false;
-}
+async function checkConnection(){const pill=el('system-connection');if(!pill)return;try{const r=await fetch('/api/health',{cache:'no-store'});if(!r.ok)throw new Error();pill.textContent='متصل';pill.style.color='#1f8a5b';}catch{pill.textContent='غير متصل';pill.style.color='#b83d4b';}}
 
-function safeAdminImage(value) {
-    try {
-        const url = new URL(value, window.location.href);
-        return ['http:', 'https:'].includes(url.protocol) ? url.href : 'q.png';
-    } catch { return 'q.png'; }
-}
-
-function updateItemPreview() {
-    const value = adminElement('item-img').value.trim();
-    adminElement('item-preview').src = value ? safeAdminImage(value) : 'q.png';
-    adminElement('preview-caption').textContent = value ? 'الصورة التي ستظهر مع الصنف' : 'تظهر الصورة هنا عند إدخال الرابط';
-}
-
-function focusItemEditor() {
-    adminElement('item-editor').scrollIntoView({ block: 'nearest' });
-    adminElement('item-name').focus({ preventScroll: true });
-}
-
-function resetItemEditor(focus = false) {
-    if (adminSaving) return;
-    editingItemId = null;
-    adminElement('add-item-form').reset();
-    adminElement('item-cat').querySelectorAll('[data-legacy]').forEach(option => option.remove());
-    adminElement('editor-title').textContent = 'إضافة صنف للمنيو';
-    adminElement('editor-mode').textContent = 'صنف جديد';
-    adminElement('save-item-button').textContent = 'إضافة الصنف';
-    adminElement('cancel-edit-button').hidden = true;
-    updateItemPreview();
-    if (focus) focusItemEditor();
-}
-
-function editMenuItem(id) {
-    if (adminSaving || pendingDeletes.has(String(id))) return;
-    const item = getMenu().find(row => String(row.id) === String(id));
-    if (!item) return;
-    resetItemEditor();
-    editingItemId = String(id);
-    if (!Object.hasOwn(adminCategories, item.category)) {
-        const option = document.createElement('option');
-        option.value = item.category || '';
-        option.textContent = item.category || 'بدون تصنيف';
-        option.dataset.legacy = 'true';
-        adminElement('item-cat').appendChild(option);
-    }
-    for (const [field, key] of Object.entries({ name:'name', cat:'category', price:'price', desc:'desc', img:'img' })) {
-        adminElement('item-' + field).value = item[key] ?? '';
-    }
-    adminElement('editor-title').textContent = 'تعديل بيانات الصنف';
-    adminElement('editor-mode').textContent = item.name;
-    adminElement('save-item-button').textContent = 'حفظ التعديلات';
-    adminElement('cancel-edit-button').hidden = false;
-    updateItemPreview();
-    focusItemEditor();
-}
-
-async function addNewItem(event) {
-    event.preventDefault();
-    if (adminSaving || !adminElement('add-item-form').reportValidity()) return;
-    const name = adminElement('item-name').value.trim();
-    const category = adminElement('item-cat').value;
-    const price = Number(adminElement('item-price').value);
-    const desc = adminElement('item-desc').value.trim();
-    const img = adminElement('item-img').value.trim();
-    if (!name || !desc || !img || !Number.isFinite(price) || price < 0) {
-        adminFeedback('أدخل اسمًا ووصفًا وصورة وسعرًا صالحًا للصنف.', true);
-        return;
-    }
-    const id = editingItemId;
-    const changes = { name, category, price, desc, img };
-    adminSaving = true;
-    adminElement('item-fields').disabled = true;
-    adminElement('new-item-button').disabled = true;
-    adminElement('save-item-button').textContent = 'جاري الحفظ…';
-    try {
-        // Preserve the existing Firebase /menu path and local fallback.
-        const ref = getFirebaseMenuRef();
-        if (id !== null) {
-            if (!getMenu().some(row => String(row.id) === id)) throw new Error('missing-item');
-            if (ref) await ref.child(id).update(changes);
-            else saveMenu(getMenu().map(row => String(row.id) === id ? { ...row, ...changes } : row));
-        } else {
-            const newItem = { ...changes, createdAt: Date.now() };
-            if (ref) await ref.push(newItem);
-            else saveMenu([...getMenu(), { ...newItem, id: Date.now() }]);
-        }
-        adminSaving = false;
-        resetItemEditor();
-        renderAdminMenu();
-        adminFeedback(id === null ? 'تمت إضافة الصنف بنجاح.' : 'تم حفظ تعديلات الصنف بنجاح.');
-    } catch (error) {
-        adminFeedback(error.message === 'missing-item' ? 'هذا الصنف لم يعد موجودًا. ألغِ التعديل وحدّث القائمة.' : 'تعذر حفظ الصنف. تحقق من الاتصال وصلاحيات Firebase ثم أعد المحاولة.', true);
-    } finally {
-        adminSaving = false;
-        adminElement('item-fields').disabled = false;
-        adminElement('new-item-button').disabled = false;
-        adminElement('save-item-button').textContent = editingItemId === null ? 'إضافة الصنف' : 'حفظ التعديلات';
-    }
-}
-
-function renderAdminMenu() {
-    const list = adminElement('admin-menu-list');
-    if (!list) return;
-    const menu = getMenu();
-    const query = adminElement('menu-search').value.trim().toLocaleLowerCase('ar');
-    const filter = adminElement('category-filter').value;
-    // Keep existing custom categories accessible without changing stored values.
-    const categories = [...new Set(menu.map(item => item.category).filter(Boolean))];
-    const filterElement = adminElement('category-filter');
-    filterElement.querySelectorAll('[data-legacy]').forEach(option => option.remove());
-    categories.filter(category => !Object.hasOwn(adminCategories, category)).forEach(category => {
-        const option = document.createElement('option');
-        option.value = category; option.textContent = category; option.dataset.legacy = 'true';
-        filterElement.appendChild(option);
-    });
-    filterElement.value = [...filterElement.options].some(option => option.value === filter) ? filter : '';
-    const visible = menu.filter(item => (!filterElement.value || item.category === filterElement.value) && `${item.name || ''} ${item.desc || ''}`.toLocaleLowerCase('ar').includes(query));
-    adminElement('total-items').textContent = menu.length;
-    adminElement('total-categories').textContent = categories.length;
-    adminElement('result-count').textContent = `عرض ${visible.length} من ${menu.length} صنف`;
-    list.replaceChildren();
-    if (!visible.length) {
-        const empty = document.createElement('p');
-        empty.className = 'empty-state';
-        empty.textContent = menu.length ? 'لا توجد أصناف مطابقة. جرّب بحثًا أو تصنيفًا آخر.' : 'المنيو فارغ. أضف أول صنف من النموذج.';
-        list.appendChild(empty);
-        return;
-    }
-    visible.forEach(item => {
-        const row = document.createElement('article');
-        row.className = 'product-row';
-        // Only static markup is inserted; item content is assigned as text.
-        row.innerHTML = '<div class="product-details"><img class="product-image" loading="lazy" alt=""><div class="product-copy"><strong></strong><p></p><span class="category-badge"></span></div></div><div class="product-price"><span></span><small>ليرة</small></div><div class="product-actions"><button type="button" class="secondary-button">تعديل</button><button type="button" class="remove-button">حذف</button></div>';
-        const image = row.querySelector('img');
-        image.addEventListener('error', () => { image.src = 'q.png'; }, { once: true });
-        image.src = safeAdminImage(item.img || 'q.png');
-        row.querySelector('strong').textContent = item.name;
-        row.querySelector('p').textContent = item.desc || 'بدون وصف';
-        row.querySelector('.category-badge').textContent = adminCategories[item.category] || item.category || 'بدون تصنيف';
-        row.querySelector('.product-price span').textContent = new Intl.NumberFormat('ar', { maximumFractionDigits:2 }).format(Number(item.price));
-        const [edit, remove] = row.querySelectorAll('button');
-        edit.setAttribute('aria-label', `تعديل ${item.name}`);
-        remove.setAttribute('aria-label', `حذف ${item.name}`);
-        edit.disabled = remove.disabled = pendingDeletes.has(String(item.id));
-        edit.addEventListener('click', () => editMenuItem(item.id));
-        remove.addEventListener('click', () => deleteMenuItem(item.id));
-        list.appendChild(row);
-    });
-}
-
-async function deleteMenuItem(id) {
-    id = String(id);
-    if (adminSaving || pendingDeletes.has(id)) return;
-    const item = getMenu().find(row => String(row.id) === id);
-    if (!item || !confirm(`حذف «${item.name}» من المنيو؟ لا يمكن التراجع عن الحذف.`)) return;
-    pendingDeletes.add(id);
-    renderAdminMenu();
-    try {
-        const ref = getFirebaseMenuRef();
-        if (ref) await ref.child(id).remove();
-        else saveMenu(getMenu().filter(row => String(row.id) !== id));
-        if (editingItemId === id) resetItemEditor();
-        adminFeedback(`تم حذف «${item.name}» من المنيو.`);
-    } catch (error) {
-        adminFeedback('تعذر حذف الصنف. تحقق من الاتصال وصلاحيات Firebase ثم أعد المحاولة.', true);
-    } finally {
-        pendingDeletes.delete(id);
-        renderAdminMenu();
-    }
-}
+window.addEventListener('ward:menu',render);
+window.addEventListener('DOMContentLoaded',async()=>{if(window.WardAuth)await WardAuth.ready;el('menu-search')?.addEventListener('input',render);el('category-filter')?.addEventListener('change',render);el('new-item-button')?.addEventListener('click',()=>resetEditor(true));el('cancel-edit-button')?.addEventListener('click',()=>resetEditor());el('item-img')?.addEventListener('input',preview);await refreshMenu();render();checkConnection();if(typeof startMenuRealtime==='function')startMenuRealtime();setInterval(checkConnection,15000);});

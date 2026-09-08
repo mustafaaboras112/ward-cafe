@@ -1,0 +1,360 @@
+
+
+:root{
+    --pink:#e91e63;
+    --pink-dark:#c2185b;
+    --soft:#fff1f6;
+    --soft2:#ffe3ee;
+    --border:#f1d0dc;
+    --text:#30242a;
+    --muted:#806f77;
+    --green:#249765;
+    --orange:#d58d13;
+    --red:#d84a55;
+    --white:#ffffff;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Tahoma,Arial,sans-serif;
+    background:#fff9fb;
+    color:var(--text);
+}
+
+button,
+input,
+select{
+    font:inherit;
+}
+
+/* =========================
+   النظام
+========================= */
+
+.app{
+    min-height:100vh;
+    display:grid;
+    grid-template-columns:250px 1fr;
+}
+
+/* =========================
+   القائمة الجانبية
+========================= */
+
+.sidebar{
+    background:#fff;
+    border-left:1px solid var(--border);
+    padding:18px 14px;
+    display:flex;
+    flex-direction:column;
+    position:sticky;
+    top:0;
+    height:100vh;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:5px 8px 20px;
+}
+
+.logo{
+    width:48px;
+    height:48px;
+    background:var(--soft);
+    border-radius:15px;
+    display:grid;
+    place-items:center;
+    font-size:25px;
+}
+
+.brand strong{
+    font-size:20px;
+}
+
+.brand small{
+    display:block;
+    color:var(--muted);
+    margin-top:3px;
+}
+
+.nav{
+    display:grid;
+    gap:6px;
+}
+
+.nav button{
+    border:0;
+    background:transparent;
+    padding:12px 13px;
+    border-radius:13px;
+    text-align:right;
+    cursor:pointer;
+    color:var(--text);
+}
+
+.nav button:hover,
+.nav button.active{
+    background:var(--soft);
+    color:var(--pink);
+    font-weight:bold;
+}
+
+.sidebar-bottom{
+    margin-top:auto;
+    border-top:1px solid var(--border);
+    padding-top:14px;
+}
+
+/* =========================
+   المحتوى
+========================= */
+
+.main{
+    padding:20px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:18px;
+}
+
+.title h1{
+    margin:0;
+    font-size:27px;
+}
+
+.title p{
+    margin:5px 0 0;
+    color:var(--muted);
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+}
+
+.btn{
+    border:1px solid var(--border);
+    background:#fff;
+    padding:10px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-primary{
+    background:var(--pink);
+    border-color:var(--pink);
+    color:#fff;
+}
+
+/* =========================
+   البطاقات
+========================= */
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+}
+
+.card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:19px;
+    padding:17px;
+    box-shadow:0 9px 30px rgba(140,40,80,.06);
+}
+
+.metric span{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.metric strong{
+    display:block;
+    margin-top:8px;
+    font-size:27px;
+}
+
+.metric small{
+    display:block;
+    color:var(--green);
+    margin-top:5px;
+}
+
+/* =========================
+   الأقسام
+========================= */
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.two-columns{
+    display:grid;
+    grid-template-columns:1.3fr .8fr;
+    gap:14px;
+    margin-top:14px;
+}
+
+.section-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:14px;
+}
+
+.section-title h2{
+    margin:0;
+}
+
+.section-title p{
+    margin:4px 0 0;
+    color:var(--muted);
+    font-size:13px;
+}
+
+/* =========================
+   الجداول
+========================= */
+
+.table-wrap{
+    overflow:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:700px;
+}
+
+th,
+td{
+    text-align:right;
+    padding:12px 10px;
+    border-bottom:1px solid #f2dfe6;
+}
+
+th{
+    color:var(--muted);
+    font-size:12px;
+    background:#fffafd;
+}
+
+.status{
+    display:inline-block;
+    border-radius:999px;
+    padding:6px 9px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.status.green{
+    background:#eaf7f1;
+    color:#18754a;
+}
+
+.status.orange{
+    background:#fff3dc;
+    color:#98620b;
+}
+
+.status.red{
+    background:#fdecef;
+    color:#a32e3b;
+}
+
+/* =========================
+   التنبيهات
+========================= */
+
+.list{
+    display:grid;
+    gap:10px;
+}
+
+.list-item{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    border:1px solid var(--border);
+    border-radius:13px;
+    padding:12px;
+}
+
+.list-item small{
+    color:var(--muted);
+    display:block;
+    margin-top:3px;
+}
+
+/* =========================
+   الإدخالات
+========================= */
+
+.toolbar{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+}
+
+.input,
+select{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:11px;
+    padding:10px 12px;
+}
+
+.input{
+    min-width:220px;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media(max-width:1000px){
+
+    .app{
+        grid-template-columns:90px 1fr;
+    }
+
+    .brand div:last-child{
+        display:none;
+    }
+
+    .nav button{
+        font-size:20px;
+        text-align:center;
+    }
+
+    .nav button span{
+        display:none;
+    }
+
+    .cards{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .two-columns{
+        grid-template-columns:1fr;
+    }
+
+}

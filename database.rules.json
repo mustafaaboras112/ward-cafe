@@ -1,0 +1,22 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "menu": {
+      ".read": true,
+      ".write": true
+    },
+    "orders": {
+      ".read": true,
+      ".write": true
+    },
+    "tables": {
+      ".read": true,
+      ".write": true
+    },
+    "accounting": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}

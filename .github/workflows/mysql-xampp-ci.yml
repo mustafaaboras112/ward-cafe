@@ -21,16 +21,22 @@ jobs:
           node --check server/src/db.js
           node --check server/src/cafe.js
           node --check server/src/admin-api.js
+          node --check server/src/customer-api.js
           node --check server/src/setup-admin.js
       - name: Check browser JavaScript syntax
         run: |
           node --check js/auth.js
           node --check js/common.js
+          node --check js/admin.js
+          node --check js/users.js
+          node --check js/menu.js
           node --check js/mysql-overrides.js
           node --check js/login.js
           node --check js/pos.js
           node --check js/waiter.js
           node --check js/kitchen.js
+          node --check js/accounting-core.js
+          node --check js/print.js
       - name: Run migration safety tests
         working-directory: server
         run: npm test

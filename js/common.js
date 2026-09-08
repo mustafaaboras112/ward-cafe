@@ -120,10 +120,14 @@ function startAdminConnectionMonitor(){
     const refresh=async()=>{try{await api('/api/health',{redirectOnAuth:false});badge.textContent='متصل بالخادم';badge.dataset.state='online';}catch{badge.textContent='تعذر الاتصال بالخادم';badge.dataset.state='offline';}};
     refresh();setInterval(refresh,5000);
 }
+function applyAccountingServerGuards(){
+    if(typeof setAccountingDayClosed==='function')setAccountingDayClosed=async value=>{if(!value)throw new Error('إعادة فتح يوم مغلق تحتاج إجراء إداري موثق.');const result=await api('/api/accounting/close-day',{method:'POST',body:{}});await refreshAccounting();return result;};
+    if(typeof updateAccountingRecord==='function')updateAccountingRecord=async()=>{throw new Error('تعديل سجل مالي محفوظ مباشرة غير مسموح. أضف حركة تصحيح منفصلة.');};
+}
 
 function createPetals(){const container=document.createElement('div');container.className='petals-container';document.body.appendChild(container);for(let i=0;i<15;i++){const petal=document.createElement('div');petal.className='petal';const size=Math.random()*10+10;petal.style.width=`${size}px`;petal.style.height=`${size*1.4}px`;petal.style.left=`${Math.random()*100}vw`;petal.style.animationDuration=`${Math.random()*6+4}s`;petal.style.animationDelay=`${Math.random()*5}s`;container.appendChild(petal);}}
 function createSplashPetals(container){const petals=document.createElement('div');petals.className='splash-petals';container.appendChild(petals);for(let i=0;i<8;i++){const petal=document.createElement('span');petal.className='splash-petal';petal.style.left=`${10+Math.random()*80}%`;petal.style.animationDelay=`${Math.random()*1.2}s`;petal.style.animationDuration=`${2.6+Math.random()*1.8}s`;petals.appendChild(petal);}}
 function initializeProtectedPage(){}
 function initializeCafeHeaderClock(){const header=document.querySelector('header');if(!header||document.getElementById('ward-live-clock')||document.getElementById('pos-clock'))return;const clock=document.createElement('div');clock.id='ward-live-clock';clock.setAttribute('aria-label','الوقت الحالي');header.append(clock);const update=()=>clock.textContent=formatWardDateTime(Date.now());update();setInterval(update,30000);}
 
-window.addEventListener('DOMContentLoaded',async()=>{if(window.WardAuth)await WardAuth.ready;initializeProtectedPage();initializeCafeHeaderClock();const splash=document.getElementById('splash-screen');if(splash){createSplashPetals(splash);setTimeout(()=>{splash.remove();document.body.classList.remove('menu-page-loading');},1200);}createPetals();});
+window.addEventListener('DOMContentLoaded',async()=>{if(window.WardAuth)await WardAuth.ready;applyAccountingServerGuards();initializeProtectedPage();initializeCafeHeaderClock();const splash=document.getElementById('splash-screen');if(splash){createSplashPetals(splash);setTimeout(()=>{splash.remove();document.body.classList.remove('menu-page-loading');},1200);}createPetals();});

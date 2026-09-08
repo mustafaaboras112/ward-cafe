@@ -16,21 +16,46 @@ test('payment and close-day operations are server-side transactions',()=>{
   assert.match(cafe,/لا يمكن إغلاق اليوم وهناك طلبات غير مدفوعة/);
 });
 
-test('browser data layer no longer writes Firebase state',()=>{
+test('shared browser layer uses HTTP APIs and keeps sensitive state server-side',()=>{
   const common=read('js/common.js');
   assert.doesNotMatch(common,/firebase\.database\(|firebase\.auth\(|\.ref\('orders'\)/);
-  assert.match(common,/\/api\/orders|\/api\/tables/);
-  assert.match(common,/function changeCafeState\(\).*يجب أن تتم عبر API الخادم/s);
+  assert.match(common,/\/api\/orders/);
+  assert.match(common,/\/api\/tables/);
+  assert.match(common,/\/api\/customer\/orders/);
+  assert.match(common,/async function changeCafeState\(\).*خادم MySQL فقط/s);
   const overrides=read('js/mysql-overrides.js');
   assert.match(overrides,/\/api\/payments/);
 });
 
+test('customer QR ordering is mounted and isolated by a customer cookie',()=>{
+  const server=read('server/src/server.js');
+  const customer=read('server/src/customer-api.js');
+  const schema=read('server/sql/schema.sql');
+  assert.match(server,/app\.use\('\/api\/customer',customerRouter\)/);
+  assert.match(customer,/ward_customer/);
+  assert.match(customer,/customer_order_access/);
+  assert.match(customer,/router\.post\('\/orders'/);
+  assert.match(schema,/CREATE TABLE IF NOT EXISTS customer_order_access/);
+});
+
 test('admin menu uses MySQL API and has a working system monitor',()=>{
   const admin=read('js/admin.js');
+  const html=read('admin.html');
   assert.match(admin,/function renderSystemMonitor\(/);
   assert.match(admin,/\/api\/admin\/menu/);
   assert.match(admin,/startAdminConnectionMonitor\(\)/);
   assert.doesNotMatch(admin,/صلاحيات Firebase|adminFirebaseConnected/);
+  assert.doesNotMatch(html,/gstatic\.com\/firebase|firebase-config\.js/);
+});
+
+test('accounting screen only exposes MySQL-backed core modules',()=>{
+  const html=read('accounting.html');
+  const core=read('js/accounting-core.js');
+  assert.match(html,/js\/accounting-core\.js/);
+  assert.doesNotMatch(html,/js\/accounting\.js|gstatic\.com\/firebase|الموردون|المخزون|المشتريات/);
+  assert.match(core,/closeAccountingDay\(\)/);
+  assert.match(core,/saveAccountingRecord\('expenses'/);
+  assert.match(core,/startAccountingRealtime\(\)/);
 });
 
 test('protected pages use server sessions, role checks and short aliases',()=>{
@@ -56,6 +81,13 @@ test('password policy is consistently 8 to 128 characters',()=>{
   assert.doesNotMatch(users,/12 إلى 20|12–20|\{12,20\}/);
   assert.match(auth,/password\.length<8/);
   assert.match(adminApi,/password\.length<8/);
+});
+
+test('local operational pages do not load Firebase runtime scripts',()=>{
+  for(const file of ['admin.html','accounting.html','index.html','kitchen.html','pos.html','waiter.html']){
+    const html=read(file);
+    assert.doesNotMatch(html,/gstatic\.com\/firebase|firebase-config\.js/,file+' still loads Firebase');
+  }
 });
 
 test('schema keeps financial history and one payment per order',()=>{

@@ -100,6 +100,15 @@ CREATE TABLE IF NOT EXISTS order_items (
   CONSTRAINT chk_order_item_price CHECK (unit_price >= 0 AND line_total >= 0)
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS customer_order_access (
+  order_id CHAR(36) NOT NULL,
+  token_hash CHAR(64) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (order_id),
+  KEY idx_customer_order_token (token_hash),
+  CONSTRAINT fk_customer_order_access_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS payments (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   table_number TINYINT UNSIGNED NOT NULL,

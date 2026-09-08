@@ -50,7 +50,10 @@ for(const [route,roles] of Object.entries(pageRoles)){
     try{
       const user=await getSession(req);
       if(!user)return res.redirect(`/login.html?next=${encodeURIComponent(route.slice(1))}`);
-      if(!roles.includes(user.role))return res.redirect('/login.html?denied=1');
+      if(!roles.includes(user.role)){
+        const home=homeFor(user.role);
+        return res.redirect(`/${home}?denied=1`);
+      }
       res.sendFile(path.join(root,route));
     }catch(error){next(error);}
   });

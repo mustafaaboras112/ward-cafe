@@ -25,14 +25,29 @@ test('browser data layer no longer writes Firebase state',()=>{
   assert.match(overrides,/\/api\/payments/);
 });
 
-test('protected pages use server sessions and role checks',()=>{
+test('protected pages use server sessions, role checks and short aliases',()=>{
   const server=read('server/src/server.js');
   const auth=read('server/src/auth.js');
   assert.match(server,/pageRoles/);
   assert.match(server,/getSession\(req\)/);
+  assert.match(server,/['"]\/admin['"]\s*:\s*['"]\/admin\.html['"]/);
+  assert.match(server,/['"]\/pos['"]\s*:\s*['"]\/pos\.html['"]/);
   assert.match(auth,/bcrypt\.compare/);
   assert.match(auth,/HttpOnly; SameSite=Strict/);
   assert.match(auth,/x-csrf-token/i);
+});
+
+test('password policy is consistently 8 to 128 characters',()=>{
+  const login=read('login.html');
+  const users=read('js/users.js');
+  const auth=read('server/src/auth.js');
+  const adminApi=read('server/src/admin-api.js');
+  assert.match(login,/minlength="8"/);
+  assert.doesNotMatch(login,/12 إلى 20|12–20/);
+  assert.match(users,/minlength=\\?"8|password\.minLength=8/);
+  assert.doesNotMatch(users,/12 إلى 20|12–20|\{12,20\}/);
+  assert.match(auth,/password\.length<8/);
+  assert.match(adminApi,/password\.length<8/);
 });
 
 test('schema keeps financial history and one payment per order',()=>{

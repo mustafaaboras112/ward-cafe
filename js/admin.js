@@ -5,90 +5,20 @@ let adminSaving = false;
 const pendingDeletes = new Set();
 const adminElement = id => document.getElementById(id);
 
-window.addEventListener(
-    'ward:menu',
-    renderAdminMenu
-);
-
-window.addEventListener(
-    'ward:orders',
-    renderSystemMonitor
-);
-
-window.addEventListener(
-    'ward:tables',
-    renderSystemMonitor
-);
-
-window.addEventListener(
-    'ward:accounting',
-    renderSystemMonitor
-);
-
-let adminFirebaseConnected = false;
-let adminConnectionStarted = false;
-
-window.addEventListener('DOMContentLoaded', async () => {
-    if(window.WardAuth) await WardAuth.ready;
-
-    adminElement('add-item-form')
-        .addEventListener('submit', addNewItem);
-
-    adminElement('menu-search')
-        .addEventListener('input', renderAdminMenu);
-
-    adminElement('category-filter')
-        .addEventListener('change', renderAdminMenu);
-
-    adminElement('new-item-button')
-        .addEventListener(
-            'click',
-            () => resetItemEditor(true)
-        );
-
-    adminElement('cancel-edit-button')
-        .addEventListener(
-            'click',
-            () => resetItemEditor(true)
-        );
-
-    adminElement('item-img')
-        .addEventListener(
-            'input',
-            updateItemPreview
-        );
-
-    adminElement('item-preview')
-        .addEventListener('error', () => {
-
-            const preview =
-                adminElement('item-preview');
-
-            if (
-                preview.getAttribute('src') !==
-                'q.png'
-            ) {
-                preview.src = 'q.png';
-            }
-
-            adminElement(
-                'preview-caption'
-            ).textContent =
-                'تعذر عرض الصورة، تحقق من الرابط';
-        });
-
+window.addEventListener('ward:menu', renderAdminMenu);
+window.addEventListener('DOMContentLoaded', () => {
+    adminElement('add-item-form').addEventListener('submit', addNewItem);
+    adminElement('menu-search').addEventListener('input', renderAdminMenu);
+    adminElement('category-filter').addEventListener('change', renderAdminMenu);
+    adminElement('new-item-button').addEventListener('click', () => resetItemEditor(true));
+    adminElement('cancel-edit-button').addEventListener('click', () => resetItemEditor(true));
+    adminElement('item-img').addEventListener('input', updateItemPreview);
+    adminElement('item-preview').addEventListener('error', () => {
+        const preview = adminElement('item-preview');
+        if (preview.getAttribute('src') !== 'q.png') preview.src = 'q.png';
+        adminElement('preview-caption').textContent = 'تعذر عرض الصورة، تحقق من الرابط';
+    });
     startMenuRealtime();
-    startOrdersRealtime();
-    startTablesRealtime();
-    startAccountingRealtime();
-
-    startAdminConnectionMonitor();
-    renderSystemMonitor();
-
-    window.setInterval(
-        renderSystemMonitor,
-        30000
-    );
 });
 
 function adminFeedback(message, error = false) {

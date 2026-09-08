@@ -2912,8 +2912,7 @@ window.addEventListener(
 
 window.addEventListener(
     'DOMContentLoaded',
-    async () => {
-    if(window.WardAuth) await WardAuth.ready;
+    () => {
 
         ['report-date-from', 'report-date-to'].forEach(id => {
             const input = accSection(id);

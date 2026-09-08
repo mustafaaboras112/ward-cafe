@@ -17,10 +17,12 @@ async function runLayoutTests(){
   await new Promise(resolve=>setTimeout(resolve,1400));
   const fit=label=>assert(d.documentElement.scrollWidth<=d.documentElement.clientWidth,width+' '+label+' horizontal overflow '+d.documentElement.scrollWidth);
   const touch=selector=>d.querySelectorAll(selector).forEach(el=>{const r=el.getBoundingClientRect();if(r.width&&r.height)assert(r.width>=43&&r.height>=43,width+' small touch target '+selector);});
-  assert(w.getComputedStyle(d.documentElement).direction==='rtl',width+' RTL');fit('categories');touch('.category-box,#open-cart');
-  assert(!d.getElementById('table-selector') && !d.getElementById('change-table'),width+' QR must not expose table selection');
-  assert(d.getElementById('table-badge').textContent==='طاولتك 12',width+' fixed QR table');
+  assert(w.getComputedStyle(d.documentElement).direction==='rtl',width+' RTL');fit('categories');touch('.category-box,#open-cart,#change-table');
+  assert(d.getElementById('table-picker').hidden,width+' QR picker');
   if(width<=768)assert(d.querySelector('.hero-no-header').getBoundingClientRect().height<320,width+' hero too tall');
+  d.getElementById('change-table').click();fit('table picker');touch('#table-selector');
+  d.getElementById('table-selector').value='8';d.getElementById('table-selector').dispatchEvent(new w.Event('change'));
+  assert(d.getElementById('table-badge').textContent==='طاولتك رقم 8',width+' table selector event');
   d.getElementById('category-hot').click();await new Promise(resolve=>setTimeout(resolve,50));fit('products');touch('.add-btn');
   d.querySelector('.add-btn:not(:disabled)').click();assert(d.getElementById('cart-count').textContent==='1',width+' add action');
   touch('.quantity-controls button');

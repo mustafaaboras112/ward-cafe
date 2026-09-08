@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="style/common.css">
     <link rel="stylesheet" href="style/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="style/security.css">
-<script>document.documentElement.classList.add("auth-pending");</script>
 </head>
 <body class="ward-admin">
     <header class="admin-header">
@@ -19,196 +17,6 @@
             <div><p class="eyebrow">كافيه ورد / إدارة المنيو</p><h1>منيو مرتب. إدارة أسهل.</h1><p>أضف أصنافك وحدّث تفاصيلها من مكان واحد.</p></div>
             <button class="primary-button" id="new-item-button" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> إضافة صنف</button>
         </div>
-
-        <section class="system-monitor" aria-labelledby="system-monitor-title">
-
-    <div class="system-monitor-heading">
-        <div>
-            <p class="eyebrow">مراقبة مباشرة</p>
-            <h2 id="system-monitor-title">حالة النظام</h2>
-            <p>ملخص لحظي لحركة الكافيه.</p>
-        </div>
-
-        <span id="system-connection"
-              class="connection-pill"
-              data-state="loading">
-            جاري فحص الاتصال…
-        </span>
-    </div>
-
-    <div class="system-monitor-grid">
-
-        <article class="monitor-card">
-            <span>طاولات فارغة</span>
-            <strong id="monitor-empty-tables">—</strong>
-            <small>من أصل 20 طاولة</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>طاولات مشغولة</span>
-            <strong id="monitor-occupied-tables">—</strong>
-            <small>حسابات مفتوحة</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>قيد التحضير</span>
-            <strong id="monitor-preparing">—</strong>
-            <small>طلبات في المطبخ</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>جاهزة للتوصيل</span>
-            <strong id="monitor-ready">—</strong>
-            <small>بانتظار الكارسون</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>بانتظار الدفع</span>
-            <strong id="monitor-delivered">—</strong>
-            <small>تم توصيلها ولم تُدفع</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>مبيعات اليوم</span>
-            <strong id="monitor-sales">—</strong>
-            <small>ليرة</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>حالة الصندوق</span>
-            <strong id="monitor-cashbox">—</strong>
-            <small>المحاسبة</small>
-        </article>
-
-    </div>
-
-    <section class="system-alert-box">
-        <div class="system-alert-heading">
-            <h3>تنبيهات التشغيل</h3>
-            <span id="monitor-alert-count">0</span>
-        </div>
-
-        <div id="system-alert-list"
-             aria-live="polite">
-            جاري فحص النظام…
-        </div>
-    </section>
-
-</section>
-
-<style>
-.system-monitor {
-    margin: 0 0 28px;
-}
-
-.system-monitor-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 14px;
-}
-
-.system-monitor-heading h2 {
-    margin: 2px 0 4px;
-}
-
-.connection-pill {
-    padding: 9px 14px;
-    border-radius: 999px;
-    font-weight: 700;
-    white-space: nowrap;
-    background: #f3f3f3;
-}
-
-.connection-pill[data-state="online"] {
-    background: #eaf8ef;
-    color: #176b38;
-}
-
-.connection-pill[data-state="offline"] {
-    background: #fff0f0;
-    color: #a52b2b;
-}
-
-.system-monitor-grid {
-    display: grid;
-    grid-template-columns:
-        repeat(auto-fit, minmax(145px, 1fr));
-    gap: 12px;
-}
-
-.monitor-card {
-    background: #fff;
-    border: 1px solid #ead6dc;
-    border-radius: 16px;
-    padding: 15px;
-    box-shadow: 0 5px 18px rgba(0,0,0,.035);
-}
-
-.monitor-card span,
-.monitor-card small {
-    display: block;
-    color: #71656a;
-}
-
-.monitor-card strong {
-    display: block;
-    margin: 7px 0 3px;
-    font-size: 1.7rem;
-    color: #222;
-}
-
-.system-alert-box {
-    margin-top: 14px;
-    padding: 16px;
-    background: #fff;
-    border: 1px solid #ead6dc;
-    border-radius: 16px;
-}
-
-.system-alert-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.system-alert-heading h3 {
-    margin: 0 0 10px;
-}
-
-#monitor-alert-count {
-    min-width: 30px;
-    padding: 4px 9px;
-    text-align: center;
-    border-radius: 999px;
-    background: #fff0f3;
-    color: #a43955;
-    font-weight: 800;
-}
-
-.system-alert {
-    padding: 10px 12px;
-    margin-top: 8px;
-    border-radius: 10px;
-    background: #fff7f7;
-    border-right: 4px solid #c84d4d;
-}
-
-.system-alert-ok {
-    background: #f2fbf5;
-    border-right-color: #35985c;
-    color: #246b40;
-}
-
-@media (max-width: 650px) {
-    .system-monitor-heading {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-}
-</style>
-
         <div class="menu-summary" aria-label="ملخص المنيو">
             <div><span class="summary-icon"><i class="fa-solid fa-utensils" aria-hidden="true"></i></span><div><strong id="total-items">—</strong><span>إجمالي الأصناف</span></div></div>
             <div><span class="summary-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></span><div><strong id="total-categories">—</strong><span>تصنيفات مستخدمة</span></div></div>
@@ -242,12 +50,8 @@
     </main>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="js/auth.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="js/common.js"></script>
     <script src="js/admin.js"></script>
-<script src="js/users.js"></script>
 </body>
 </html>

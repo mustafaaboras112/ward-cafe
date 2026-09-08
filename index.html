@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style/common.css">
     <link rel="stylesheet" href="style/menu.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="style/security.css">
 </head>
 <body class="menu-page">
     <div id="splash-screen" aria-label="شاشة التحميل"><img src="q.png" alt="كافيه ورد"></div>
@@ -20,7 +19,34 @@
         </div>
 
         <div class="table-selector-container">
-            <p id="table-badge" class="table-badge" aria-live="polite">امسح رمز QR الخاص بطاولتك</p>
+            <button id="change-table" class="change-table-btn" type="button" aria-controls="table-picker" aria-expanded="false" hidden>تغيير الطاولة</button>
+            <div class="table-select-box" id="table-picker">
+                <label for="table-selector"><i class="fa-solid fa-chair"></i> اختر طاولتك</label>
+                <select id="table-selector">
+                    <option value="1" selected>رقم 1</option>
+                    <option value="2">رقم 2</option>
+                    <option value="3">رقم 3</option>
+                    <option value="4">رقم 4</option>
+                    <option value="5">رقم 5</option>
+                    <option value="6">رقم 6</option>
+                    <option value="7">رقم 7</option>
+                    <option value="8">رقم 8</option>
+                    <option value="9">رقم 9</option>
+                    <option value="10">رقم 10</option>
+                    <option value="11">رقم 11</option>
+                    <option value="12">رقم 12</option>
+                    <option value="13">رقم 13</option>
+                    <option value="14">رقم 14</option>
+                    <option value="15">رقم 15</option>
+                    <option value="16">رقم 16</option>
+                    <option value="17">رقم 17</option>
+                    <option value="18">رقم 18</option>
+                    <option value="19">رقم 19</option>
+                    <option value="20">رقم 20</option>
+                </select>
+                <strong id="selected-table-label">رقم الطاولة: 1</strong>
+            </div>
+            <p id="table-badge" class="table-badge">طاولتك رقم 1</p>
             <p id="table-error" class="menu-error" role="status"></p>
         </div>
     </section>
@@ -70,7 +96,7 @@
             <div class="cart-checkout">
                 <div class="cart-total"><strong>الإجمالي: <span id="total-price">0</span> ليرة</strong></div>
                 <p id="checkout-error" class="menu-error" role="alert"></p>
-                <button type="button" id="checkout-submit" class="checkout-btn" disabled>تأكيد وإرسال الطلب</button>
+                <button type="button" id="checkout-submit" class="checkout-btn">تأكيد وإرسال الطلب</button>
             </div>
         </section>
     </div>
@@ -78,10 +104,7 @@
     <section id="customer-orders" aria-label="متابعة طلباتك" aria-live="polite" hidden></section>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="js/auth.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="js/common.js"></script>
     <script src="js/menu.js"></script>
 

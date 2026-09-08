@@ -16,8 +16,7 @@ function kitchenAttribute(value) {
     return escapeHtml(value).replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 }
 window.addEventListener('ward:orders', renderKitchenOrders);
-window.addEventListener('DOMContentLoaded', async () => {
-    if(window.WardAuth) await WardAuth.ready;
+window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('kitchen-orders-container').addEventListener('click', event => {
         const button = event.target.closest('[data-ready-order]');
         if (button && !button.disabled) markOrderReady(button.dataset.readyOrder);

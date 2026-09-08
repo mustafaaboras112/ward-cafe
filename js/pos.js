@@ -97,7 +97,41 @@ function setPosMethod(method) {
    حالة الدفع
 ========================= */
 
-async function changePosPaymentState(change) { return changeCafeState(change);
+async function changePosPaymentState(change) {
+
+    if (!firebaseDatabase) {
+        return changeCafeState(change);
+    }
+
+    const ref = firebaseDatabase.ref();
+    let onValue;
+
+    try {
+
+        await new Promise((resolve, reject) => {
+
+            onValue = () => resolve();
+
+            ref.on(
+                'value',
+                onValue,
+                reject
+            );
+
+        });
+
+        return await changeCafeState(change);
+
+    } finally {
+
+        if (onValue) {
+            ref.off(
+                'value',
+                onValue
+            );
+        }
+
+    }
 }
 
 
@@ -2023,8 +2057,7 @@ window.addEventListener(
 
 window.addEventListener(
     'DOMContentLoaded',
-    async () => {
-    if(window.WardAuth) await WardAuth.ready;
+    () => {
 
         try {
 

@@ -7,6 +7,7 @@ const {pool}=require('./db');
 const {authRequired,csrfRequired,login,logout,changePassword,getSession,homeFor}=require('./auth');
 const {router:cafeRouter}=require('./cafe');
 const {router:adminRouter}=require('./admin-api');
+const {router:customerRouter}=require('./customer-api');
 
 const app=express();
 const root=path.resolve(__dirname,'../..');
@@ -23,6 +24,7 @@ app.post('/api/auth/login',login);
 app.get('/api/auth/me',async(req,res,next)=>{try{const user=await getSession(req);if(!user)return res.status(401).json({error:'يجب تسجيل الدخول.'});res.json({user:{id:user.id,userNumber:user.user_number,name:user.name,role:user.role},csrf:user.csrf_token,home:homeFor(user.role)});}catch(error){next(error);}});
 app.post('/api/auth/logout',authRequired,csrfRequired,logout);
 app.post('/api/auth/change-password',authRequired,csrfRequired,changePassword);
+app.use('/api/customer',customerRouter);
 app.use('/api',cafeRouter);
 app.use('/api/admin',adminRouter);
 
@@ -54,7 +56,7 @@ for(const [route,roles] of Object.entries(pageRoles)){
   });
 }
 
-app.use(express.static(root,{index:false,extensions:false}));
+app.use(express.static(root,{index:false,extensions:false,maxAge:0}));
 app.get('/',(req,res)=>res.sendFile(path.join(root,'index.html')));
 
 app.use((error,req,res,next)=>{

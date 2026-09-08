@@ -4,11 +4,12 @@ const path=require('node:path');
 const express=require('express');
 const helmet=require('helmet');
 const {pool}=require('./db');
-const {authRequired,allow,csrfRequired,login,logout,getSession,homeFor}=require('./auth');
+const {authRequired,csrfRequired,login,logout,getSession,homeFor}=require('./auth');
+const {router:cafeRouter}=require('./cafe');
 
 const app=express();
 const root=path.resolve(__dirname,'../..');
-const port=Number(process.env.PORT || 3000);
+const port=Number(process.env.PORT||3000);
 
 if(process.env.TRUST_PROXY==='1')app.set('trust proxy',1);
 app.disable('x-powered-by');
@@ -20,6 +21,7 @@ app.get('/api/health',async(req,res,next)=>{try{await pool.query('SELECT 1');res
 app.post('/api/auth/login',login);
 app.get('/api/auth/me',async(req,res,next)=>{try{const user=await getSession(req);if(!user)return res.status(401).json({error:'يجب تسجيل الدخول.'});res.json({user:{id:user.id,userNumber:user.user_number,name:user.name,role:user.role},csrf:user.csrf_token,home:homeFor(user.role)});}catch(error){next(error);}});
 app.post('/api/auth/logout',authRequired,csrfRequired,logout);
+app.use('/api',cafeRouter);
 
 const pageRoles={
   '/admin.html':['admin'],
@@ -39,18 +41,16 @@ for(const [route,roles] of Object.entries(pageRoles)){
   });
 }
 
-app.get('/api/menu',async(req,res,next)=>{try{const [rows]=await pool.execute('SELECT id,name,category,price,description,image_url imageUrl,available FROM menu_items WHERE available=1 ORDER BY id');res.json(rows);}catch(error){next(error);}});
-app.get('/api/orders',authRequired,allow('admin','cashier','accountant','waiter','kitchen'),async(req,res,next)=>{try{const [orders]=await pool.execute(`SELECT id,table_number tableNumber,status,payment_status paymentStatus,total,created_at createdAt,ready_at readyAt,delivered_at deliveredAt FROM orders WHERE payment_status='unpaid' ORDER BY created_at`);res.json(orders);}catch(error){next(error);}});
-
 app.use(express.static(root,{index:false,extensions:false}));
 app.get('/',(req,res)=>res.sendFile(path.join(root,'index.html')));
 
 app.use((error,req,res,next)=>{
-  console.error(error);
   if(res.headersSent)return next(error);
-  res.status(500).json({error:'حدث خطأ في الخادم. راجع سجل التشغيل.'});
+  const status=Number(error.status)||500;
+  if(status>=500)console.error(error);
+  res.status(status).json({error:status>=500?'حدث خطأ في الخادم. راجع سجل التشغيل.':error.message});
 });
 
-app.listen(port,process.env.HOST || '0.0.0.0',()=>{
+app.listen(port,process.env.HOST||'0.0.0.0',()=>{
   console.log(`Ward Cafe: http://localhost:${port}`);
 });

@@ -6,6 +6,7 @@ const helmet=require('helmet');
 const {pool}=require('./db');
 const {authRequired,csrfRequired,login,logout,changePassword,getSession,homeFor}=require('./auth');
 const {router:cafeRouter}=require('./cafe');
+const {router:adminRouter}=require('./admin-api');
 
 const app=express();
 const root=path.resolve(__dirname,'../..');
@@ -23,6 +24,7 @@ app.get('/api/auth/me',async(req,res,next)=>{try{const user=await getSession(req
 app.post('/api/auth/logout',authRequired,csrfRequired,logout);
 app.post('/api/auth/change-password',authRequired,csrfRequired,changePassword);
 app.use('/api',cafeRouter);
+app.use('/api/admin',adminRouter);
 
 const pageRoles={
   '/admin.html':['admin'],

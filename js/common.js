@@ -16,6 +16,7 @@ const pollers=new Map();
 
 function validTable(table){return /^(?:[1-9]|1[0-9]|20)$/.test(String(table??''));}
 function currentQrTable(){const values=new URLSearchParams(location.search).getAll('table');return values.length===1&&validTable(values[0])?String(values[0]):null;}
+function isCustomerQrPage(){const page=location.pathname.split('/').pop()||'index.html';return Boolean(currentQrTable()&&(page==='index.html'||page===''));}
 function customerId(){let id=sessionStorage.getItem('ward-client-id');if(!id){id=crypto.randomUUID();sessionStorage.setItem('ward-client-id',id);}return id;}
 function getOrderIdentity(order,storedKey){const id=String(order?.id??storedKey??'');return {firebaseKey:id,orderId:id};}
 function escapeHtml(value){const node=document.createElement('span');node.textContent=value==null?'':String(value);return node.innerHTML;}
@@ -77,7 +78,8 @@ function normalizeOrder(row,extra={}){
 }
 function getOrders(){return liveOrders;}
 async function refreshOrders(){
-    const staff=Boolean(window.WardAuth?.user);
+    const customerContext=isCustomerQrPage();
+    const staff=Boolean(window.WardAuth?.user)&&!customerContext;
     if(staff){
         const rows=await api('/api/orders');
         liveOrders=rows.map(row=>normalizeOrder(row)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
@@ -93,7 +95,7 @@ async function refreshOrders(){
     return liveOrders;
 }
 function startOrdersRealtime(){
-    if(window.WardAuth?.user||currentQrTable())poll('orders',refreshOrders,2200);
+    if((window.WardAuth?.user&&!isCustomerQrPage())||currentQrTable())poll('orders',refreshOrders,2200);
     else{liveOrders=[];renderAllOrderScreens();}
 }
 
@@ -102,20 +104,20 @@ function setLocalTableStatus(tableNumber,status){if(status)liveTables[String(tab
 function clearLocalTableStatus(tableNumber){delete liveTables[String(tableNumber)];updateTableCache();}
 function updateTableCache(){try{localStorage.setItem('cafe_ward_tables_cache',JSON.stringify(liveTables));}catch{}}
 async function refreshTables(){
-    if(!window.WardAuth?.user)return liveTables;
+    if(!window.WardAuth?.user||isCustomerQrPage())return liveTables;
     const rows=await api('/api/tables');liveTables={};
     for(const row of rows)if(row.status==='occupied')liveTables[String(row.table)]={...row,table:String(row.table),status:'occupied'};
     updateTableCache();updateTableSelectorUI();return liveTables;
 }
 function startTablesRealtime(){
-    if(window.WardAuth?.user)poll('tables',refreshTables,2500);
+    if(window.WardAuth?.user&&!isCustomerQrPage())poll('tables',refreshTables,2500);
     else{try{liveTables=JSON.parse(localStorage.getItem('cafe_ward_tables_cache')||'{}');}catch{liveTables={};}updateTableSelectorUI();}
 }
 
 async function submitOrder(table,items){
     if(!validTable(table)||!Array.isArray(items)||!items.length)throw new Error('اختر طاولة وأضف أصنافاً أولاً.');
     const body={id:crypto.randomUUID(),table:String(table),items:items.map(item=>({id:String(item.id),qty:Number(item.qty)}))};
-    const staff=Boolean(window.WardAuth?.user);
+    const staff=Boolean(window.WardAuth?.user)&&!isCustomerQrPage();
     const order=await api(staff?'/api/orders':'/api/customer/orders',{method:'POST',body,redirectOnAuth:false});
     await refreshOrders();
     if(staff)await refreshTables();
@@ -167,6 +169,7 @@ function injectRuntimePolish(){
         #ward-server-banner{position:fixed;z-index:100000;left:50%;bottom:18px;transform:translateX(-50%);max-width:min(680px,calc(100% - 28px));padding:11px 16px;border-radius:14px;background:#2d2529;color:#fff;box-shadow:0 12px 35px rgba(0,0,0,.2);font:600 14px/1.5 Tahoma,Arial,sans-serif;display:none;text-align:center}
         #ward-server-banner[data-show="true"]{display:block}
         [aria-busy="true"]{cursor:progress}
+        .ready-notification::before,.ready-bell-icon::before{content:'🔔';margin-inline-end:6px}
     `;document.head.appendChild(style);
     const banner=document.createElement('div');banner.id='ward-server-banner';banner.setAttribute('role','status');banner.setAttribute('aria-live','polite');document.body.appendChild(banner);
     const sync=()=>{banner.dataset.show=String(WardServerState.online===false);banner.textContent=WardServerState.online===false?'الاتصال بالخادم متوقف — البيانات المعروضة قد تكون آخر نسخة محفوظة.':'';};

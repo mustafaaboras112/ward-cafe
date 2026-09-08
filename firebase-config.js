@@ -15,3 +15,16 @@ if (firebaseConfigured && window.firebase) {
     firebase.initializeApp(firebaseConfig);
     firebaseDatabase = firebase.database();
 }
+
+(function loadSimpleWardHelpers(){
+    const page=location.pathname.split('/').pop().toLowerCase();
+    const scripts=[];
+    if(page==='kitchen.html'||page==='waiter.html') scripts.push('js/simple-lock.js');
+    if(page==='admin.html') scripts.push('js/menu-repair.js');
+    scripts.forEach(src=>{
+        const script=document.createElement('script');
+        script.src=src;
+        script.async=false;
+        document.head.appendChild(script);
+    });
+})();

@@ -1,253 +1,71 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المنيو | كافيه ورد</title>
-    <link rel="stylesheet" href="style/common.css">
-    <link rel="stylesheet" href="style/admin.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="style/security.css">
-<script>document.documentElement.classList.add("auth-pending");</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>إدارة كافيه ورد</title>
+  <link rel="stylesheet" href="style/common.css">
+  <link rel="stylesheet" href="style/admin.css">
+  <link rel="stylesheet" href="style/security.css">
+  <script>document.documentElement.classList.add('auth-pending');</script>
+  <style>
+    :root{--admin-rose:#d61661;--admin-soft:#fff4f8;--admin-border:#eedbe2;--admin-text:#302329;--admin-muted:#7b6c72;--admin-green:#23845b;--admin-red:#b7434d}
+    *{box-sizing:border-box}.ward-admin{margin:0;background:#fcf9fa;color:var(--admin-text);font-family:Tahoma,Arial,sans-serif}.admin-header{min-height:76px;background:#fff;border-bottom:1px solid var(--admin-border);display:flex;align-items:center;padding:12px max(24px,calc((100vw - 1450px)/2));position:sticky;top:0;z-index:20}.admin-brand{display:flex;align-items:center;gap:11px;font-weight:900}.admin-brand img{width:48px;height:48px;border-radius:14px;object-fit:cover}.admin-main{width:min(1450px,calc(100% - 34px));margin:24px auto 60px}.page-heading{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:20px}.page-heading h1{margin:3px 0 6px;font-size:31px}.page-heading p{margin:0;color:var(--admin-muted)}.eyebrow{font-size:12px;font-weight:900;color:#a63b5c}.primary-button,.secondary-button,.remove-button{border-radius:11px;padding:10px 14px;font:800 14px Tahoma,Arial}.primary-button{border:0;background:var(--admin-rose);color:#fff}.secondary-button{border:1px solid var(--admin-border);background:#fff;color:var(--admin-text)}.remove-button{border:1px solid #f1cbd0;background:#fff5f5;color:var(--admin-red)}
+    .system-monitor{background:#fff;border:1px solid var(--admin-border);border-radius:20px;padding:18px;margin-bottom:16px}.system-monitor-heading{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:14px}.system-monitor-heading h2{margin:2px 0 4px}.connection-pill{padding:8px 13px;border-radius:999px;background:#f2f2f2;font-weight:800;font-size:13px}.connection-pill[data-state="online"]{background:#eaf8f0;color:#216e4a}.connection-pill[data-state="offline"]{background:#fff0f0;color:#a52b2b}.system-monitor-grid{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));gap:9px}.monitor-card{border:1px solid #f0e3e7;border-radius:14px;padding:12px;background:#fffafb}.monitor-card span,.monitor-card small{display:block;color:var(--admin-muted);font-size:12px}.monitor-card strong{display:block;margin:6px 0 3px;font-size:21px}.system-alert-box{margin-top:12px;padding-top:12px;border-top:1px solid #f2e5e9}.system-alert-heading{display:flex;justify-content:space-between;align-items:center}.system-alert-heading h3{margin:0 0 8px}.system-alert{padding:9px 11px;border-radius:10px;background:#fff5f5;margin-top:7px}.system-alert-ok{background:#effaf3;color:#246b40}.menu-summary{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:10px;margin-bottom:16px}.menu-summary>div{background:#fff;border:1px solid var(--admin-border);border-radius:15px;padding:14px}.menu-summary strong{font-size:23px;display:block}.menu-summary span{color:var(--admin-muted);font-size:13px}.summary-note{display:flex;align-items:center}.admin-workspace{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(330px,.7fr);gap:16px;align-items:start}.menu-panel,.editor-panel{background:#fff;border:1px solid var(--admin-border);border-radius:19px;padding:17px}.editor-panel{position:sticky;top:96px}.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.panel-heading h2{margin:0}.panel-heading p{margin:5px 0 0;color:var(--admin-muted);font-size:13px}.panel-tag{padding:6px 9px;border-radius:999px;background:var(--admin-soft);color:#a23557;font-size:12px;font-weight:800}.menu-tools{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:9px;margin-bottom:12px}.menu-tools input,.menu-tools select,.admin-form input,.admin-form select,.admin-form textarea{width:100%;border:1px solid var(--admin-border);border-radius:10px;padding:10px 11px;font:inherit;background:#fff}.search-field{display:block}.list-heading{display:grid;grid-template-columns:minmax(0,1fr) 100px 150px;gap:10px;padding:8px 12px;color:var(--admin-muted);font-size:12px}.product-row{display:grid;grid-template-columns:minmax(0,1fr) 100px 150px;gap:10px;align-items:center;padding:11px;border-top:1px solid #f2e6e9}.product-details{display:flex;align-items:center;gap:11px;min-width:0}.product-image{width:58px;height:58px;border-radius:12px;object-fit:cover;background:#f8f1f3}.product-copy{min-width:0}.product-copy strong{display:block}.product-copy p{margin:5px 0;color:var(--admin-muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.category-badge{display:inline-block;padding:4px 7px;border-radius:999px;background:var(--admin-soft);color:#a23557;font-size:11px}.product-price{font-weight:900}.product-price small{display:block;color:var(--admin-muted);font-weight:400}.product-actions{display:flex;gap:6px}.product-actions button{flex:1;padding:8px}.empty-state{padding:25px;text-align:center;color:var(--admin-muted)}.admin-form fieldset{border:0;padding:0;margin:0;display:grid;gap:10px}.admin-form label{font-weight:800;font-size:13px}.form-pair{display:grid;grid-template-columns:1fr 1fr;gap:9px}.image-preview{display:flex;align-items:center;gap:10px;padding:10px;border:1px dashed var(--admin-border);border-radius:12px}.image-preview img{width:60px;height:60px;border-radius:11px;object-fit:cover}.image-preview strong,.image-preview small{display:block}.image-preview small{color:var(--admin-muted);margin-top:4px}.form-actions{display:flex;gap:8px;margin-top:3px}.form-actions button{flex:1}.editor-icon{width:38px;height:38px;border-radius:11px;background:var(--admin-soft);display:grid;place-items:center;color:#a23557;font-size:22px}#admin-feedback{padding:11px 13px;border-radius:11px;background:#effaf3;color:#246b40;margin:0 0 14px}#admin-feedback[data-error="true"]{background:#fff0f0;color:#a52b2b}
+    @media(max-width:1100px){.system-monitor-grid{grid-template-columns:repeat(4,1fr)}.admin-workspace{grid-template-columns:1fr}.editor-panel{position:static}.menu-summary{grid-template-columns:1fr 1fr}.summary-note{grid-column:1/-1}}
+    @media(max-width:700px){.admin-main{width:min(100% - 20px,1450px);margin-top:14px}.page-heading{align-items:stretch;flex-direction:column}.page-heading .primary-button{width:100%}.system-monitor-heading{align-items:flex-start;flex-direction:column}.system-monitor-grid{grid-template-columns:repeat(2,1fr)}.menu-summary{grid-template-columns:1fr}.summary-note{grid-column:auto}.menu-tools{grid-template-columns:1fr}.list-heading{display:none}.product-row{grid-template-columns:1fr;gap:8px}.product-price{padding-right:69px}.product-actions{padding-right:69px}.form-pair{grid-template-columns:1fr}}
+  </style>
 </head>
 <body class="ward-admin">
-    <header class="admin-header">
-        <div class="admin-brand"><img src="q.png" alt="كافيه ورد"><span>لوحة الإدارة</span></div>
-    </header>
-    <main class="admin-main">
-        <div class="page-heading">
-            <div><p class="eyebrow">كافيه ورد / إدارة المنيو</p><h1>منيو مرتب. إدارة أسهل.</h1><p>أضف أصنافك وحدّث تفاصيلها من مكان واحد.</p></div>
-            <button class="primary-button" id="new-item-button" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> إضافة صنف</button>
-        </div>
+<header class="admin-header"><div class="admin-brand"><img src="q.png" alt="كافيه ورد"><span>لوحة الإدارة · MySQL</span></div></header>
+<main class="admin-main">
+  <div class="page-heading"><div><p class="eyebrow">كافيه ورد / إدارة المنيو</p><h1>إدارة المنيو والنظام</h1><p>الأصناف والمستخدمون وحالة التشغيل من مكان واحد.</p></div><button class="primary-button" id="new-item-button" type="button">＋ إضافة صنف</button></div>
 
-        <section class="system-monitor" aria-labelledby="system-monitor-title">
-
-    <div class="system-monitor-heading">
-        <div>
-            <p class="eyebrow">مراقبة مباشرة</p>
-            <h2 id="system-monitor-title">حالة النظام</h2>
-            <p>ملخص لحظي لحركة الكافيه.</p>
-        </div>
-
-        <span id="system-connection"
-              class="connection-pill"
-              data-state="loading">
-            جاري فحص الاتصال…
-        </span>
-    </div>
-
+  <section class="system-monitor" aria-labelledby="system-monitor-title">
+    <div class="system-monitor-heading"><div><p class="eyebrow">مراقبة مباشرة</p><h2 id="system-monitor-title">حالة النظام</h2><p>بيانات لحظية من خادم المقهى.</p></div><span id="system-connection" class="connection-pill" data-state="loading">جاري فحص الاتصال…</span></div>
     <div class="system-monitor-grid">
-
-        <article class="monitor-card">
-            <span>طاولات فارغة</span>
-            <strong id="monitor-empty-tables">—</strong>
-            <small>من أصل 20 طاولة</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>طاولات مشغولة</span>
-            <strong id="monitor-occupied-tables">—</strong>
-            <small>حسابات مفتوحة</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>قيد التحضير</span>
-            <strong id="monitor-preparing">—</strong>
-            <small>طلبات في المطبخ</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>جاهزة للتوصيل</span>
-            <strong id="monitor-ready">—</strong>
-            <small>بانتظار الكارسون</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>بانتظار الدفع</span>
-            <strong id="monitor-delivered">—</strong>
-            <small>تم توصيلها ولم تُدفع</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>مبيعات اليوم</span>
-            <strong id="monitor-sales">—</strong>
-            <small>ليرة</small>
-        </article>
-
-        <article class="monitor-card">
-            <span>حالة الصندوق</span>
-            <strong id="monitor-cashbox">—</strong>
-            <small>المحاسبة</small>
-        </article>
-
+      <article class="monitor-card"><span>طاولات فارغة</span><strong id="monitor-empty-tables">—</strong><small>من أصل 20</small></article>
+      <article class="monitor-card"><span>طاولات مشغولة</span><strong id="monitor-occupied-tables">—</strong><small>حسابات مفتوحة</small></article>
+      <article class="monitor-card"><span>قيد التحضير</span><strong id="monitor-preparing">—</strong><small>في المطبخ</small></article>
+      <article class="monitor-card"><span>جاهزة للتوصيل</span><strong id="monitor-ready">—</strong><small>بانتظار الجرسون</small></article>
+      <article class="monitor-card"><span>بانتظار الدفع</span><strong id="monitor-delivered">—</strong><small>تم التوصيل</small></article>
+      <article class="monitor-card"><span>مبيعات اليوم</span><strong id="monitor-sales">—</strong><small>ليرة</small></article>
+      <article class="monitor-card"><span>اليوم المحاسبي</span><strong id="monitor-cashbox">—</strong><small>حالة الصندوق</small></article>
     </div>
+    <section class="system-alert-box"><div class="system-alert-heading"><h3>تنبيهات التشغيل</h3><span id="monitor-alert-count">0</span></div><div id="system-alert-list" aria-live="polite">جاري فحص النظام…</div></section>
+  </section>
 
-    <section class="system-alert-box">
-        <div class="system-alert-heading">
-            <h3>تنبيهات التشغيل</h3>
-            <span id="monitor-alert-count">0</span>
-        </div>
+  <div class="menu-summary" aria-label="ملخص المنيو">
+    <div><strong id="total-items">—</strong><span>إجمالي الأصناف</span></div>
+    <div><strong id="total-categories">—</strong><span>تصنيفات مستخدمة</span></div>
+    <div class="summary-note"><span>كل تغيير تحفظه هنا يذهب مباشرة إلى قاعدة MySQL ويظهر على أجهزة المقهى.</span></div>
+  </div>
+  <p id="admin-feedback" role="status" aria-live="polite" hidden></p>
 
-        <div id="system-alert-list"
-             aria-live="polite">
-            جاري فحص النظام…
-        </div>
+  <div class="admin-workspace">
+    <section class="menu-panel" aria-labelledby="menu-title">
+      <div class="panel-heading"><div><h2 id="menu-title">الأصناف</h2><p id="result-count" aria-live="polite">جاري تحميل المنيو…</p></div><span class="panel-tag">إدارة المنيو</span></div>
+      <div class="menu-tools"><label class="search-field"><input id="menu-search" type="search" placeholder="ابحث عن اسم أو وصف الصنف…" aria-label="البحث في الأصناف"></label><select id="category-filter" aria-label="فلترة حسب التصنيف"><option value="">كل التصنيفات</option><option value="hot">مشروبات ساخنة</option><option value="cold">مشروبات باردة</option><option value="sweets">حلويات</option><option value="food">مأكولات</option></select></div>
+      <div class="list-heading" aria-hidden="true"><span>الصنف / التفاصيل</span><span>السعر</span><span>الإجراءات</span></div>
+      <div id="admin-menu-list"><p class="empty-state">جاري تحميل الأصناف…</p></div>
     </section>
 
-</section>
-
-<style>
-.system-monitor {
-    margin: 0 0 28px;
-}
-
-.system-monitor-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 14px;
-}
-
-.system-monitor-heading h2 {
-    margin: 2px 0 4px;
-}
-
-.connection-pill {
-    padding: 9px 14px;
-    border-radius: 999px;
-    font-weight: 700;
-    white-space: nowrap;
-    background: #f3f3f3;
-}
-
-.connection-pill[data-state="online"] {
-    background: #eaf8ef;
-    color: #176b38;
-}
-
-.connection-pill[data-state="offline"] {
-    background: #fff0f0;
-    color: #a52b2b;
-}
-
-.system-monitor-grid {
-    display: grid;
-    grid-template-columns:
-        repeat(auto-fit, minmax(145px, 1fr));
-    gap: 12px;
-}
-
-.monitor-card {
-    background: #fff;
-    border: 1px solid #ead6dc;
-    border-radius: 16px;
-    padding: 15px;
-    box-shadow: 0 5px 18px rgba(0,0,0,.035);
-}
-
-.monitor-card span,
-.monitor-card small {
-    display: block;
-    color: #71656a;
-}
-
-.monitor-card strong {
-    display: block;
-    margin: 7px 0 3px;
-    font-size: 1.7rem;
-    color: #222;
-}
-
-.system-alert-box {
-    margin-top: 14px;
-    padding: 16px;
-    background: #fff;
-    border: 1px solid #ead6dc;
-    border-radius: 16px;
-}
-
-.system-alert-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.system-alert-heading h3 {
-    margin: 0 0 10px;
-}
-
-#monitor-alert-count {
-    min-width: 30px;
-    padding: 4px 9px;
-    text-align: center;
-    border-radius: 999px;
-    background: #fff0f3;
-    color: #a43955;
-    font-weight: 800;
-}
-
-.system-alert {
-    padding: 10px 12px;
-    margin-top: 8px;
-    border-radius: 10px;
-    background: #fff7f7;
-    border-right: 4px solid #c84d4d;
-}
-
-.system-alert-ok {
-    background: #f2fbf5;
-    border-right-color: #35985c;
-    color: #246b40;
-}
-
-@media (max-width: 650px) {
-    .system-monitor-heading {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-}
-</style>
-
-        <div class="menu-summary" aria-label="ملخص المنيو">
-            <div><span class="summary-icon"><i class="fa-solid fa-utensils" aria-hidden="true"></i></span><div><strong id="total-items">—</strong><span>إجمالي الأصناف</span></div></div>
-            <div><span class="summary-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></span><div><strong id="total-categories">—</strong><span>تصنيفات مستخدمة</span></div></div>
-            <div class="summary-note"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i><span>كل تفاصيل الصنف<br><b>جاهزة للتعديل بلمسة</b></span></div>
-        </div>
-        <p id="admin-feedback" role="status" aria-live="polite" hidden></p>
-        <div class="admin-workspace">
-            <section class="menu-panel" aria-labelledby="menu-title">
-                <div class="panel-heading"><div><h2 id="menu-title">الأصناف</h2><p id="result-count" aria-live="polite">جاري تحميل المنيو…</p></div><span class="panel-tag">إدارة المنيو</span></div>
-                <div class="menu-tools">
-                    <label class="search-field"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input id="menu-search" type="search" placeholder="ابحث عن اسم أو وصف الصنف…" aria-label="البحث في الأصناف"></label>
-                    <select id="category-filter" aria-label="فلترة حسب التصنيف"><option value="">كل التصنيفات</option><option value="hot">مشروبات ساخنة</option><option value="cold">مشروبات باردة</option><option value="sweets">حلويات</option><option value="food">مأكولات</option></select>
-                </div>
-                <div class="list-heading" aria-hidden="true"><span>الصنف / التفاصيل</span><span>السعر</span><span>الإجراءات</span></div>
-                <div id="admin-menu-list"><p class="empty-state">جاري تحميل الأصناف…</p></div>
-            </section>
-            <section class="editor-panel" id="item-editor" aria-labelledby="editor-title">
-                <div class="panel-heading"><div><p class="eyebrow" id="editor-mode">صنف جديد</p><h2 id="editor-title">إضافة صنف للمنيو</h2></div><span class="editor-icon"><i class="fa-solid fa-plus" aria-hidden="true"></i></span></div>
-                <form id="add-item-form" class="admin-form">
-                    <fieldset id="item-fields">
-                        <label for="item-name">اسم الصنف</label><input type="text" id="item-name" placeholder="مثال: لاتيه كافيه ورد" required maxlength="150">
-                        <div class="form-pair"><div><label for="item-cat">التصنيف</label><select id="item-cat" required><option value="hot">مشروبات ساخنة</option><option value="cold">مشروبات باردة</option><option value="sweets">حلويات</option><option value="food">مأكولات</option></select></div><div><label for="item-price">السعر <small>(ليرة)</small></label><input type="number" id="item-price" placeholder="0.00" min="0" step="0.01" inputmode="decimal" required></div></div>
-                        <label for="item-desc">وصف الصنف</label><textarea id="item-desc" rows="3" placeholder="المكونات أو تفاصيل تميز الصنف…" required></textarea>
-                        <label for="item-img">رابط الصورة</label><input type="url" id="item-img" dir="ltr" placeholder="https://example.com/photo.jpg" required aria-describedby="image-help"><small id="image-help">استخدم رابطًا مباشرًا للصورة، كما في المنيو الحالي.</small>
-                        <div class="image-preview"><img id="item-preview" src="q.png" alt="معاينة صورة الصنف"><div><strong>معاينة الصورة</strong><small id="preview-caption">تظهر الصورة هنا عند إدخال الرابط</small></div></div>
-                        <div class="form-actions"><button type="submit" id="save-item-button" class="primary-button">إضافة الصنف</button><button type="button" id="cancel-edit-button" class="secondary-button" hidden>إلغاء التعديل</button></div>
-                    </fieldset>
-                </form>
-            </section>
-        </div>
-    </main>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
-<script src="firebase-config.js"></script>
+    <section class="editor-panel" id="item-editor" aria-labelledby="editor-title">
+      <div class="panel-heading"><div><p class="eyebrow" id="editor-mode">صنف جديد</p><h2 id="editor-title">إضافة صنف للمنيو</h2></div><span class="editor-icon">＋</span></div>
+      <form id="add-item-form" class="admin-form"><fieldset id="item-fields">
+        <label for="item-name">اسم الصنف</label><input type="text" id="item-name" placeholder="مثال: لاتيه كافيه ورد" required maxlength="150">
+        <div class="form-pair"><div><label for="item-cat">التصنيف</label><select id="item-cat" required><option value="hot">مشروبات ساخنة</option><option value="cold">مشروبات باردة</option><option value="sweets">حلويات</option><option value="food">مأكولات</option></select></div><div><label for="item-price">السعر (ليرة)</label><input type="number" id="item-price" placeholder="0.00" min="0" step="0.01" inputmode="decimal" required></div></div>
+        <label for="item-desc">وصف الصنف</label><textarea id="item-desc" rows="3" placeholder="المكونات أو تفاصيل الصنف…" required maxlength="500"></textarea>
+        <label for="item-img">رابط الصورة</label><input type="url" id="item-img" dir="ltr" placeholder="https://example.com/photo.jpg" required aria-describedby="image-help"><small id="image-help">يمكن استخدام رابط مباشر للصورة، وعند فشله تظهر صورة ورد الافتراضية.</small>
+        <div class="image-preview"><img id="item-preview" src="q.png" alt="معاينة صورة الصنف"><div><strong>معاينة الصورة</strong><small id="preview-caption">تظهر الصورة هنا عند إدخال الرابط</small></div></div>
+        <div class="form-actions"><button type="submit" id="save-item-button" class="primary-button">إضافة الصنف</button><button type="button" id="cancel-edit-button" class="secondary-button" hidden>إلغاء التعديل</button></div>
+      </fieldset></form>
+    </section>
+  </div>
+</main>
 <script src="js/auth.js"></script>
-    <script src="js/common.js"></script>
-    <script src="js/admin.js"></script>
+<script src="js/common.js"></script>
+<script src="js/admin.js"></script>
 <script src="js/users.js"></script>
 </body>
 </html>

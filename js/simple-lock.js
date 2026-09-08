@@ -9,8 +9,8 @@
     document.getElementById('access-lock')?.remove();
   }
 
-  window.addEventListener('DOMContentLoaded',()=>{
-    if(sessionStorage.getItem(SESSION_KEY)==='true') return;
+  function init(){
+    if(sessionStorage.getItem(SESSION_KEY)==='true'||document.getElementById('access-lock')) return;
     document.body.classList.add('page-locked');
 
     const lock=document.createElement('div');
@@ -40,5 +40,8 @@
       input.value='';
       input.focus();
     });
-  });
+  }
+
+  if(document.readyState==='loading') window.addEventListener('DOMContentLoaded',init,{once:true});
+  else init();
 })();
